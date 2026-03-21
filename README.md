@@ -19,6 +19,8 @@ You can refer to these 4 scripts to generate the single-arm in-lab training data
 ```bash
 # eef control, based on the first frame within an action chunk (our ideal choice)
 python utils/gen_json_tac_deltabase_eef_down.py
+# eef control, based on the first frame within an action chunk with multiprocess (very fast)
+python utils/gen_json_tac_deltabase_eef_down_parallel.py
 
 # joint control, based on the first frame within an action chunk
 python utils/gen_json_tac_deltabase_joint_down.py
@@ -28,6 +30,11 @@ python utils/gen_json_tac_deltacurr_eef_down.py
 
 # joint control, based on the neighbor frame within an action chunk
 python utils/gen_json_tac_deltacurr_joint_down.py
+```
+
+There's a good script to analyze the episode stats:
+```bash 
+python utils/analyze_episode.py
 ```
 
 ## Training

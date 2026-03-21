@@ -127,3 +127,4 @@ widgetsnbextension==4.0.14
 xxhash==3.5.0
 yarl==1.20.1
 zipp==3.23.0
+zmq==0.0.0

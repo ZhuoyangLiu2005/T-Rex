@@ -1,0 +1,10 @@
+__pycache__/
+training_data
+exp
+exp_pretrain
+experiments/logs
+LIBERO
+vis_results
+vis_scripts
+rollouts
+test_results

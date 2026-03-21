@@ -1,0 +1,595 @@
+import os, sys
+
+_SCRIPT_DIR  = os.path.dirname(os.path.abspath(__file__))
+_PROJECT_DIR = os.path.dirname(_SCRIPT_DIR)  # dex_mot_qwen/
+if _PROJECT_DIR not in sys.path:
+    sys.path.insert(0, _PROJECT_DIR)
+
+import json
+import torch
+import logging
+import argparse
+import shutil
+import math
+import wandb
+import PIL.Image
+import numpy as np
+
+from typing import List, Dict
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.distributed as dist
+from torch.utils.data import Dataset, DataLoader
+from torch.optim.lr_scheduler import LambdaLR
+from accelerate import Accelerator
+from transformers import AutoProcessor, set_seed
+
+from qwen_vla import Qwen3VLVLAModel
+from janus.models.action_tokenizer import ActionTokenizer
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level="INFO")
+
+
+def get_cosine_schedule_with_warmup(optimizer, num_warmup_steps, num_training_steps,
+                                     min_lr_ratio=0.0, num_cycles=0.5):
+    def lr_lambda(step):
+        if step < num_warmup_steps:
+            return float(step) / float(max(1, num_warmup_steps))
+        progress = float(step - num_warmup_steps) / float(max(1, num_training_steps - num_warmup_steps))
+        cosine  = 0.5 * (1.0 + math.cos(math.pi * 2 * num_cycles * progress))
+        return (1 - min_lr_ratio) * cosine + min_lr_ratio
+    return LambdaLR(optimizer, lr_lambda, last_epoch=-1)
+
+
+class SftDataset(Dataset):
+    def __init__(self, config, processor, accelerator):
+        self.config = config
+        self.processor = processor
+        self.accelerator = accelerator
+        self.action_tokenizer = ActionTokenizer(processor.tokenizer)
+
+        with open(config.data_path, "r") as f:
+            self.data = json.load(f)
+
+        stats_path = config.data_path.replace(".json", "_statistics.json")
+        with open(stats_path, "r") as f:
+            self.stats_data = json.load(f)
+
+        ds = next(iter(self.stats_data))
+        self.dataset_name = ds
+
+        def _arr(key, sub):
+            return np.array(self.stats_data[ds][key][sub])
+
+        self.action_mask = _arr("action", "mask")
+        self.action_min = _arr("action", "q01")
+        self.action_max = _arr("action", "q99")
+        self.state_mask = _arr("state",  "mask")
+        self.state_min = _arr("state",  "q01")
+        self.state_max = _arr("state",  "q99")
+        self.tacf6_mask = _arr("tactile_f6", "mask")
+        self.tacf6_min = _arr("tactile_f6", "q01")
+        self.tacf6_max = _arr("tactile_f6", "q99")
+
+        tracking_info = self.stats_data[ds].get("tracking_error", {})
+        self.tracking_err_mean = np.array(tracking_info["mean"], dtype=np.float32) \
+            if "mean" in tracking_info else None
+        self.tracking_err_std  = np.array(tracking_info["std"],  dtype=np.float32) \
+            if "std"  in tracking_info else None
+
+        self.img_dir = os.path.dirname(config.data_path)
+        accelerator.print(f"Dataset size: {len(self.data)}")
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        return self.data[idx]
+
+    @staticmethod
+    def _normalize(values, mask, vmin, vmax):
+        return np.where(
+            mask,
+            np.clip(2 * (values - vmin) / (vmax - vmin + 1e-8) - 1, -1, 1),
+            values,
+        )
+
+    def _open(self, rel_path):
+        return PIL.Image.open(os.path.join(self.img_dir, rel_path)).convert("RGB")
+
+    def _open_gray(self, path):
+        full = path if os.path.isabs(path) else os.path.join(self.img_dir, path)
+        img  = PIL.Image.open(full).convert("L")
+        return np.array(img, dtype=np.float32) / 255.0
+
+    def _beta_sample(self, n, device):
+        d = torch.distributions.Beta(
+            torch.tensor(1.5, dtype=torch.float32, device=device),
+            torch.tensor(1.0, dtype=torch.float32, device=device),
+        )
+        t = d.sample((n,)) * 0.999 + 0.001
+        return t.to(torch.bfloat16)
+
+    def collate_fn(self, batch: List[Dict]) -> Dict:
+        cfg = self.config
+        B = len(batch)
+
+        actions = np.array([x["action"] for x in batch], dtype=np.float32)
+        actions = actions.reshape(B, -1, cfg.action_dim)
+        norm_actions = self._normalize(actions, self.action_mask, self.action_min, self.action_max)
+        norm_actions = torch.tensor(norm_actions, dtype=torch.bfloat16) # [B, chunk, dim]
+
+        device_cpu = norm_actions.device
+        time = self._beta_sample(B, device_cpu) # [B]
+        t_ = time[:, None, None]
+        noise = torch.randn_like(norm_actions)
+        x_t = t_ * noise + (1 - t_) * norm_actions
+        u_t = noise - norm_actions
+
+        norm_tacf6 = None
+        if cfg.use_tactile_vec:
+            tacf6 = np.array([x["tactile_f6"] for x in batch], dtype=np.float32)
+            tacf6 = tacf6.reshape(B, -1, 6)
+            norm_tacf6 = self._normalize(tacf6, self.tacf6_mask, self.tacf6_min, self.tacf6_max)
+            norm_tacf6 = torch.tensor(norm_tacf6, dtype=torch.bfloat16)
+
+        deforms_tensor = None
+        if cfg.use_tactile_deform:
+            deforms = []
+            for x in batch:
+                imgs = [self._open_gray(p) for p in x.get("tactile_image_deform", [])]
+                deforms.append(imgs)
+            deforms_tensor = torch.tensor(np.array(deforms)).unsqueeze(2) # [B,5,1,H,W]
+
+        state_token_ids_list = []
+        if cfg.use_robot_state:
+            at = self.action_tokenizer
+            for x in batch:
+                state_raw = np.array(x["state_fast"], dtype=np.float32)
+                # if self.tracking_err_mean is not None:
+                #     state_raw = state_raw + np.random.normal(
+                #         self.tracking_err_mean, self.tracking_err_std)
+                norm_state = self._normalize(state_raw, self.state_mask,
+                                             self.state_min, self.state_max)
+                clipped = np.clip(norm_state, at.min_action, at.max_action)
+                discretized = np.digitize(clipped, at.bins)
+                ids = (at.my_vocab_size - discretized).tolist()
+                state_token_ids_list.append(torch.LongTensor(ids))
+
+        all_input_ids = []
+        all_pixel_values = []
+        all_grid_thw = []
+
+        for x in batch:
+            slow_imgs = x.get("input_image_slow", [])
+            fast_imgs = x.get("input_image_fast", [])
+
+            pil_imgs_slow = [self._open(p) for p in slow_imgs]
+            pil_imgs_fast = [self._open(p) for p in fast_imgs]
+
+            content = []
+            for _ in pil_imgs_slow:
+                content.append({"type": "image"})
+            content.append({"type": "text", "text": x.get("input_prompt", "")})
+            for _ in pil_imgs_fast:
+                content.append({"type": "image"})
+
+            messages = [{"role": "user", "content": content}]
+            text = self.processor.apply_chat_template(
+                messages, tokenize=False, add_generation_prompt=True
+            )
+            all_pil = pil_imgs_slow + pil_imgs_fast
+
+            inp = self.processor(
+                text=text,
+                images=all_pil if all_pil else None,
+                return_tensors="pt",
+                padding=False,
+            )
+            all_input_ids.append(inp.input_ids[0]) # [L_i]
+            if "pixel_values" in inp and inp.pixel_values is not None:
+                all_pixel_values.append(inp.pixel_values) # [patches_i, ...]
+                all_grid_thw.append(inp.image_grid_thw) # [n_imgs_i, 3]
+
+        max_len = max(ids.shape[0] for ids in all_input_ids)
+        pad_id  = self.processor.tokenizer.pad_token_id or 0
+
+        padded_ids   = []
+        attention_ms = []
+        for ids in all_input_ids:
+            pad_len = max_len - ids.shape[0]
+            padded_ids.append(F.pad(ids, (pad_len, 0), value=pad_id))
+            attn = torch.ones(max_len, dtype=torch.long)
+            if pad_len > 0:
+                attn[:pad_len] = 0
+            attention_ms.append(attn)
+
+        input_ids = torch.stack(padded_ids) # [B, max_len]
+        attention_mask = torch.stack(attention_ms) # [B, max_len]
+
+        pixel_values = (torch.cat(all_pixel_values, dim=0)
+                        if all_pixel_values else None)
+        image_grid_thw = (torch.cat(all_grid_thw, dim=0)
+                          if all_grid_thw else None)
+
+        # Stack state token IDs: [B, action_dim] or None
+        state_token_ids = (torch.stack(state_token_ids_list)
+                           if state_token_ids_list else None)
+
+        return {
+            "input_ids": input_ids,
+            "attention_mask": attention_mask,
+            "pixel_values": pixel_values,
+            "image_grid_thw": image_grid_thw,
+            "noisy_actions": x_t, # [B, chunk, dim]
+            "target": u_t, # [B, chunk, dim]
+            "timesteps": time, # [B]
+            "tactile_f6s": norm_tacf6,
+            "tactile_deforms": deforms_tensor,
+            "state_token_ids": state_token_ids, # [B, action_dim] or None
+        }
+
+def save_checkpoint(model, processor, accelerator, args, epoch, global_step, stats_data):
+    save_dir = os.path.join(args.output_dir, f"checkpoint-{epoch}-{global_step}")
+
+    if accelerator.is_main_process:
+        ckpts = [f for f in os.listdir(args.output_dir) if f.startswith("checkpoint-")]
+        if args.max_ckpts > 0 and len(ckpts) >= args.max_ckpts:
+            oldest = min(ckpts, key=lambda f: os.path.getctime(os.path.join(args.output_dir, f)))
+            shutil.rmtree(os.path.join(args.output_dir, oldest))
+
+        os.makedirs(save_dir, exist_ok=True)
+
+        # Save model weights
+        unwrapped = accelerator.unwrap_model(model)
+        sd = accelerator.get_state_dict(model)
+        torch.save(sd, os.path.join(save_dir, "model.pt"))
+
+        # Save processor (tokenizer / image processor)
+        processor.save_pretrained(os.path.join(save_dir, "processor"))
+
+        # Save base model config for architecture reconstruction at inference
+        src_config = os.path.join(args.model_path, "config.json")
+        if os.path.exists(src_config):
+            shutil.copy(src_config, os.path.join(save_dir, "config.json"))
+        else:
+            logger.warning(f"config.json not found at {src_config} — inference will "
+                           f"need --base_model_path to reconstruct the architecture.")
+
+        # Save training args so inference can auto-detect base model and settings
+        with open(os.path.join(save_dir, "training_args.json"), "w") as f:
+            json.dump({
+                "model_path": args.model_path,
+                "action_dim": args.action_dim,
+                "action_chunk": args.action_chunk,
+                "use_robot_state": args.use_robot_state,
+                "use_tactile_deform": args.use_tactile_deform,
+                "use_tactile_vec": getattr(args, "use_tactile_vec", 0),
+            }, f, indent=2)
+
+        with open(os.path.join(save_dir, "stats_data.json"), "w") as f:
+            json.dump(stats_data, f, indent=2)
+
+    accelerator.wait_for_everyone()
+    logger.info(f"Checkpoint {epoch}-{global_step} saved.")
+
+
+class TrainingMetrics:
+    def __init__(self, device):
+        self.n_step      = 0
+        self.action_loss = torch.tensor(0.0, device=device)
+        self.world_size  = dist.get_world_size()
+
+    def update(self, action_loss):
+        self.n_step += 1
+        self.action_loss += action_loss.item()
+
+    def get_metric(self, reset=True):
+        dist.all_reduce(self.action_loss, op=dist.ReduceOp.SUM)
+        loss = self.action_loss.item() / (self.world_size * max(self.n_step, 1))
+        if reset:
+            self.n_step = 0
+            self.action_loss.fill_(0)
+        return loss
+
+
+def train(args):
+    accelerator = Accelerator(
+        mixed_precision="bf16",
+        gradient_accumulation_steps=args.gradient_accumulation_steps,
+    )
+    set_seed(args.seed)
+
+    if accelerator.is_main_process:
+        wandb.init(project=args.experiment_name, name=args.run_name,
+                   config=args, dir=args.log_dir)
+
+    accelerator.state.deepspeed_plugin.deepspeed_config[
+        "train_micro_batch_size_per_gpu"] = args.train_bsz_per_gpu
+    accelerator.state.deepspeed_plugin.deepspeed_config[
+        "train_batch_size"] = (args.train_bsz_per_gpu
+                               * dist.get_world_size()
+                               * accelerator.gradient_accumulation_steps)
+
+    processor = AutoProcessor.from_pretrained(args.model_path, trust_remote_code=True)
+
+    model = Qwen3VLVLAModel.from_pretrained_qwen3vl(
+        pretrained_path = args.model_path,
+        action_dim = args.action_dim,
+        action_chunk = args.action_chunk,
+        use_tactile_deform = bool(args.use_tactile_deform),
+        use_robot_state = bool(args.use_robot_state),
+        torch_dtype = torch.bfloat16,
+    )
+
+    if args.use_tactile_deform:
+        model.load_deform_encoder_weights(args.deform_encoder_ckpt)
+
+    model.initialize_vla_weights()
+    accelerator.print("VLA weights initialized (Xavier + zero-init final layer output).")
+
+    action_sd = None
+    if args.load_action_from_pretrain and args.action_model_path:
+        action_sd = torch.load(args.action_model_path, map_location="cpu")
+        if "state_dict" in action_sd:
+            action_sd = action_sd["state_dict"]
+        accelerator.print("Loaded action pretrain checkpoint.")
+
+    for name, param in model.named_parameters():
+        if "_action" in name:
+            if args.load_action_from_latent:
+                base = name.replace("_action", "")
+                if base in dict(model.named_parameters()):
+                    param.data.copy_(dict(model.named_parameters())[base].data)
+                    accelerator.print(f"Init {name} <- {base}")
+            elif action_sd is not None:
+                base = name.replace("_action", "")
+                if base in action_sd:
+                    param.data.copy_(action_sd[base])
+            param.requires_grad = True
+
+        elif "_tactile" in name:
+            if args.load_action_from_latent:
+                base = name.replace("_tactile", "")
+                if base in dict(model.named_parameters()):
+                    param.data.copy_(dict(model.named_parameters())[base].data)
+                    accelerator.print(f"Init {name} <- {base}")
+            elif action_sd is not None:
+                base = name.replace("_tactile", "")
+                if base in action_sd:
+                    param.data.copy_(action_sd[base])
+            param.requires_grad = True
+
+        elif any(k in name for k in ("x_embedder", "t_embedder", "final_layer",
+                                      "tacf6_embedder", "deform_proj", "state_embedder")):
+            if action_sd is not None and name in action_sd:
+                param.data.copy_(action_sd[name])
+                accelerator.print(f"Init {name} from action ckpt")
+            param.requires_grad = True
+
+        elif name.startswith("visual") or name.startswith("deform_encoder"):
+            param.requires_grad = False
+
+        else:
+            param.requires_grad = True
+
+    total = sum(p.numel() for p in model.parameters())
+    trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    accelerator.print(f"Total: {total/1e9:.2f}B  Trainable: {trainable/1e9:.2f}B "
+                      f"({trainable/total*100:.1f}%)")
+
+    no_decay = ["bias", "norm.weight", "q_norm.weight", "k_norm.weight"]
+    param_groups = [
+        {"params": [p for n, p in model.named_parameters()
+                    if p.requires_grad and not any(nd in n for nd in no_decay)],
+         "weight_decay": args.weight_decay},
+        {"params": [p for n, p in model.named_parameters()
+                    if p.requires_grad and any(nd in n for nd in no_decay)],
+         "weight_decay": 0.0},
+    ]
+    optimizer = torch.optim.AdamW(param_groups, lr=args.learning_rate)
+
+    dataset = SftDataset(args, processor, accelerator)
+    dataloader = DataLoader(
+        dataset, batch_size=args.train_bsz_per_gpu, shuffle=True,
+        collate_fn=dataset.collate_fn, num_workers=4, pin_memory=True,
+    )
+
+    num_training_steps = (
+        int(len(dataloader) * args.n_epochs)
+        // accelerator.gradient_accumulation_steps
+        // dist.get_world_size()
+    )
+    lr_scheduler = get_cosine_schedule_with_warmup(
+        optimizer,
+        num_warmup_steps=int(args.warmup_rates * num_training_steps),
+        num_training_steps=num_training_steps,
+        min_lr_ratio=args.min_lr_ratio,
+    )
+
+    model, optimizer, dataloader = accelerator.prepare(model, optimizer, dataloader)
+
+    metric      = TrainingMetrics(device=torch.cuda.current_device())
+    global_step = 0
+    model.train()
+
+    for epoch in range(args.n_epochs):
+        from tqdm import tqdm
+        it = (tqdm(dataloader, total=len(dataloader))
+              if accelerator.is_main_process else dataloader)
+
+        for batch in it:
+            raw_model = accelerator.unwrap_model(model)
+
+            inputs_embeds = raw_model.prepare_inputs_embeds(
+                input_ids      = batch["input_ids"],
+                pixel_values   = batch.get("pixel_values"),
+                image_grid_thw = batch.get("image_grid_thw"),
+            ) # [B, L, H]
+
+            pos_ids, _ = raw_model.get_rope_index(
+                input_ids      = batch["input_ids"],
+                image_grid_thw = batch.get("image_grid_thw"),
+                attention_mask = batch["attention_mask"],
+            )
+
+            if args.use_robot_state and batch["state_token_ids"] is not None:
+                state_ids = batch["state_token_ids"].to(inputs_embeds.device)
+                state_embeds = raw_model.model.get_input_embeddings()(state_ids)
+                state_embeds = state_embeds.to(inputs_embeds.dtype)  # [B, action_dim, H]
+            else:
+                state_embeds = torch.empty(
+                    (inputs_embeds.shape[0], 0, inputs_embeds.shape[2]),
+                    device=inputs_embeds.device, dtype=inputs_embeds.dtype)
+            n_state = state_embeds.shape[1]
+
+            noisy_actions = raw_model.x_embedder(
+                batch["noisy_actions"].to(inputs_embeds.dtype)) # [B, chunk, H]
+            timesteps = raw_model.t_embedder(
+                batch["timesteps"].to(inputs_embeds.dtype)).unsqueeze(1) # [B, 1, H]
+
+            noisy_actions_tac = raw_model.x_embedder(
+                batch["noisy_actions"].to(inputs_embeds.dtype))
+            timesteps_tac = raw_model.t_embedder(
+                batch["timesteps"].to(inputs_embeds.dtype)).unsqueeze(1)
+
+            if args.use_tactile_deform and batch["tactile_deforms"] is not None:
+                deforms = batch["tactile_deforms"].to(
+                    inputs_embeds.device, dtype=inputs_embeds.dtype)
+                Bs, nf, C, H, W = deforms.shape
+                with torch.no_grad():
+                    feats = raw_model.deform_encoder(deforms.view(-1, C, H, W))
+                feats = feats.view(Bs, nf, -1)
+                tactile_embeds = raw_model.deform_proj(
+                    feats.to(inputs_embeds.dtype)) # [B, nf, H]
+            elif args.use_tactile_vec and batch["tactile_f6s"] is not None:
+                tactile_embeds = raw_model.tacf6_embedder(
+                    batch["tactile_f6s"].to(inputs_embeds.dtype)) # [B, T, H]
+            else:
+                tactile_embeds = torch.empty(
+                    (inputs_embeds.shape[0], 0, inputs_embeds.shape[2]),
+                    device=inputs_embeds.device, dtype=inputs_embeds.dtype)
+
+            # ── Concatenate full sequence ─────────────────────────────────────
+            # Layout: [latent | state | t_act | actions | tactile | t_tac | actions_tac]
+            #          ^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            #          latent        action expert              tactile expert
+            full_embeds = torch.cat([
+                inputs_embeds,
+                state_embeds, timesteps, noisy_actions,
+                tactile_embeds, timesteps_tac, noisy_actions_tac,
+            ], dim=1)                                              # [B, L_total, H]
+
+            # ── Stream indexes ────────────────────────────────────────────────
+            # pos_ids: [B, 3, L_latent] (Qwen3-VL M-RoPE format)
+            # The model's forward will extend position_ids internally for
+            # action/tactile tokens, so we pass latent-only pos_ids.
+            n_action  = n_state + 1 + args.action_chunk  # state + timestep + chunk
+            n_tactile = tactile_embeds.shape[1] + 1 + args.action_chunk
+            L_latent = inputs_embeds.shape[1]
+            L_total = full_embeds.shape[1]
+            latent_indexes = torch.arange(0, L_latent,
+                                           device=full_embeds.device)
+            action_indexes = torch.arange(L_latent, L_latent + n_action,
+                                           device=full_embeds.device)
+            tactile_indexes = torch.arange(L_latent + n_action, L_total,
+                                           device=full_embeds.device)
+
+            outputs = model.model(
+                inputs_embeds = full_embeds,
+                position_ids = pos_ids,                   # [3, B, L_latent] — extended inside model
+                attention_mask  = batch["attention_mask"],   # latent padding mask
+                use_cache = False,
+                latent_indexes = latent_indexes,
+                action_indexes = action_indexes,
+                tactile_indexes = tactile_indexes,
+            )
+            hidden = outputs.last_hidden_state               # [B, L_total, H]
+
+            # ── Loss (action expert + tactile expert) ─────────────────────────
+            chunk  = args.action_chunk
+            target = batch["target"].to(hidden.dtype)        # [B, chunk, dim]
+
+            # action expert prediction: after state + timestep, i.e.
+            # positions [L_latent + n_state + 1 : L_latent + n_state + 1 + chunk]
+            act_pred_start = L_latent + n_state + 1
+            pred_act = raw_model.final_layer(hidden)[
+                :, act_pred_start : act_pred_start + chunk, :]
+            loss_act = nn.MSELoss()(pred_act, target)
+
+            # tactile expert prediction: last `chunk` positions
+            pred_tac = raw_model.final_layer(hidden)[:, -chunk:, :]
+            loss_tac = nn.MSELoss()(pred_tac, target)
+
+            loss = loss_act + loss_tac
+
+            metric.update(loss)
+
+            accelerator.backward(loss)
+
+            if (global_step + 1) % accelerator.gradient_accumulation_steps == 0:
+                if args.max_grad_norm > 0:
+                    accelerator.clip_grad_norm_(model.parameters(), args.max_grad_norm)
+                optimizer.step()
+                lr_scheduler.step()
+                optimizer.zero_grad()
+
+                agg_loss = metric.get_metric()
+                if accelerator.is_main_process:
+                    if hasattr(it, "set_postfix"):
+                        it.set_postfix(epoch=epoch, step=global_step,
+                                       loss=f"{agg_loss:.6f}",
+                                       lr=f"{lr_scheduler.get_last_lr()[0]:.2e}")
+                    wandb.log({"action_loss": agg_loss,
+                               "lr": lr_scheduler.get_last_lr()[0]},
+                              step=global_step)
+
+            global_step += 1
+
+        if (epoch + 1) % args.save_freq == 0 or epoch == args.n_epochs - 1:
+            accelerator.wait_for_everyone()
+            save_checkpoint(model, processor, accelerator, args,
+                            epoch, global_step, dataset.stats_data)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--experiment_name", type=str, default="qwen3vl_mot")
+    parser.add_argument("--run_name", type=str, default="run_1")
+    parser.add_argument("--model_path", type=str, required=True)
+    parser.add_argument("--action_model_path", type=str, default="")
+    parser.add_argument("--data_path", type=str, required=True)
+    parser.add_argument("--data_root", type=str, default="")
+    parser.add_argument("--output_dir", type=str, default="./outputs")
+    parser.add_argument("--log_dir", type=str, default="./logs")
+    parser.add_argument("--max_ckpts", type=int, default=10)
+
+    parser.add_argument("--n_epochs", type=int, default=200)
+    parser.add_argument("--save_freq", type=int, default=50)
+    parser.add_argument("--train_bsz_per_gpu", type=int, default=1)
+    parser.add_argument("--gradient_accumulation_steps", type=int, default=1)
+    parser.add_argument("--learning_rate", type=float, default=1e-4)
+    parser.add_argument("--min_lr_ratio", type=float, default=0.0)
+    parser.add_argument("--warmup_rates", type=float, default=0.0)
+    parser.add_argument("--weight_decay", type=float, default=0.0)
+    parser.add_argument("--max_grad_norm", type=float, default=1.0)
+    parser.add_argument("--seed", type=int, default=42)
+
+    parser.add_argument("--action_dim", type=int, default=29)
+    parser.add_argument("--action_chunk", type=int, default=8)
+    parser.add_argument("--use_robot_state", type=int, default=1)
+    parser.add_argument("--use_tactile_vec", type=int, default=0)
+    parser.add_argument("--use_tactile_deform", type=int, default=1)
+    parser.add_argument("--deform_encoder_ckpt", type=str, default="")
+    parser.add_argument("--load_action_from_latent",  type=int, default=0)
+    parser.add_argument("--load_action_from_pretrain", type=int, default=1)
+
+    args = parser.parse_args()
+
+    args.log_dir    = os.path.join(args.log_dir,    args.experiment_name)
+    args.output_dir = os.path.join(args.output_dir, args.experiment_name, args.run_name)
+    os.makedirs(args.log_dir,    exist_ok=True)
+    os.makedirs(args.output_dir, exist_ok=True)
+
+    train(args)

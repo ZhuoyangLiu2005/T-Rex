@@ -92,11 +92,13 @@ class Qwen3VLRMSNorm(nn.Module):
 
 
 class Qwen3VLMLP(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config, intermediate_size: int = None):
         super().__init__()
-        self.gate_proj = nn.Linear(config.hidden_size, config.intermediate_size, bias=False)
-        self.up_proj   = nn.Linear(config.hidden_size, config.intermediate_size, bias=False)
-        self.down_proj = nn.Linear(config.intermediate_size, config.hidden_size, bias=False)
+        H = config.hidden_size
+        I = intermediate_size if intermediate_size is not None else config.intermediate_size
+        self.gate_proj = nn.Linear(H, I, bias=False)
+        self.up_proj   = nn.Linear(H, I, bias=False)
+        self.down_proj = nn.Linear(I, H, bias=False)
         self.act_fn    = nn.SiLU()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -278,7 +280,7 @@ class Qwen3VLDecoderLayerMoT(nn.Module):
     Sliding-window is disabled (all layers use full causal attention).
     """
 
-    def __init__(self, config, layer_idx: int):
+    def __init__(self, config, layer_idx: int, tactile_intermediate_size: int = None):
         super().__init__()
         self.hidden_size = config.hidden_size
         self.self_attn   = Qwen3VLAttentionMoT(config, layer_idx)
@@ -293,8 +295,8 @@ class Qwen3VLDecoderLayerMoT(nn.Module):
         self.input_layernorm_action           = Qwen3VLRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
         self.post_attention_layernorm_action  = Qwen3VLRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
 
-        # ── tactile expert ──
-        self.mlp_tactile                       = Qwen3VLMLP(config)
+        # ── tactile expert (optionally smaller MLP) ──
+        self.mlp_tactile                       = Qwen3VLMLP(config, intermediate_size=tactile_intermediate_size)
         self.input_layernorm_tactile           = Qwen3VLRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
         self.post_attention_layernorm_tactile  = Qwen3VLRMSNorm(config.hidden_size, eps=config.rms_norm_eps)
 
@@ -488,14 +490,16 @@ class Qwen3VLModelMoT(nn.Module):
     sequentially.
     """
 
-    def __init__(self, config):
+    def __init__(self, config, tactile_intermediate_size: int = None):
         super().__init__()
         self.config    = config
         self.vocab_size = config.vocab_size
+        self.tactile_intermediate_size = tactile_intermediate_size
         self.embed_tokens = nn.Embedding(config.vocab_size, config.hidden_size,
                                          padding_idx=getattr(config, "pad_token_id", None))
         self.layers = nn.ModuleList([
-            Qwen3VLDecoderLayerMoT(config, layer_idx)
+            Qwen3VLDecoderLayerMoT(config, layer_idx,
+                                   tactile_intermediate_size=tactile_intermediate_size)
             for layer_idx in range(config.num_hidden_layers)
         ])
         # Three final norms – one per expert stream

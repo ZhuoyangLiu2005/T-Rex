@@ -202,7 +202,7 @@ def model_predict(
 
     with torch.inference_mode():
 
-        # ── State embedding (OpenVLA-style tokenizer → action expert) ────────
+        # ── State embedding (MLP → single token) ─────────────────────────────
         state_embeds = None
         if args.use_robot_state and state_fast is not None:
             norm_state = _normalize(
@@ -211,12 +211,8 @@ def model_predict(
                 statistic["state_min"],
                 statistic["state_max"],
             )
-            clipped = np.clip(norm_state, action_tokenizer.min_action, action_tokenizer.max_action)
-            discretized = np.digitize(clipped, action_tokenizer.bins)
-            state_ids = (action_tokenizer.my_vocab_size - discretized).tolist()
-            state_ids = torch.LongTensor(state_ids).unsqueeze(0).to(device)  # [1, action_dim]
-            state_embeds = model.model.get_input_embeddings()(state_ids)
-            state_embeds = state_embeds.to(torch.bfloat16)  # [1, action_dim, H]
+            state_vec = torch.tensor(norm_state, dtype=torch.bfloat16).unsqueeze(0).to(device)  # [1, action_dim]
+            state_embeds = model.state_embedder(state_vec).unsqueeze(1)  # [1, 1, H]
 
         # ── Build processor inputs (state NOT in text) ────────────────────────
         content = []

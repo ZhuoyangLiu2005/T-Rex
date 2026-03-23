@@ -3,35 +3,25 @@ Qwen3VLVLAModel – the full VLA model.
 
 Architecture
 ────────────
-  visual      : Qwen3VL ViT (frozen during visual feature extraction)
-  model       : Qwen3VLModelMoT – three-expert Qwen3-VL text backbone
-  x_embedder  : noisy actions  → hidden_size
-  t_embedder  : diffusion time → hidden_size
-  tacf6_embed : F6 tactile vec → hidden_size   (optional)
-  deform_proj : tactile deform → hidden_size   (optional)
-  state_embed : robot state    → hidden_size   (optional)
-  final_layer : hidden_size    → action_dim
+  visual             : Qwen3VL ViT (frozen during visual feature extraction)
+  model              : Qwen3VLModelMoT – three-expert Qwen3-VL text backbone
+  x_embedder         : noisy actions  → hidden_size
+  t_embedder         : diffusion time → hidden_size
+  tacf6_embed        : F6 tactile vec → hidden_size   (optional)
+  deform_proj        : tactile deform → hidden_size   (optional)
+  state_embed        : robot state    → hidden_size   (optional)
+  final_layer        : hidden_size    → action_dim    (action expert output)
+  final_layer_tactile: hidden_size    → action_dim    (tactile expert residual)
 
-Loading from Qwen3VLForConditionalGeneration pretrained weights
-──────────────────────────────────────────────────────────────
-  Use `Qwen3VLVLAModel.from_pretrained_qwen3vl(path, ...)`.
+Residual tactile correction
+───────────────────────────
+  Action expert predicts: v_act  (base velocity)
+  Tactile expert predicts: delta_v (residual correction, zero-initialized)
+  Final velocity: v_final = v_act + delta_v
 
-  Base (latent) expert weights: load directly (strict=False).
-  New action / tactile expert weights: missing in the checkpoint;
-    they are initialised from the base weights in the training script
-    via the --load_action_from_latent flag (same mechanism as in Janus).
-
-Image token handling
-────────────────────
-  Qwen3-VL uses <|image_pad|> placeholder tokens inside input_ids.
-  The visual tower output (already spatially merged) is injected at
-  those positions in prepare_inputs_embeds.
-
-M-RoPE position_ids
-────────────────────
-  The training script calls `model.get_rope_index(...)` (delegated to
-  the underlying Qwen3VL model) to get latent position_ids [B, 3, L].
-  Action / tactile positions are then appended inside Qwen3VLModelMoT.
+  This supports two-stage training:
+    Stage 1: no tactile → v_final = v_act
+    Stage 2: with tactile → v_final = v_act + delta_v
 """
 
 import os
@@ -65,6 +55,7 @@ class Qwen3VLVLAModel(nn.Module):
         use_tactile_deform:  bool  = False,
         use_robot_state:     bool  = False,
         image_token_id:      int   = _DEFAULT_IMAGE_TOKEN_ID,
+        tactile_intermediate_size: int = None,
     ):
         super().__init__()
         self.config             = config
@@ -74,16 +65,18 @@ class Qwen3VLVLAModel(nn.Module):
         self.use_tactile_deform = use_tactile_deform
         self.use_robot_state    = use_robot_state
         self.image_token_id     = image_token_id
+        self.tactile_intermediate_size = tactile_intermediate_size
 
-        self.visual = None 
+        self.visual = None
 
-        self.model = Qwen3VLModelMoT(config)
+        self.model = Qwen3VLModelMoT(config, tactile_intermediate_size=tactile_intermediate_size)
 
         H = config.hidden_size
-        self.x_embedder   = ActionEmbedder(action_dim, H)
-        self.t_embedder   = TimestepEmbedder(H)
-        self.final_layer  = FinalLayer(H, action_dim)
-        self.tacf6_embedder = ActionEmbedder(tacf6_dim, H)
+        self.x_embedder          = ActionEmbedder(action_dim, H)
+        self.t_embedder          = TimestepEmbedder(H)
+        self.final_layer         = FinalLayer(H, action_dim)   # action expert → velocity
+        self.final_layer_tactile = FinalLayer(H, action_dim)   # tactile expert → residual
+        self.tacf6_embedder      = ActionEmbedder(tacf6_dim, H)
 
         if use_tactile_deform:
             self.deform_encoder = DeformEncoder()
@@ -107,6 +100,7 @@ class Qwen3VLVLAModel(nn.Module):
         use_tactile_deform: bool = False,
         use_robot_state:    bool = False,
         torch_dtype              = torch.bfloat16,
+        tactile_intermediate_size: int = None,
     ) -> "Qwen3VLVLAModel":
         """
         Build a Qwen3VLVLAModel by:
@@ -144,6 +138,7 @@ class Qwen3VLVLAModel(nn.Module):
             use_tactile_deform = use_tactile_deform,
             use_robot_state = use_robot_state,
             image_token_id = image_token_id,
+            tactile_intermediate_size = tactile_intermediate_size,
         )
         # Capture only the get_rope_index function — do NOT store the full
         # base model as an attribute, because nn.Module.__setattr__ would
@@ -225,7 +220,8 @@ class Qwen3VLVLAModel(nn.Module):
 
     def initialize_vla_weights(self):
         """Xavier-init all new VLA-specific linear layers."""
-        for m in [self.x_embedder, self.t_embedder, self.final_layer, self.tacf6_embedder]:
+        for m in [self.x_embedder, self.t_embedder, self.final_layer,
+                  self.final_layer_tactile, self.tacf6_embedder]:
             for mm in m.modules():
                 if isinstance(mm, nn.Linear):
                     nn.init.xavier_uniform_(mm.weight)
@@ -243,9 +239,11 @@ class Qwen3VLVLAModel(nn.Module):
                     nn.init.xavier_uniform_(mm.weight)
                     if mm.bias is not None:
                         nn.init.zeros_(mm.bias)
-        nn.init.zeros_(self.final_layer.mlp.fc2.weight)
-        if self.final_layer.mlp.fc2.bias is not None:
-            nn.init.zeros_(self.final_layer.mlp.fc2.bias)
+        # Zero-init final output layers so predictions start at zero
+        for fl in [self.final_layer, self.final_layer_tactile]:
+            nn.init.zeros_(fl.mlp.fc2.weight)
+            if fl.mlp.fc2.bias is not None:
+                nn.init.zeros_(fl.mlp.fc2.bias)
 
     def prepare_inputs_embeds(
         self,
@@ -309,78 +307,99 @@ class Qwen3VLVLAModel(nn.Module):
         past_key_values,
         x_t: torch.Tensor, # noisy actions [B, chunk, action_dim]
         timestep: torch.Tensor, # [B]
-        tactile_embeds: torch.Tensor, # [B, T, H]
+        tactile_embeds: torch.Tensor, # [B, T, H]  (T=0 when no tactile)
         attention_mask: Optional[torch.Tensor] = None,
         state_embeds: Optional[torch.Tensor] = None, # [B, S, H] or None
     ) -> Tuple[torch.Tensor, object]:
 
         noisy_actions = self.x_embedder(x_t.to(torch.bfloat16)) # [B, chunk, H]
         timesteps = self.t_embedder(timestep).unsqueeze(1) # [B, 1, H]
+        n_chunk = noisy_actions.shape[1]
 
         B = inputs_embeds.shape[0]
 
-        # Sequence layout: [latent | state? | t | actions | tactile | t | actions]
-        # (matches the Janus double-stream layout for action + tactile expert)
-        # Build act_seq: optionally prepend state_embeds
+        # Sequence layout: [latent | act_seq | tac_seq?]
+        # act_seq = [state? | timestep | noisy_actions]
+        # tac_seq = [tactile_embeds | timestep | noisy_actions]  (omitted when T=0)
         act_parts = []
         if state_embeds is not None and state_embeds.shape[1] > 0:
             act_parts.append(state_embeds)
         act_parts.extend([timesteps, noisy_actions])
         act_seq = torch.cat(act_parts, dim=1) # [B, (S+)1+chunk, H]
-        tac_seq = torch.cat([tactile_embeds, timesteps, noisy_actions], dim=1) # [B, T+1+chunk, H]
-
         n_act = act_seq.shape[1]
-        n_tac = tac_seq.shape[1]
+
+        has_tactile = (tactile_embeds.shape[1] > 0)
+        if has_tactile:
+            tac_seq = torch.cat([tactile_embeds, timesteps, noisy_actions], dim=1)
+            n_tac = tac_seq.shape[1]
+        else:
+            n_tac = 0
 
         if past_key_values is None:
-            full_embeds = torch.cat([inputs_embeds, act_seq, tac_seq], dim=1)
+            parts = [inputs_embeds, act_seq]
+            if has_tactile:
+                parts.append(tac_seq)
+            full_embeds = torch.cat(parts, dim=1)
             L = inputs_embeds.shape[1]
             total = full_embeds.shape[1]
-            latent_indexes = torch.arange(0, L, device=full_embeds.device)
-            action_indexes = torch.arange(L, L + n_act, device=full_embeds.device)
+            latent_indexes  = torch.arange(0, L, device=full_embeds.device)
+            action_indexes  = torch.arange(L, L + n_act, device=full_embeds.device)
             tactile_indexes = torch.arange(L + n_act, total, device=full_embeds.device)
 
             outputs = self.model(
-                inputs_embeds = full_embeds,
-                position_ids = position_ids,
+                inputs_embeds   = full_embeds,
+                position_ids    = position_ids,
                 past_key_values = past_key_values,
-                attention_mask = attention_mask,
-                use_cache = True,
-                latent_indexes = latent_indexes,
-                action_indexes = action_indexes,
+                attention_mask  = attention_mask,
+                use_cache       = True,
+                latent_indexes  = latent_indexes,
+                action_indexes  = action_indexes,
                 tactile_indexes = tactile_indexes,
             )
         else:
             # Subsequent denoise steps: only pass the action/tactile tokens
-            full_embeds = torch.cat([act_seq, tac_seq], dim=1)
+            parts = [act_seq]
+            if has_tactile:
+                parts.append(tac_seq)
+            full_embeds = torch.cat(parts, dim=1)
             # Trim cached KVs to remove previous action/tactile entries
             drop = n_act + n_tac
             past_key_values.crop(-drop)
             total = full_embeds.shape[1]
-            latent_indexes = torch.arange(0, 0,       device=full_embeds.device)
-            action_indexes = torch.arange(0, n_act,   device=full_embeds.device)
+            latent_indexes  = torch.arange(0, 0, device=full_embeds.device)
+            action_indexes  = torch.arange(0, n_act, device=full_embeds.device)
             tactile_indexes = torch.arange(n_act, total, device=full_embeds.device)
 
-            # Compute correct M-RoPE position_ids for action/tactile tokens
-            # (must match positions used in the first denoise step)
             extended_pos = self.model._extend_position_ids(
                 position_ids, n_act, n_tac,
             )
             act_tac_pos = extended_pos[..., -(n_act + n_tac):]
 
             outputs = self.model(
-                inputs_embeds = full_embeds,
-                position_ids = act_tac_pos,
+                inputs_embeds   = full_embeds,
+                position_ids    = act_tac_pos,
                 past_key_values = past_key_values,
-                use_cache = True,
-                latent_indexes = latent_indexes,
-                action_indexes = action_indexes,
+                use_cache       = True,
+                latent_indexes  = latent_indexes,
+                action_indexes  = action_indexes,
                 tactile_indexes = tactile_indexes,
             )
 
         hidden = outputs.last_hidden_state
-        # Extract velocity prediction from the action-expert positions
-        v_t = self.final_layer(hidden)[:, -noisy_actions.shape[1]:, :]
+        # ── Residual prediction ──────────────────────────────────────────────
+        # Action expert's noisy_action hidden states (last chunk of action block)
+        act_block_end = hidden.shape[1] - n_tac
+        h_act_chunk = hidden[:, act_block_end - n_chunk : act_block_end, :]
+        v_act = self.final_layer(h_act_chunk)
+
+        if has_tactile:
+            # Tactile expert's noisy_action hidden states (last chunk overall)
+            h_tac_chunk = hidden[:, -n_chunk:, :]
+            delta_v = self.final_layer_tactile(h_tac_chunk)
+            v_t = v_act + delta_v
+        else:
+            v_t = v_act
+
         return v_t, outputs.past_key_values
 
     def forward_flow(
@@ -388,7 +407,7 @@ class Qwen3VLVLAModel(nn.Module):
         inputs_embeds: torch.Tensor, # latent embeddings
         position_ids: torch.Tensor, # M-RoPE for latent
         noise: torch.Tensor, # [B, chunk, action_dim]
-        tactile_inputs: torch.Tensor, # [B, T, 6] or [B, T, 1, H, W]
+        tactile_inputs: Optional[torch.Tensor] = None, # [B, T, 6] or [B, T, 1, H, W] or None
         num_steps: int = 10,
         attention_mask: Optional[torch.Tensor] = None,
         state_embeds: Optional[torch.Tensor] = None,
@@ -399,27 +418,33 @@ class Qwen3VLVLAModel(nn.Module):
         x_t = noise.to(torch.bfloat16)
         time = torch.tensor(1.0, dtype=torch.bfloat16, device=device)
 
-        if self.use_tactile_deform:
-            B, n_fingers, C, H, W = tactile_inputs.shape
-            deforms_flat = tactile_inputs.view(-1, C, H, W).to(inputs_embeds.dtype)
-            deform_feats = self.deform_encoder(deforms_flat)
-            deform_feats = deform_feats.view(B, n_fingers, -1)
-            tactile_embeds = self.deform_proj(deform_feats.to(torch.bfloat16))
+        if tactile_inputs is not None:
+            if self.use_tactile_deform:
+                B, n_fingers, C, H, W = tactile_inputs.shape
+                deforms_flat = tactile_inputs.view(-1, C, H, W).to(inputs_embeds.dtype)
+                deform_feats = self.deform_encoder(deforms_flat)
+                deform_feats = deform_feats.view(B, n_fingers, -1)
+                tactile_embeds = self.deform_proj(deform_feats.to(torch.bfloat16))
+            else:
+                tactile_embeds = self.tacf6_embedder(tactile_inputs.to(torch.bfloat16))
         else:
-            tactile_embeds = self.tacf6_embedder(tactile_inputs.to(torch.bfloat16))
+            # No tactile data — empty tactile embeddings [B, 0, H]
+            tactile_embeds = torch.empty(
+                (noise.shape[0], 0, inputs_embeds.shape[2]),
+                device=device, dtype=torch.bfloat16)
 
         past_kv = None
         while time >= -dt / 2:
             expanded_time = time.expand(x_t.shape[0])
             v_t, past_kv = self.denoise_step(
-                inputs_embeds = inputs_embeds,
-                position_ids = position_ids,
+                inputs_embeds   = inputs_embeds,
+                position_ids    = position_ids,
                 past_key_values = past_kv,
-                x_t = x_t,
-                timestep = expanded_time,
-                tactile_embeds = tactile_embeds,
-                attention_mask = attention_mask,
-                state_embeds = state_embeds,
+                x_t             = x_t,
+                timestep        = expanded_time,
+                tactile_embeds  = tactile_embeds,
+                attention_mask  = attention_mask,
+                state_embeds    = state_embeds,
             )
             x_t = x_t + dt * v_t
             time = time + dt

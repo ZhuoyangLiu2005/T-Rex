@@ -142,20 +142,13 @@ class SftDataset(Dataset):
                 deforms.append(imgs)
             deforms_tensor = torch.tensor(np.array(deforms)).unsqueeze(2) # [B,5,1,H,W]
 
-        state_token_ids_list = []
+        state_raw_list = []
         if cfg.use_robot_state:
-            at = self.action_tokenizer
             for x in batch:
                 state_raw = np.array(x["state_fast"], dtype=np.float32)
-                # if self.tracking_err_mean is not None:
-                #     state_raw = state_raw + np.random.normal(
-                #         self.tracking_err_mean, self.tracking_err_std)
                 norm_state = self._normalize(state_raw, self.state_mask,
                                              self.state_min, self.state_max)
-                clipped = np.clip(norm_state, at.min_action, at.max_action)
-                discretized = np.digitize(clipped, at.bins)
-                ids = (at.my_vocab_size - discretized).tolist()
-                state_token_ids_list.append(torch.LongTensor(ids))
+                state_raw_list.append(torch.tensor(norm_state, dtype=torch.bfloat16))
 
         all_input_ids = []
         all_pixel_values = []
@@ -213,9 +206,9 @@ class SftDataset(Dataset):
         image_grid_thw = (torch.cat(all_grid_thw, dim=0)
                           if all_grid_thw else None)
 
-        # Stack state token IDs: [B, action_dim] or None
-        state_token_ids = (torch.stack(state_token_ids_list)
-                           if state_token_ids_list else None)
+        # Stack normalized state vectors: [B, action_dim] or None
+        state_raw = (torch.stack(state_raw_list)
+                     if state_raw_list else None)
 
         return {
             "input_ids": input_ids,
@@ -227,7 +220,7 @@ class SftDataset(Dataset):
             "timesteps": time, # [B]
             "tactile_f6s": norm_tacf6,
             "tactile_deforms": deforms_tensor,
-            "state_token_ids": state_token_ids, # [B, action_dim] or None
+            "state_raw": state_raw, # [B, action_dim] or None
         }
 
 def save_checkpoint(model, processor, accelerator, args, epoch, global_step, stats_data):
@@ -266,6 +259,8 @@ def save_checkpoint(model, processor, accelerator, args, epoch, global_step, sta
                 "use_robot_state": args.use_robot_state,
                 "use_tactile_deform": args.use_tactile_deform,
                 "use_tactile_vec": getattr(args, "use_tactile_vec", 0),
+                "tactile_intermediate_size": getattr(args, "tactile_intermediate_size", 0),
+                "training_stage": args.training_stage,
             }, f, indent=2)
 
         with open(os.path.join(save_dir, "stats_data.json"), "w") as f:
@@ -277,21 +272,34 @@ def save_checkpoint(model, processor, accelerator, args, epoch, global_step, sta
 
 class TrainingMetrics:
     def __init__(self, device):
-        self.n_step      = 0
-        self.action_loss = torch.tensor(0.0, device=device)
-        self.world_size  = dist.get_world_size()
+        self.n_step       = 0
+        self.action_loss  = torch.tensor(0.0, device=device)
+        self.tactile_loss = torch.tensor(0.0, device=device)
+        self.total_loss   = torch.tensor(0.0, device=device)
+        self.world_size   = dist.get_world_size()
 
-    def update(self, action_loss):
+    def update(self, total_loss, action_loss, tactile_loss=0.0):
         self.n_step += 1
-        self.action_loss += action_loss.item()
+        self.total_loss   += total_loss.item() if torch.is_tensor(total_loss) else total_loss
+        self.action_loss  += action_loss.item() if torch.is_tensor(action_loss) else action_loss
+        self.tactile_loss += tactile_loss.item() if torch.is_tensor(tactile_loss) else tactile_loss
 
     def get_metric(self, reset=True):
-        dist.all_reduce(self.action_loss, op=dist.ReduceOp.SUM)
-        loss = self.action_loss.item() / (self.world_size * max(self.n_step, 1))
+        dist.all_reduce(self.total_loss,   op=dist.ReduceOp.SUM)
+        dist.all_reduce(self.action_loss,  op=dist.ReduceOp.SUM)
+        dist.all_reduce(self.tactile_loss, op=dist.ReduceOp.SUM)
+        denom = self.world_size * max(self.n_step, 1)
+        metrics = {
+            "total_loss":   self.total_loss.item()   / denom,
+            "action_loss":  self.action_loss.item()  / denom,
+            "tactile_loss": self.tactile_loss.item() / denom,
+        }
         if reset:
             self.n_step = 0
+            self.total_loss.fill_(0)
             self.action_loss.fill_(0)
-        return loss
+            self.tactile_loss.fill_(0)
+        return metrics
 
 
 def train(args):
@@ -314,6 +322,7 @@ def train(args):
 
     processor = AutoProcessor.from_pretrained(args.model_path, trust_remote_code=True)
 
+    tac_isize = args.tactile_intermediate_size if args.tactile_intermediate_size > 0 else None
     model = Qwen3VLVLAModel.from_pretrained_qwen3vl(
         pretrained_path = args.model_path,
         action_dim = args.action_dim,
@@ -321,63 +330,98 @@ def train(args):
         use_tactile_deform = bool(args.use_tactile_deform),
         use_robot_state = bool(args.use_robot_state),
         torch_dtype = torch.bfloat16,
+        tactile_intermediate_size = tac_isize,
     )
 
     if args.use_tactile_deform:
         model.load_deform_encoder_weights(args.deform_encoder_ckpt)
 
     model.initialize_vla_weights()
-    accelerator.print("VLA weights initialized (Xavier + zero-init final layer output).")
+    accelerator.print("VLA weights initialized (Xavier + zero-init final layers).")
 
-    action_sd = None
-    if args.load_action_from_pretrain and args.action_model_path:
-        action_sd = torch.load(args.action_model_path, map_location="cpu")
-        if "state_dict" in action_sd:
-            action_sd = action_sd["state_dict"]
-        accelerator.print("Loaded action pretrain checkpoint.")
+    is_stage1 = (args.training_stage == 1)
+
+    if not args.resume_checkpoint:
+        named_params = dict(model.named_parameters())
+        for name, param in model.named_parameters():
+            if "_action" in name:
+                base = name.replace("_action", "")
+                if base in named_params:
+                    param.data.copy_(named_params[base].data)
+        accelerator.print("Action expert initialized from latent expert (VLM weights).")
+        
+    if args.resume_checkpoint:
+        resume_sd = torch.load(args.resume_checkpoint, map_location="cpu")
+        if "state_dict" in resume_sd:
+            resume_sd = resume_sd["state_dict"]
+        missing, unexpected = model.load_state_dict(resume_sd, strict=False)
+        accelerator.print(f"Resumed from {args.resume_checkpoint}: "
+                          f"missing={len(missing)}, unexpected={len(unexpected)}")
+
+    if not is_stage1:
+        for name, param in model.named_parameters():
+            if "_tactile" in name:
+                if param.ndim >= 2:
+                    nn.init.xavier_uniform_(param)
+                elif param.ndim == 1:
+                    nn.init.zeros_(param)
+        nn.init.zeros_(model.final_layer_tactile.mlp.fc2.weight)
+        if model.final_layer_tactile.mlp.fc2.bias is not None:
+            nn.init.zeros_(model.final_layer_tactile.mlp.fc2.bias)
+        accelerator.print("Tactile expert freshly initialized (Xavier + zero final layer).")
 
     for name, param in model.named_parameters():
-        if "_action" in name:
-            if args.load_action_from_latent:
-                base = name.replace("_action", "")
-                if base in dict(model.named_parameters()):
-                    param.data.copy_(dict(model.named_parameters())[base].data)
-                    accelerator.print(f"Init {name} <- {base}")
-            elif action_sd is not None:
-                base = name.replace("_action", "")
-                if base in action_sd:
-                    param.data.copy_(action_sd[base])
-            param.requires_grad = True
-
-        elif "_tactile" in name:
-            if args.load_action_from_latent:
-                base = name.replace("_tactile", "")
-                if base in dict(model.named_parameters()):
-                    param.data.copy_(dict(model.named_parameters())[base].data)
-                    accelerator.print(f"Init {name} <- {base}")
-            elif action_sd is not None:
-                base = name.replace("_tactile", "")
-                if base in action_sd:
-                    param.data.copy_(action_sd[base])
-            param.requires_grad = True
-
-        elif any(k in name for k in ("x_embedder", "t_embedder", "final_layer",
-                                      "tacf6_embedder", "deform_proj", "state_embedder")):
-            if action_sd is not None and name in action_sd:
-                param.data.copy_(action_sd[name])
-                accelerator.print(f"Init {name} from action ckpt")
-            param.requires_grad = True
-
-        elif name.startswith("visual") or name.startswith("deform_encoder"):
+        if name.startswith("visual") or name.startswith("deform_encoder"):
             param.requires_grad = False
-
+        elif "_tactile" in name or "final_layer_tactile" in name:
+            param.requires_grad = (not is_stage1)
         else:
             param.requires_grad = True
+
+    if is_stage1:
+        accelerator.print("[Stage 1] Tactile expert + final_layer_tactile FROZEN.")
 
     total = sum(p.numel() for p in model.parameters())
     trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
     accelerator.print(f"Total: {total/1e9:.2f}B  Trainable: {trainable/1e9:.2f}B "
                       f"({trainable/total*100:.1f}%)")
+
+    if accelerator.is_main_process:
+        buckets = {"visual": 0, "latent_attn": 0, "latent_mlp": 0, "latent_norm": 0,
+                   "action_attn": 0, "action_mlp": 0, "action_norm": 0,
+                   "tactile_attn": 0, "tactile_mlp": 0, "tactile_norm": 0,
+                   "vla_heads": 0, "other": 0}
+        for n, p in model.named_parameters():
+            cnt = p.numel()
+            if n.startswith("visual") or n.startswith("deform_encoder"):
+                buckets["visual"] += cnt
+            elif any(k in n for k in ("x_embedder", "t_embedder", "final_layer",
+                                       "tacf6_embedder", "deform_proj", "state_embedder")):
+                buckets["vla_heads"] += cnt
+            elif "_tactile" in n:
+                if "mlp" in n:    buckets["tactile_mlp"] += cnt
+                elif "norm" in n: buckets["tactile_norm"] += cnt
+                else:             buckets["tactile_attn"] += cnt
+            elif "_action" in n:
+                if "mlp" in n:    buckets["action_mlp"] += cnt
+                elif "norm" in n: buckets["action_norm"] += cnt
+                else:             buckets["action_attn"] += cnt
+            elif "self_attn" in n or "rotary" in n:
+                buckets["latent_attn"] += cnt
+            elif "mlp" in n and "_action" not in n and "_tactile" not in n:
+                buckets["latent_mlp"] += cnt
+            elif "norm" in n or "embed_tokens" in n:
+                buckets["latent_norm"] += cnt
+            else:
+                buckets["other"] += cnt
+        print("\n" + "=" * 60)
+        print("  Per-Expert Parameter Breakdown")
+        print("=" * 60)
+        for k, v in buckets.items():
+            if v > 0:
+                print(f"  {k:20s}: {v/1e6:10.2f}M")
+        print(f"  {'TOTAL':20s}: {sum(buckets.values())/1e6:10.2f}M")
+        print("=" * 60 + "\n")
 
     no_decay = ["bias", "norm.weight", "q_norm.weight", "k_norm.weight"]
     param_groups = [
@@ -410,7 +454,7 @@ def train(args):
 
     model, optimizer, dataloader = accelerator.prepare(model, optimizer, dataloader)
 
-    metric      = TrainingMetrics(device=torch.cuda.current_device())
+    metric = TrainingMetrics(device=torch.cuda.current_device())
     global_step = 0
     model.train()
 
@@ -421,110 +465,138 @@ def train(args):
 
         for batch in it:
             raw_model = accelerator.unwrap_model(model)
+            
+            print(batch["pixel_values"].shape)
+            print(batch["image_grid_thw"])
+            input()
 
             inputs_embeds = raw_model.prepare_inputs_embeds(
-                input_ids      = batch["input_ids"],
-                pixel_values   = batch.get("pixel_values"),
+                input_ids = batch["input_ids"],
+                pixel_values = batch.get("pixel_values"),
                 image_grid_thw = batch.get("image_grid_thw"),
             ) # [B, L, H]
 
             pos_ids, _ = raw_model.get_rope_index(
-                input_ids      = batch["input_ids"],
+                input_ids = batch["input_ids"],
                 image_grid_thw = batch.get("image_grid_thw"),
                 attention_mask = batch["attention_mask"],
             )
 
-            if args.use_robot_state and batch["state_token_ids"] is not None:
-                state_ids = batch["state_token_ids"].to(inputs_embeds.device)
-                state_embeds = raw_model.model.get_input_embeddings()(state_ids)
-                state_embeds = state_embeds.to(inputs_embeds.dtype)  # [B, action_dim, H]
+            if args.use_robot_state and batch["state_raw"] is not None:
+                state_vec = batch["state_raw"].to(inputs_embeds.device,
+                                                   dtype=inputs_embeds.dtype)  # [B, action_dim]
+                state_embeds = raw_model.state_embedder(state_vec).unsqueeze(1)  # [B, 1, H]
             else:
                 state_embeds = torch.empty(
                     (inputs_embeds.shape[0], 0, inputs_embeds.shape[2]),
                     device=inputs_embeds.device, dtype=inputs_embeds.dtype)
-            n_state = state_embeds.shape[1]
+            n_state = state_embeds.shape[1]  # 1 when use_robot_state, 0 otherwise
 
             noisy_actions = raw_model.x_embedder(
                 batch["noisy_actions"].to(inputs_embeds.dtype)) # [B, chunk, H]
             timesteps = raw_model.t_embedder(
                 batch["timesteps"].to(inputs_embeds.dtype)).unsqueeze(1) # [B, 1, H]
 
-            noisy_actions_tac = raw_model.x_embedder(
-                batch["noisy_actions"].to(inputs_embeds.dtype))
-            timesteps_tac = raw_model.t_embedder(
-                batch["timesteps"].to(inputs_embeds.dtype)).unsqueeze(1)
+            chunk = args.action_chunk
+            target = batch["target"].to(inputs_embeds.dtype)   # [B, chunk, dim]
 
-            if args.use_tactile_deform and batch["tactile_deforms"] is not None:
-                deforms = batch["tactile_deforms"].to(
-                    inputs_embeds.device, dtype=inputs_embeds.dtype)
-                Bs, nf, C, H, W = deforms.shape
-                with torch.no_grad():
-                    feats = raw_model.deform_encoder(deforms.view(-1, C, H, W))
-                feats = feats.view(Bs, nf, -1)
-                tactile_embeds = raw_model.deform_proj(
-                    feats.to(inputs_embeds.dtype)) # [B, nf, H]
-            elif args.use_tactile_vec and batch["tactile_f6s"] is not None:
-                tactile_embeds = raw_model.tacf6_embedder(
-                    batch["tactile_f6s"].to(inputs_embeds.dtype)) # [B, T, H]
+            if is_stage1:
+                # ── Stage 1: latent + action expert only ─────────────────────
+                full_embeds = torch.cat([
+                    inputs_embeds,
+                    state_embeds, timesteps, noisy_actions,
+                ], dim=1)
+
+                n_action = n_state + 1 + chunk
+                L_latent = inputs_embeds.shape[1]
+                L_total  = full_embeds.shape[1]
+                latent_indexes  = torch.arange(0, L_latent, device=full_embeds.device)
+                action_indexes  = torch.arange(L_latent, L_total, device=full_embeds.device)
+                tactile_indexes = torch.arange(0, 0, device=full_embeds.device)
+
+                outputs = model.model(
+                    inputs_embeds  = full_embeds,
+                    position_ids   = pos_ids,
+                    attention_mask = batch["attention_mask"],
+                    use_cache      = False,
+                    latent_indexes = latent_indexes,
+                    action_indexes = action_indexes,
+                    tactile_indexes = tactile_indexes,
+                )
+                hidden = outputs.last_hidden_state
+
+                act_pred_start = L_latent + n_state + 1
+                v_act = raw_model.final_layer(
+                    hidden[:, act_pred_start : act_pred_start + chunk, :])
+                loss_act = nn.MSELoss()(v_act, target)
+                loss_tac = 0.0
+                loss = loss_act
+
             else:
-                tactile_embeds = torch.empty(
-                    (inputs_embeds.shape[0], 0, inputs_embeds.shape[2]),
-                    device=inputs_embeds.device, dtype=inputs_embeds.dtype)
+                # ── Stage 2: full sequence with residual tactile correction ──
+                noisy_actions_tac = raw_model.x_embedder(
+                    batch["noisy_actions"].to(inputs_embeds.dtype))
+                timesteps_tac = raw_model.t_embedder(
+                    batch["timesteps"].to(inputs_embeds.dtype)).unsqueeze(1)
 
-            # ── Concatenate full sequence ─────────────────────────────────────
-            # Layout: [latent | state | t_act | actions | tactile | t_tac | actions_tac]
-            #          ^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            #          latent        action expert              tactile expert
-            full_embeds = torch.cat([
-                inputs_embeds,
-                state_embeds, timesteps, noisy_actions,
-                tactile_embeds, timesteps_tac, noisy_actions_tac,
-            ], dim=1)                                              # [B, L_total, H]
+                if args.use_tactile_deform and batch["tactile_deforms"] is not None:
+                    deforms = batch["tactile_deforms"].to(
+                        inputs_embeds.device, dtype=inputs_embeds.dtype)
+                    Bs, nf, C, H, W = deforms.shape
+                    with torch.no_grad():
+                        feats = raw_model.deform_encoder(deforms.view(-1, C, H, W))
+                    feats = feats.view(Bs, nf, -1)
+                    tactile_embeds = raw_model.deform_proj(
+                        feats.to(inputs_embeds.dtype))
+                elif args.use_tactile_vec and batch["tactile_f6s"] is not None:
+                    tactile_embeds = raw_model.tacf6_embedder(
+                        batch["tactile_f6s"].to(inputs_embeds.dtype))
+                else:
+                    tactile_embeds = torch.empty(
+                        (inputs_embeds.shape[0], 0, inputs_embeds.shape[2]),
+                        device=inputs_embeds.device, dtype=inputs_embeds.dtype)
 
-            # ── Stream indexes ────────────────────────────────────────────────
-            # pos_ids: [B, 3, L_latent] (Qwen3-VL M-RoPE format)
-            # The model's forward will extend position_ids internally for
-            # action/tactile tokens, so we pass latent-only pos_ids.
-            n_action  = n_state + 1 + args.action_chunk  # state + timestep + chunk
-            n_tactile = tactile_embeds.shape[1] + 1 + args.action_chunk
-            L_latent = inputs_embeds.shape[1]
-            L_total = full_embeds.shape[1]
-            latent_indexes = torch.arange(0, L_latent,
-                                           device=full_embeds.device)
-            action_indexes = torch.arange(L_latent, L_latent + n_action,
-                                           device=full_embeds.device)
-            tactile_indexes = torch.arange(L_latent + n_action, L_total,
-                                           device=full_embeds.device)
+                full_embeds = torch.cat([
+                    inputs_embeds,
+                    state_embeds, timesteps, noisy_actions,
+                    tactile_embeds, timesteps_tac, noisy_actions_tac,
+                ], dim=1)
 
-            outputs = model.model(
-                inputs_embeds = full_embeds,
-                position_ids = pos_ids,                   # [3, B, L_latent] — extended inside model
-                attention_mask  = batch["attention_mask"],   # latent padding mask
-                use_cache = False,
-                latent_indexes = latent_indexes,
-                action_indexes = action_indexes,
-                tactile_indexes = tactile_indexes,
-            )
-            hidden = outputs.last_hidden_state               # [B, L_total, H]
+                n_action  = n_state + 1 + chunk
+                n_tactile = tactile_embeds.shape[1] + 1 + chunk
+                L_latent = inputs_embeds.shape[1]
+                L_total  = full_embeds.shape[1]
+                latent_indexes  = torch.arange(0, L_latent, device=full_embeds.device)
+                action_indexes  = torch.arange(L_latent, L_latent + n_action,
+                                               device=full_embeds.device)
+                tactile_indexes = torch.arange(L_latent + n_action, L_total,
+                                               device=full_embeds.device)
 
-            # ── Loss (action expert + tactile expert) ─────────────────────────
-            chunk  = args.action_chunk
-            target = batch["target"].to(hidden.dtype)        # [B, chunk, dim]
+                outputs = model.model(
+                    inputs_embeds  = full_embeds,
+                    position_ids   = pos_ids,
+                    attention_mask = batch["attention_mask"],
+                    use_cache      = False,
+                    latent_indexes = latent_indexes,
+                    action_indexes = action_indexes,
+                    tactile_indexes = tactile_indexes,
+                )
+                hidden = outputs.last_hidden_state
 
-            # action expert prediction: after state + timestep, i.e.
-            # positions [L_latent + n_state + 1 : L_latent + n_state + 1 + chunk]
-            act_pred_start = L_latent + n_state + 1
-            pred_act = raw_model.final_layer(hidden)[
-                :, act_pred_start : act_pred_start + chunk, :]
-            loss_act = nn.MSELoss()(pred_act, target)
+                # Action expert velocity (from action block's noisy_action positions)
+                act_pred_start = L_latent + n_state + 1
+                v_act = raw_model.final_layer(
+                    hidden[:, act_pred_start : act_pred_start + chunk, :])
+                loss_act = nn.MSELoss()(v_act, target)
 
-            # tactile expert prediction: last `chunk` positions
-            pred_tac = raw_model.final_layer(hidden)[:, -chunk:, :]
-            loss_tac = nn.MSELoss()(pred_tac, target)
+                # Tactile expert residual (from tactile block's last chunk positions)
+                delta_v = raw_model.final_layer_tactile(hidden[:, -chunk:, :])
+                residual_target = target - v_act.detach()
+                loss_tac = nn.MSELoss()(delta_v, residual_target)
 
-            loss = loss_act + loss_tac
+                loss = loss_act + args.tactile_loss_weight * loss_tac
 
-            metric.update(loss)
+            metric.update(loss, loss_act, loss_tac)
 
             accelerator.backward(loss)
 
@@ -535,15 +607,21 @@ def train(args):
                 lr_scheduler.step()
                 optimizer.zero_grad()
 
-                agg_loss = metric.get_metric()
+                m = metric.get_metric()
                 if accelerator.is_main_process:
+                    lr_now = lr_scheduler.get_last_lr()[0]
                     if hasattr(it, "set_postfix"):
                         it.set_postfix(epoch=epoch, step=global_step,
-                                       loss=f"{agg_loss:.6f}",
-                                       lr=f"{lr_scheduler.get_last_lr()[0]:.2e}")
-                    wandb.log({"action_loss": agg_loss,
-                               "lr": lr_scheduler.get_last_lr()[0]},
-                              step=global_step)
+                                       loss=f"{m['total_loss']:.6f}",
+                                       act=f"{m['action_loss']:.6f}",
+                                       tac=f"{m['tactile_loss']:.6f}",
+                                       lr=f"{lr_now:.2e}")
+                    wandb.log({
+                        "total_loss":   m["total_loss"],
+                        "action_loss":  m["action_loss"],
+                        "tactile_loss": m["tactile_loss"],
+                        "lr": lr_now,
+                    }, step=global_step)
 
             global_step += 1
 
@@ -558,7 +636,6 @@ if __name__ == "__main__":
     parser.add_argument("--experiment_name", type=str, default="qwen3vl_mot")
     parser.add_argument("--run_name", type=str, default="run_1")
     parser.add_argument("--model_path", type=str, required=True)
-    parser.add_argument("--action_model_path", type=str, default="")
     parser.add_argument("--data_path", type=str, required=True)
     parser.add_argument("--data_root", type=str, default="")
     parser.add_argument("--output_dir", type=str, default="./outputs")
@@ -582,8 +659,16 @@ if __name__ == "__main__":
     parser.add_argument("--use_tactile_vec", type=int, default=0)
     parser.add_argument("--use_tactile_deform", type=int, default=1)
     parser.add_argument("--deform_encoder_ckpt", type=str, default="")
-    parser.add_argument("--load_action_from_latent",  type=int, default=0)
-    parser.add_argument("--load_action_from_pretrain", type=int, default=1)
+    parser.add_argument("--tactile_intermediate_size", type=int, default=0,
+                        help="Intermediate size for tactile expert MLP. "
+                             "0 = same as latent (config.intermediate_size).")
+    parser.add_argument("--training_stage", type=int, default=2, choices=[1, 2],
+                        help="1 = pretrain (latent+action only, no tactile). "
+                             "2 = full training with residual tactile correction.")
+    parser.add_argument("--resume_checkpoint", type=str, default="",
+                        help="Path to model.pt from a previous stage to resume from.")
+    parser.add_argument("--tactile_loss_weight", type=float, default=1.0,
+                        help="Weight for tactile residual loss in stage 2.")
 
     args = parser.parse_args()
 

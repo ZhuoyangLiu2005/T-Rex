@@ -92,6 +92,10 @@ def _build_qwen3vl_from_config(config_path, args):
             os.path.dirname(config_path), trust_remote_code=True)
         text_config = getattr(vl_config, "text_config", vl_config)
 
+    # ── Resolve tactile_intermediate_size ─────────────────────────────────
+    tac_isize = getattr(args, "tactile_intermediate_size", 0)
+    tac_isize = tac_isize if tac_isize > 0 else None
+
     # ── Create VLA model shell ────────────────────────────────────────────
     model = Qwen3VLVLAModel(
         config             = text_config,
@@ -100,6 +104,7 @@ def _build_qwen3vl_from_config(config_path, args):
         use_tactile_deform = bool(args.use_tactile_deform),
         use_robot_state    = bool(args.use_robot_state),
         image_token_id     = image_token_id,
+        tactile_intermediate_size = tac_isize,
     )
 
     # ── Create visual tower from vision_config ────────────────────────────
@@ -174,6 +179,20 @@ def model_load(args):
     """
     ckpt = args.checkpoint_path
 
+    # ── 0. Auto-detect tactile_intermediate_size from training_args.json ──────
+    ta_path = os.path.join(ckpt, "training_args.json")
+    if os.path.exists(ta_path):
+        with open(ta_path) as f:
+            ta = json.load(f)
+        saved_tis = ta.get("tactile_intermediate_size", 0)
+        cli_tis = getattr(args, "tactile_intermediate_size", 0)
+        if saved_tis > 0 and cli_tis == 0:
+            args.tactile_intermediate_size = saved_tis
+            print(f"Auto-detected tactile_intermediate_size={saved_tis} from training_args.json")
+
+    tac_isize = getattr(args, "tactile_intermediate_size", 0)
+    tac_isize = tac_isize if tac_isize > 0 else None
+
     # ── 1. Processor ──────────────────────────────────────────────────────────
     proc_dir = os.path.join(ckpt, "processor")
     if not os.path.isdir(proc_dir):
@@ -199,6 +218,7 @@ def model_load(args):
             use_tactile_deform = bool(args.use_tactile_deform),
             use_robot_state    = bool(args.use_robot_state),
             torch_dtype        = torch.bfloat16,
+            tactile_intermediate_size = tac_isize,
         )
     elif os.path.exists(ckpt_config):
         # (b) Finetuned checkpoint with config.json + model.pt only
@@ -206,11 +226,8 @@ def model_load(args):
         model = _build_qwen3vl_from_config(ckpt_config, args)
     else:
         # (c) Try training_args.json for base model path
-        ta_path = os.path.join(ckpt, "training_args.json")
         pretrained_path = None
         if os.path.exists(ta_path):
-            with open(ta_path) as f:
-                ta = json.load(f)
             mp = ta.get("model_path", "")
             if mp and os.path.isdir(mp):
                 pretrained_path = mp
@@ -230,6 +247,7 @@ def model_load(args):
                 use_tactile_deform = bool(args.use_tactile_deform),
                 use_robot_state    = bool(args.use_robot_state),
                 torch_dtype        = torch.bfloat16,
+                tactile_intermediate_size = tac_isize,
             )
         else:
             raise FileNotFoundError(
@@ -318,7 +336,7 @@ def model_predict(
 
     with torch.inference_mode():
 
-        # ── State embedding (OpenVLA-style tokenizer → action expert) ────────
+        # ── State embedding (MLP → single token) ─────────────────────────────
         state_embeds = None
         if args.use_robot_state and state_fast is not None:
             norm_state = _normalize(
@@ -327,12 +345,8 @@ def model_predict(
                 statistic["state_min"],
                 statistic["state_max"],
             )
-            clipped = np.clip(norm_state, action_tokenizer.min_action, action_tokenizer.max_action)
-            discretized = np.digitize(clipped, action_tokenizer.bins)
-            state_ids = (action_tokenizer.my_vocab_size - discretized).tolist()
-            state_ids = torch.LongTensor(state_ids).unsqueeze(0).to(device)  # [1, action_dim]
-            state_embeds = model.model.get_input_embeddings()(state_ids)
-            state_embeds = state_embeds.to(torch.bfloat16)  # [1, action_dim, H]
+            state_vec = torch.tensor(norm_state, dtype=torch.bfloat16).unsqueeze(0).to(device)  # [1, action_dim]
+            state_embeds = model.state_embedder(state_vec).unsqueeze(1)  # [1, 1, H]
 
         # ── Build processor inputs (state NOT in text) ────────────────────────
         content = []
@@ -634,6 +648,9 @@ if __name__ == "__main__":
     parser.add_argument("--use_robot_state", type=int, default=1)
     parser.add_argument("--use_tactile_deform", type=int, default=1, help="1=use deformation images, 0=use f6 force/torque vectors.")
     parser.add_argument("--use_tactile_vec", type=int, default=0, help="Kept for compatibility; effective only when use_tactile_deform=0.")
+    parser.add_argument("--tactile_intermediate_size", type=int, default=0,
+                        help="Intermediate size for tactile expert MLP. "
+                             "0 = auto-detect from training_args.json or use default.")
 
     # Offline test
     parser.add_argument("--save_dir", type=str, default="./test_output", help="Directory to save action trajectory plots and data.")

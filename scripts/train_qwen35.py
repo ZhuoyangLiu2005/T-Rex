@@ -143,9 +143,8 @@ class SftDataset(Dataset):
                 deforms.append(imgs)
             deforms_tensor = torch.tensor(np.array(deforms)).unsqueeze(2) # [B,5,1,H,W]
 
-        state_token_ids_list = []
+        state_raw_list = []
         if cfg.use_robot_state:
-            at = self.action_tokenizer
             for x in batch:
                 state_raw = np.array(x["state_fast"], dtype=np.float32)
                 if self.tracking_err_mean is not None:
@@ -153,10 +152,7 @@ class SftDataset(Dataset):
                         self.tracking_err_mean, self.tracking_err_std)
                 norm_state = self._normalize(state_raw, self.state_mask,
                                              self.state_min, self.state_max)
-                clipped = np.clip(norm_state, at.min_action, at.max_action)
-                discretized = np.digitize(clipped, at.bins)
-                ids = (at.my_vocab_size - discretized).tolist()
-                state_token_ids_list.append(torch.LongTensor(ids))
+                state_raw_list.append(torch.tensor(norm_state, dtype=torch.bfloat16))
 
         all_input_ids = []
         all_pixel_values = []
@@ -214,9 +210,9 @@ class SftDataset(Dataset):
         image_grid_thw = (torch.cat(all_grid_thw, dim=0)
                           if all_grid_thw else None)
 
-        # Stack state token IDs: [B, action_dim] or None
-        state_token_ids = (torch.stack(state_token_ids_list)
-                           if state_token_ids_list else None)
+        # Stack normalized state vectors: [B, action_dim] or None
+        state_raw = (torch.stack(state_raw_list)
+                     if state_raw_list else None)
 
         return {
             "input_ids": input_ids,
@@ -228,7 +224,7 @@ class SftDataset(Dataset):
             "timesteps": time, # [B]
             "tactile_f6s": norm_tacf6,
             "tactile_deforms": deforms_tensor,
-            "state_token_ids": state_token_ids, # [B, action_dim] or None
+            "state_raw": state_raw, # [B, action_dim] or None
         }
 
 def save_checkpoint(model, processor, accelerator, args, epoch, global_step, stats_data):
@@ -435,16 +431,16 @@ def train(args):
             )
             # pos_ids: [3, B, L_latent]  (Qwen3.5 M-RoPE) or [3, B, L] 1-D fallback
 
-            # ── State embeddings (OpenVLA-style tokenizer, action expert) ────
-            if args.use_robot_state and batch["state_token_ids"] is not None:
-                state_ids = batch["state_token_ids"].to(inputs_embeds.device)
-                state_embeds = raw_model.model.get_input_embeddings()(state_ids)
-                state_embeds = state_embeds.to(inputs_embeds.dtype)  # [B, action_dim, H]
+            # ── State embeddings (MLP → single token) ────────────────────────
+            if args.use_robot_state and batch["state_raw"] is not None:
+                state_vec = batch["state_raw"].to(inputs_embeds.device,
+                                                   dtype=inputs_embeds.dtype)  # [B, action_dim]
+                state_embeds = raw_model.state_embedder(state_vec).unsqueeze(1)  # [B, 1, H]
             else:
                 state_embeds = torch.empty(
                     (inputs_embeds.shape[0], 0, inputs_embeds.shape[2]),
                     device=inputs_embeds.device, dtype=inputs_embeds.dtype)
-            n_state = state_embeds.shape[1]
+            n_state = state_embeds.shape[1]  # 1 when use_robot_state, 0 otherwise
 
             # ── Diffusion embeddings ──────────────────────────────────────────
             noisy_actions = raw_model.x_embedder(

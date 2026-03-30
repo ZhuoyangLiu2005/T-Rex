@@ -18,4 +18,5 @@ python test_qwen3vl_real.py \
   --use_tactile_deform 1 \
   --action_dim 31 \
   --action_chunk 8 \
+  --image_size 384 288 \
   --port 5678

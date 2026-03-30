@@ -14,7 +14,7 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 # export NCCL_DEBUG=INFO # only for communication debug
 export NCCL_DEBUG_SUBSYS=INIT,NET
 
-BASE_RUN_NAME="qwen3vl_2b_tri_mot_pretrainvlm_open_airpods_0325view2_tacdeform_wostate_deltabase_eef_stride2_f1s1_res_0328_tmp"
+BASE_RUN_NAME="qwen3vl_2b_tri_mot_pretrainvlm_open_airpods_0325view2_tacdeform_wostate_deltabase_eef_stride2_f1s1_res_resize_0330"
 EXPERIMENT_NAME="qwen3vl_mot_flow"
 OUTPUT_ROOT_DIR="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp"
 
@@ -47,8 +47,8 @@ accelerate launch \
     --model_path ${ORIGIN_MODEL_PATH} \
     --data_path ${DATA_JSON} \
     --data_root "" \
-    --n_epochs 100 \
-    --save_freq 25 \
+    --n_epochs 200 \
+    --save_freq 50 \
     --action_dim 62 \
     --action_chunk 16 \
     --train_bsz_per_gpu ${TRAIN_BSZ} \
@@ -67,6 +67,7 @@ accelerate launch \
     --tactile_intermediate_size 1536 \
     --training_stage 2 \
     --tactile_loss_weight 1.0 \
+    --image_size 384 288 \
     --resume_checkpoint "${RESUME_CHECKPOINT}"
 
 # ── Stage 1 pretrain (no tactile):

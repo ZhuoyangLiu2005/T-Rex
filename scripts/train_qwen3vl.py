@@ -79,6 +79,14 @@ class SftDataset(Dataset):
             if "std"  in tracking_info else None
 
         self.img_dir = os.path.dirname(config.data_path)
+
+        if config.image_size:
+            w, h = config.image_size
+            self.image_size = (w, h)
+            accelerator.print(f"Resizing RGB images to {w}x{h}")
+        else:
+            self.image_size = None
+
         accelerator.print(f"Dataset size: {len(self.hf_dataset)}")
 
     def __len__(self):
@@ -96,7 +104,10 @@ class SftDataset(Dataset):
         )
 
     def _open(self, rel_path):
-        return PIL.Image.open(os.path.join(self.img_dir, rel_path)).convert("RGB")
+        img = PIL.Image.open(os.path.join(self.img_dir, rel_path)).convert("RGB")
+        if self.image_size is not None:
+            img = img.resize(self.image_size, PIL.Image.LANCZOS)
+        return img
 
     def _open_gray(self, path):
         full = path if os.path.isabs(path) else os.path.join(self.img_dir, path)
@@ -664,6 +675,9 @@ if __name__ == "__main__":
                         help="Path to model.pt from a previous stage to resume from.")
     parser.add_argument("--tactile_loss_weight", type=float, default=1.0,
                         help="Weight for tactile residual loss in stage 2.")
+    parser.add_argument("--image_size", type=int, nargs=2, default=None, metavar=("W", "H"),
+                        help="Resize RGB images to W H before tokenization. "
+                             "E.g. --image_size 384 288. Default: no resize.")
 
     args = parser.parse_args()
 

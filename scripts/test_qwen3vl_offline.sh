@@ -21,4 +21,5 @@ python test_qwen3vl_offline.py \
   --action_chunk 8 \
   --save_dir ./test_output_qwen3vl \
   --num_test_samples 300 \
+  --image_size 384 288 \
   --port 5678

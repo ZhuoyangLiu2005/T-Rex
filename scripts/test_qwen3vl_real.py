@@ -323,6 +323,12 @@ def model_predict(
 
     with torch.inference_mode():
 
+        # ── Optional image resize ────────────────────────────────────────────
+        if args.image_size:
+            _sz = tuple(args.image_size)
+            slow_images = [img.resize(_sz, Image.LANCZOS) for img in slow_images]
+            fast_images = [img.resize(_sz, Image.LANCZOS) for img in fast_images]
+
         # ── State embedding (MLP → single token) ─────────────────────────────
         state_embeds = None
         if args.use_robot_state and state_fast is not None:
@@ -534,6 +540,9 @@ if __name__ == "__main__":
     # Runtime
     parser.add_argument("--cuda", type=str, default="0")
     parser.add_argument("--port", type=int, default=5555)
+    parser.add_argument("--image_size", type=int, nargs=2, default=None, metavar=("W", "H"),
+                        help="Resize RGB images to W H before tokenization. "
+                             "E.g. --image_size 384 288. Default: no resize.")
 
     args = parser.parse_args()
     main(args)

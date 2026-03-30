@@ -23,9 +23,9 @@ from torch.utils.data import Dataset, DataLoader
 from torch.optim.lr_scheduler import LambdaLR
 from accelerate import Accelerator
 from transformers import AutoProcessor, set_seed
+from datasets import Dataset as HFDataset
 
 from qwen_vla import Qwen3VLVLAModel
-from janus.models.action_tokenizer import ActionTokenizer
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level="INFO")
@@ -47,10 +47,10 @@ class SftDataset(Dataset):
         self.config = config
         self.processor = processor
         self.accelerator = accelerator
-        self.action_tokenizer = ActionTokenizer(processor.tokenizer)
 
-        with open(config.data_path, "r") as f:
-            self.data = json.load(f)
+        self.hf_dataset = HFDataset.from_json(
+            config.data_path, keep_in_memory=False,
+        )
 
         stats_path = config.data_path.replace(".json", "_statistics.json")
         with open(stats_path, "r") as f:
@@ -79,13 +79,13 @@ class SftDataset(Dataset):
             if "std"  in tracking_info else None
 
         self.img_dir = os.path.dirname(config.data_path)
-        accelerator.print(f"Dataset size: {len(self.data)}")
+        accelerator.print(f"Dataset size: {len(self.hf_dataset)}")
 
     def __len__(self):
-        return len(self.data)
+        return len(self.hf_dataset)
 
     def __getitem__(self, idx):
-        return self.data[idx]
+        return self.hf_dataset[idx]
 
     @staticmethod
     def _normalize(values, mask, vmin, vmax):
@@ -206,7 +206,6 @@ class SftDataset(Dataset):
         image_grid_thw = (torch.cat(all_grid_thw, dim=0)
                           if all_grid_thw else None)
 
-        # Stack normalized state vectors: [B, action_dim] or None
         state_raw = (torch.stack(state_raw_list)
                      if state_raw_list else None)
 
@@ -465,10 +464,6 @@ def train(args):
 
         for batch in it:
             raw_model = accelerator.unwrap_model(model)
-            
-            print(batch["pixel_values"].shape)
-            print(batch["image_grid_thw"])
-            input()
 
             inputs_embeds = raw_model.prepare_inputs_embeds(
                 input_ids = batch["input_ids"],

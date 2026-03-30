@@ -9,12 +9,12 @@ export PYTHONPATH=/mnt/amlfs-01/home/dniu/Project/dex-mot:$PYTHONPATH
 
 export CUDA_VISIBLE_DEVICES=0 
 
-MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen35_mot_flow/qwen35_0.8b_tri_mot_pretrainvlm_pick_cube_0303view2_tacdeform_wostate_deltabase_eef_stride2_right_crop_f1s1_0319/stage0/checkpoint-199-57000"
+MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen35_mot_flow/qwen35_0.8b_tri_mot_pretrainvlm_pick_egg_0320view2_tacdeform_wostate_deltabase_eef_stride2_right_crop_f1s1_res_0323/stage0/checkpoint-199-217400"
 python test_qwen35_offline.py \
   --checkpoint_path ${MODEL_PATH} \
   --dataset_name 'rlbench' \
   --cuda 0 \
-  --test_json_path /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/pick_orange_cube_0303_deltabase_axis_eef_clip_right_stride2_train.json \
+  --test_json_path /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/pick_egg_0320_deltabase_axis_eef_clip_right_stride2_train.json \
   --use_robot_state 0 \
   --use_tactile_deform 1 \
   --action_dim 31 \

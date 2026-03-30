@@ -14,7 +14,7 @@ python test_qwen3vl_offline.py \
   --checkpoint_path ${MODEL_PATH} \
   --dataset_name 'rlbench' \
   --cuda 0 \
-  --test_json_path /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/pick_orange_cube_0303_deltabase_axis_eef_clip_right_stride2_train.json \
+  --test_json_path /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/pick_orange_cube_0318_deltabase_axis_eef_clip_right_stride2_train.json \
   --use_robot_state 0 \
   --use_tactile_deform 1 \
   --action_dim 31 \

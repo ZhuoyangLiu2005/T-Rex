@@ -15,13 +15,17 @@ pip install git+https://github.com/fla-org/flash-linear-attention
 ```
 
 ## Data Constructing
-You can refer to these 4 scripts to generate the single-arm in-lab training data from the raw format:
+Use these two scripts to generate standard json-style training data:
 ```bash
-# eef control, based on the first frame within an action chunk (our ideal choice)
-python utils/gen_json_tac_deltabase_eef_down.py
-# eef control, based on the first frame within an action chunk with multiprocess (very fast)
+# single arm eef control, based on the first frame within an action chunk with multiprocess (very fast)
 python utils/gen_json_tac_deltabase_eef_down_parallel.py
 
+# dual arm eef control, based on the first frame within an action chunk with multiprocess (very fast)
+python utils/gen_json_tac_deltabase_eef_bimanual_parallel.py
+```
+
+You can also refer to these other scripts to generate the single-arm in-lab training data from the raw format, note that these scripts are all for single arm now:
+```bash
 # joint control, based on the first frame within an action chunk
 python utils/gen_json_tac_deltabase_joint_down.py
 
@@ -38,8 +42,34 @@ python utils/analyze_episode.py
 ```
 
 ## Training
+Get a quick start from the following scripts:
+```bash
+cd scripts
+bash train_qwen3vl.sh
+```
+
+For the launching script, it now support a multi-node distributed training, remember to modify the crutial args of that:
+```sh
+# an example for 2-node training
+MASTER_ADDR=<your-ip> # run 'ifconfig' to get the ip address of eth0
+MASTER_PORT=29500
+NUM_MACHINES=2
+MACHINE_RANK=0 # remember to modify in different nodes, 0 for master node, 1,2... for others
+```
+If you simply want a single-node training:
+```sh
+MASTER_ADDR=<your-ip> # run 'ifconfig' to get the ip address of eth0
+MASTER_PORT=29500
+NUM_MACHINES=1
+MACHINE_RANK=0 # remember to modify in different nodes
+```
+(remember: effective_batch_size = train_bsz_per_gpu × num_gpus × gradient_accumulation_steps)
 
 The model now include 3 base models: Janus-Pro, Qwen3-VL, Qwen3.5
+
+But only the Qwen3-VL is fully developed with reduced size of tactile expert and residual flow-matching
+
+The other 2 VLMs only have a basic implementation
 
 ```bash
 cd scripts

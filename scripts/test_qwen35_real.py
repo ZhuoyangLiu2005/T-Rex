@@ -53,10 +53,6 @@ def _denormalize(norm_values, mask, vmin, vmax):
     )
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Model loading
-# ─────────────────────────────────────────────────────────────────────────────
-
 def model_load(args):
     """
     Returns (model, processor, statistic, action_tokenizer).
@@ -69,14 +65,12 @@ def model_load(args):
     """
     ckpt = args.checkpoint_path
 
-    # ── 1. Processor ──────────────────────────────────────────────────────────
     proc_dir = os.path.join(ckpt, "processor")
     if not os.path.isdir(proc_dir):
         raise FileNotFoundError(f"processor/ not found in checkpoint: {ckpt}")
     processor = AutoProcessor.from_pretrained(proc_dir, trust_remote_code=True)
     print(f"Processor loaded from: {proc_dir}")
 
-    # ── 2. Model architecture ─────────────────────────────────────────────────
     pretrained_path = None
     if getattr(args, "base_model_path", "") and os.path.isdir(args.base_model_path):
         pretrained_path = args.base_model_path
@@ -396,3 +390,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     main(args)
+

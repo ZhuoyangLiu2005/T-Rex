@@ -9,14 +9,14 @@ export HF_HOME=/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/huggingface
 
 export PYTHONPATH=/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen:$PYTHONPATH
 
-export WANDB_MODE=offline
+export WANDB_MODE=online
 export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 
-BASE_RUN_NAME="qwen35_0.8b_tri_mot_pretrainvlm_pick_cube_0303view2_tacdeform_wostate_deltabase_eef_stride2_right_crop_f1s1_0319"
+BASE_RUN_NAME="qwen35_0.8b_tri_mot_pretrainvlm_pick_egg_0320view2_tacdeform_wostate_deltabase_eef_stride2_right_crop_f1s1_res_0323"
 EXPERIMENT_NAME="qwen35_mot_flow"
 OUTPUT_ROOT_DIR="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp"
 
-DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/pick_orange_cube_0303_deltabase_axis_eef_clip_right_stride2_train.json"
+DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/pick_egg_0320_deltabase_axis_eef_clip_right_stride2_train.json"
 
 # Qwen3.5-0.8B pretrained model path
 ORIGIN_MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/Qwen3.5-0.8B"

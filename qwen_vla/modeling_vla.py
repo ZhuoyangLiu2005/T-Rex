@@ -407,10 +407,12 @@ class Qwen3VLVLAModel(nn.Module):
         inputs_embeds: torch.Tensor, # latent embeddings
         position_ids: torch.Tensor, # M-RoPE for latent
         noise: torch.Tensor, # [B, chunk, action_dim]
-        tactile_inputs: Optional[torch.Tensor] = None, # [B, T, 6] or [B, T, 1, H, W] or None
+        tactile_inputs: Optional[torch.Tensor] = None, # [B, T, 6] or [B, T, 1, H, W] or None (legacy)
         num_steps: int = 10,
         attention_mask: Optional[torch.Tensor] = None,
         state_embeds: Optional[torch.Tensor] = None,
+        tactile_f6: Optional[torch.Tensor] = None,     # [B, T, 6] or None
+        tactile_deform: Optional[torch.Tensor] = None,  # [B, N, 1, H, W] or None
     ) -> torch.Tensor:
         """Euler integration: x_1 (noise) → x_0 (action)."""
         device = noise.device
@@ -418,17 +420,27 @@ class Qwen3VLVLAModel(nn.Module):
         x_t = noise.to(torch.bfloat16)
         time = torch.tensor(1.0, dtype=torch.bfloat16, device=device)
 
-        if tactile_inputs is not None:
-            if self.use_tactile_deform:
-                B, n_fingers, C, H, W = tactile_inputs.shape
-                deforms_flat = tactile_inputs.view(-1, C, H, W).to(inputs_embeds.dtype)
-                deform_feats = self.deform_encoder(deforms_flat)
-                deform_feats = deform_feats.view(B, n_fingers, -1)
-                tactile_embeds = self.deform_proj(deform_feats.to(torch.bfloat16))
-            else:
-                tactile_embeds = self.tacf6_embedder(tactile_inputs.to(torch.bfloat16))
+        # Legacy: single tactile_inputs → route to the appropriate new arg
+        if tactile_inputs is not None and tactile_f6 is None and tactile_deform is None:
+            if self.use_tactile_deform and tactile_inputs.ndim == 5:
+                tactile_deform = tactile_inputs
+            elif tactile_inputs.ndim == 3:
+                tactile_f6 = tactile_inputs
+
+        # Build tactile_embeds: [f6_tokens, deform_tokens] (concat when both present)
+        tac_parts = []
+        if tactile_f6 is not None:
+            tac_parts.append(self.tacf6_embedder(tactile_f6.to(torch.bfloat16)))
+        if tactile_deform is not None:
+            B, n_fingers, C, H, W = tactile_deform.shape
+            deforms_flat = tactile_deform.view(-1, C, H, W).to(inputs_embeds.dtype)
+            deform_feats = self.deform_encoder(deforms_flat)
+            deform_feats = deform_feats.view(B, n_fingers, -1)
+            tac_parts.append(self.deform_proj(deform_feats.to(torch.bfloat16)))
+
+        if tac_parts:
+            tactile_embeds = torch.cat(tac_parts, dim=1)
         else:
-            # No tactile data — empty tactile embeddings [B, 0, H]
             tactile_embeds = torch.empty(
                 (noise.shape[0], 0, inputs_embeds.shape[2]),
                 device=device, dtype=torch.bfloat16)

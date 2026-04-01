@@ -325,7 +325,8 @@ def model_predict(
     task_description: str,
     slow_images,          # list[PIL.Image]
     fast_images,          # list[PIL.Image]
-    tactile_input,        # np.ndarray (T,6) for f6  OR  list/array (N,[H,W]) for deform
+    tactile_f6_input=None,    # np.ndarray (T,6) or None
+    tactile_deform_input=None, # np.ndarray (N,H,W) or (N,1,H,W) or None
     state_fast=None,      # np.ndarray (state_dim,) or None
 ):
     """
@@ -394,39 +395,37 @@ def model_predict(
             attention_mask = attention_mask,
         )                                               # [3, B, L] (Qwen3-VL format)
 
-        # ── Tactile tensor ────────────────────────────────────────────────────
-        if args.use_tactile_deform:
-            # tactile_input: list of float arrays (H,W) in [0,1]  OR np.ndarray (N,H,W)
-            if isinstance(tactile_input, (list, tuple)):
+        # ── Tactile tensors ───────────────────────────────────────────────────
+        tac_f6_tensor = None
+        if args.use_tactile_vec and tactile_f6_input is not None:
+            tacf6 = np.array(tactile_f6_input, dtype=np.float32).reshape(-1)
+            norm_tacf6 = _normalize(tacf6, statistic["tacf6_mask"],
+                                    statistic["tacf6_min"], statistic["tacf6_max"])
+            tac_f6_tensor = (torch.tensor(norm_tacf6.reshape(-1, 6), dtype=torch.bfloat16)
+                             .unsqueeze(0).to(device))          # [1, T, 6]
+
+        tac_deform_tensor = None
+        if args.use_tactile_deform and tactile_deform_input is not None:
+            if isinstance(tactile_deform_input, (list, tuple)):
                 arr = np.stack([
                     (np.array(t, dtype=np.float32) / 255.0
                      if t.dtype == np.uint8 else np.array(t, dtype=np.float32))
-                    for t in tactile_input
-                ])                                      # (N, H, W)
+                    for t in tactile_deform_input
+                ])
             else:
-                arr = np.array(tactile_input, dtype=np.float32)
+                arr = np.array(tactile_deform_input, dtype=np.float32)
                 if arr.max() > 1.0:
                     arr = arr / 255.0
-            # shape expected by forward_flow: [B, N, 1, H, W]
             if arr.ndim == 3:
-                tactile_tensor = (torch.tensor(arr)
-                                  .unsqueeze(0)             # [1, N, H, W]
-                                  .unsqueeze(2)             # [1, N, 1, H, W]
-                                  .to(device, dtype=torch.bfloat16))
+                tac_deform_tensor = (torch.tensor(arr)
+                                     .unsqueeze(0).unsqueeze(2)
+                                     .to(device, dtype=torch.bfloat16))  # [1,N,1,H,W]
             elif arr.ndim == 4:
-                tactile_tensor = (torch.tensor(arr)
-                                  .unsqueeze(0)             # [1, N, 1, H, W]
-                                  .to(device, dtype=torch.bfloat16))
+                tac_deform_tensor = (torch.tensor(arr)
+                                     .unsqueeze(0)
+                                     .to(device, dtype=torch.bfloat16))  # [1,N,1,H,W]
             else:
                 raise ValueError(f"Unexpected tactile_deform shape: {arr.shape}")
-        else:
-            # tactile_f6: (T, 6)  → normalise → [1, T, 6]
-            tacf6 = np.array(tactile_input, dtype=np.float32).reshape(-1, 6)
-            norm_tacf6 = _normalize(tacf6, statistic["tacf6_mask"],
-                                    statistic["tacf6_min"], statistic["tacf6_max"])
-            tactile_tensor = (torch.tensor(norm_tacf6, dtype=torch.bfloat16)
-                              .unsqueeze(0)             # [1, T, 6]
-                              .to(device))
 
         # ── Flow-matching denoising ───────────────────────────────────────────
         noise = torch.randn(1, args.action_chunk, args.action_dim,
@@ -437,9 +436,10 @@ def model_predict(
             position_ids   = position_ids,
             attention_mask = attention_mask,
             noise          = noise,
-            tactile_inputs = tactile_tensor,
             num_steps      = 10,
             state_embeds   = state_embeds,
+            tactile_f6     = tac_f6_tensor,
+            tactile_deform = tac_deform_tensor,
         )                                               # [1, chunk, action_dim]
 
         # ── Denormalize ───────────────────────────────────────────────────────
@@ -464,14 +464,12 @@ def main(args):
     dummy_slow  = [Image.new("RGB", (224, 224), color="black")]
     dummy_fast  = [Image.new("RGB", (224, 224), color="black")]
     dummy_state = np.zeros(args.action_dim, dtype=np.float32) if args.use_robot_state else None
-    if args.use_tactile_deform:
-        dummy_tac = np.zeros((5, 240, 240), dtype=np.float32)   # (N, H, W)
-    else:
-        dummy_tac = np.zeros((10, 6), dtype=np.float32)
+    dummy_f6    = np.zeros((5, 6), dtype=np.float32) if args.use_tactile_vec else None
+    dummy_deform = np.zeros((5, 240, 240), dtype=np.float32) if args.use_tactile_deform else None
 
     dummy_out = model_predict(
         args, model, processor, statistic, action_tokenizer,
-        "dummy task", dummy_slow, dummy_fast, dummy_tac, dummy_state,
+        "dummy task", dummy_slow, dummy_fast, dummy_f6, dummy_deform, dummy_state,
     )
     print(f"Warm-up output shape: {np.array(dummy_out).shape}")
     print("Warm-up complete.")
@@ -505,14 +503,17 @@ def main(args):
                 fast_images = [Image.open(_abs(p)).convert("RGB")
                                for p in sample["input_image_fast"]]
 
+                tac_f6 = None
+                if args.use_tactile_vec:
+                    tac_f6 = np.array(sample["tactile_f6"], dtype=np.float32)
+
+                tac_deform = None
                 if args.use_tactile_deform:
                     deform_paths = sample.get("tactile_image_deform", [])
-                    tactile_input = [
+                    tac_deform = [
                         np.array(Image.open(_abs(p)).convert("L"), dtype=np.float32) / 255.0
                         for p in deform_paths
                     ]
-                else:
-                    tactile_input = np.array(sample["tactile_f6"], dtype=np.float32)
 
                 state_fast = (np.array(sample["state_fast"], dtype=np.float32)
                               if args.use_robot_state else None)
@@ -520,7 +521,8 @@ def main(args):
 
                 predicted_action = model_predict(
                     args, model, processor, statistic, action_tokenizer,
-                    task_description, slow_images, fast_images, tactile_input, state_fast,
+                    task_description, slow_images, fast_images,
+                    tac_f6, tac_deform, state_fast,
                 )
                 predicted_action = np.array(predicted_action)
 
@@ -604,10 +606,13 @@ def main(args):
             task_description = payload["task_description"]
             state_fast       = payload.get("state_fast", None)
 
+            tac_f6 = None
+            if args.use_tactile_vec:
+                tac_f6 = payload.get("tactile_f6")
+
+            tac_deform = None
             if args.use_tactile_deform:
-                tactile_input = payload.get("tactile_deform", payload.get("tactile_image_deform", []))
-            else:
-                tactile_input = payload["tactile_f6"]
+                tac_deform = payload.get("tactile_deform", payload.get("tactile_image_deform"))
 
             actions = model_predict(
                 args=args,
@@ -618,7 +623,8 @@ def main(args):
                 task_description=task_description,
                 slow_images=slow_image_list,
                 fast_images=fast_image_list,
-                tactile_input=tactile_input,
+                tactile_f6_input=tac_f6,
+                tactile_deform_input=tac_deform,
                 state_fast=state_fast,
             )
 

@@ -9,25 +9,20 @@ export HF_HOME=/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/huggingface
 export PYTHONPATH=/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen:$PYTHONPATH
 
 export WANDB_MODE=offline
+export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 
-# ─── Multi-node config ───
-export NCCL_IB_DISABLE=0          # Enable InfiniBand if available
-export NCCL_NET_GDR=1             # GPU Direct RDMA (if hardware supports)
-export NCCL_ALGO=Ring             # Ring algorithm often best for 2 nodes
-export NCCL_SOCKET_IFNAME=eth0    # Set to your network interface (check with ifconfig)
-
-NUM_MACHINES=1
-MACHINE_RANK=0
-MASTER_ADDR=10.244.117.13
+# ─── Multi-node config (override via env vars) ───
+MASTER_ADDR=10.244.27.42   # run 'ifconfig' to get the ip address of eth0
 MASTER_PORT=29500
-NUM_PROCESSES_PER_NODE=8
-TOTAL_PROCESSES=$((NUM_MACHINES * NUM_PROCESSES_PER_NODE))
+NUM_MACHINES=1
+MACHINE_RANK=0 # remember to modify in different nodes
+NUM_PROCESSES=$((NUM_MACHINES * 8))
 
 BASE_RUN_NAME="qwen3vl_2b_egodex_pretrain_bimanual_62d_stage1_0322_test"
 EXPERIMENT_NAME="qwen3vl_egodex_pretrain"
 OUTPUT_ROOT_DIR="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp"
 
-MANIFEST_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/pretrain/example/egodex/processed_part1/fry_egg/pretrain_manifest.json"
+DATA_ROOT="/mnt/amlfs-07/shared/datasets/dniu/egodex/cotrain_processed_new"
 ORIGIN_MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/Qwen3-VL-2B-Instruct"
 
 TRAIN_BSZ=8
@@ -35,7 +30,7 @@ LR=1e-4
 
 accelerate launch \
     --config_file ../config/sft_qwen.yaml \
-    --num_processes ${TOTAL_PROCESSES} \
+    --num_processes ${NUM_PROCESSES} \
     --num_machines ${NUM_MACHINES} \
     --machine_rank ${MACHINE_RANK} \
     --main_process_ip ${MASTER_ADDR} \
@@ -43,7 +38,7 @@ accelerate launch \
     --deepspeed_multinode_launcher standard \
     train_qwen3vl_pretrain_egodex.py \
     --model_path ${ORIGIN_MODEL_PATH} \
-    --manifest_path ${MANIFEST_PATH} \
+    --data_root ${DATA_ROOT} \
     --n_epochs 100 \
     --save_freq 100 \
     --action_dim 62 \
@@ -59,7 +54,7 @@ accelerate launch \
     --experiment_name ${EXPERIMENT_NAME} \
     --run_name ${BASE_RUN_NAME} \
     --use_robot_state 0 \
-    --image_size 384 \
+    --image_size 384 288 \
     --num_workers 8
 
 echo ">>> EgoDex pretraining finished."

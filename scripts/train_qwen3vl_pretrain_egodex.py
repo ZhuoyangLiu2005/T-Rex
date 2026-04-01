@@ -4,7 +4,9 @@ EgoDex large-scale pretraining script for Qwen3-VL VLA (Stage 1, no tactile).
 Key differences from train_qwen3vl.py:
   1. Uses IterableDataset + WebDataset-style sharding for multi-node scaling.
      Each worker streams from its own shard of episodes — no full JSON in memory.
-  2. Reads pretrain.hdf5 (states, action_chunks) + ego_view.mp4 per episode on the fly.
+  2. Reads pretrain.hdf5 (states, action_chunks) + ego_view.mp4 per episode.
+     Video is opened once per episode and frames are read sequentially to avoid
+     repeated open/seek overhead.
   3. Bimanual 62D: left_wrist_9d(9) + left_hand_22d(22) + right_wrist_9d(9) + right_hand_22d(22).
   4. Single ego-view duplicated as both slow and fast image inputs.
 """
@@ -16,6 +18,7 @@ _PROJECT_DIR = os.path.dirname(_SCRIPT_DIR)
 if _PROJECT_DIR not in sys.path:
     sys.path.insert(0, _PROJECT_DIR)
 
+import glob
 import json
 import math
 import shutil
@@ -55,28 +58,6 @@ def get_cosine_schedule_with_warmup(optimizer, num_warmup_steps, num_training_st
         return (1 - min_lr_ratio) * cosine + min_lr_ratio
     return LambdaLR(optimizer, lr_lambda, last_epoch=-1)
 
-def decode_jpeg_bytes(jpeg_bytes: bytes) -> PIL.Image.Image:
-    """Decode JPEG bytes to RGB PIL Image. ~4ms vs ~72ms for video seek."""
-    import io
-    return PIL.Image.open(io.BytesIO(jpeg_bytes)).convert("RGB")
-
-
-def decode_video_frame(video_path: str, frame_idx: int,
-                       resize: Optional[tuple] = None) -> PIL.Image.Image:
-    """Fallback: decode a single frame from mp4. Returns RGB PIL Image."""
-    cap = cv2.VideoCapture(video_path)
-    cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
-    ret, frame = cap.read()
-    cap.release()
-    if not ret:
-        h, w = resize if resize else (384, 384)
-        return PIL.Image.new("RGB", (w, h))
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    img = PIL.Image.fromarray(frame)
-    if resize:
-        img = img.resize((resize[1], resize[0]), PIL.Image.BILINEAR)
-    return img
-
 class EgoDexPretrainDataset(IterableDataset):
     """
     Streams transitions from EgoDex episodes.
@@ -88,29 +69,54 @@ class EgoDexPretrainDataset(IterableDataset):
       - Episodes are shuffled per epoch via seed rotation.
     """
 
-    def __init__(self, manifest_path: str, config, processor, accelerator):
+    def __init__(self, data_root: str, config, processor, accelerator):
         super().__init__()
         self.config = config
         self.processor = processor
         self.accelerator = accelerator
         self.action_tokenizer = ActionTokenizer(processor.tokenizer)
 
-        with open(manifest_path, "r") as f:
-            manifest = json.load(f)
+        # Discover all batch manifests under data_root
+        self.episodes = []
+        all_action_q01 = []
+        all_action_q99 = []
+        all_state_q01 = []
+        all_state_q99 = []
 
-        self.episodes = manifest["episodes"]
-        self.stats = manifest.get("statistics", {})
+        manifest_paths = sorted(
+            glob.glob(os.path.join(data_root, "*", "pretrain_manifest.json"))
+        )
+        if not manifest_paths:
+            raise FileNotFoundError(
+                f"No pretrain_manifest.json found under {data_root}/*/")
 
-        # Normalization stats
-        self.action_min = np.array(self.stats["action"]["q01"], dtype=np.float32)
-        self.action_max = np.array(self.stats["action"]["q99"], dtype=np.float32)
-        self.state_min = np.array(self.stats["state"]["q01"], dtype=np.float32)
-        self.state_max = np.array(self.stats["state"]["q99"], dtype=np.float32)
+        for mp in manifest_paths:
+            with open(mp, "r") as f:
+                manifest = json.load(f)
+            self.episodes.extend(manifest["episodes"])
+            stats = manifest.get("statistics", {})
+            if "action" in stats and "state" in stats:
+                all_action_q01.append(np.array(stats["action"]["q01"], dtype=np.float32))
+                all_action_q99.append(np.array(stats["action"]["q99"], dtype=np.float32))
+                all_state_q01.append(np.array(stats["state"]["q01"], dtype=np.float32))
+                all_state_q99.append(np.array(stats["state"]["q99"], dtype=np.float32))
+
+        accelerator.print(f"Loaded {len(manifest_paths)} batch manifests")
+
+        # Aggregate stats: element-wise min of q01, max of q99 across batches
+        # This gives the most inclusive normalization range
+        self.action_min = np.min(np.stack(all_action_q01), axis=0)
+        self.action_max = np.max(np.stack(all_action_q99), axis=0)
+        self.state_min = np.min(np.stack(all_state_q01), axis=0)
+        self.state_max = np.max(np.stack(all_state_q99), axis=0)
 
         self.action_mask = np.ones(config.action_dim, dtype=bool)
         self.state_mask = np.ones(config.action_dim, dtype=bool)
 
-        self.resize = (config.image_size, config.image_size) if config.image_size > 0 else None
+        if config.image_size:
+            self.image_size = tuple(config.image_size)  # (W, H)
+        else:
+            self.image_size = None
 
         # Total transitions for LR schedule estimation
         self._total_transitions = sum(ep["num_frames"] for ep in self.episodes)
@@ -158,37 +164,39 @@ class EgoDexPretrainDataset(IterableDataset):
         for ep_info in episodes:
             ep_dir = ep_info["episode_dir"]
             pretrain_h5 = os.path.join(ep_dir, "pretrain.hdf5")
+            video_path = os.path.join(ep_dir, "ego_view.mp4")
 
-            if not os.path.isfile(pretrain_h5):
+            if not os.path.isfile(pretrain_h5) or not os.path.isfile(video_path):
                 continue
 
             try:
                 with h5py.File(pretrain_h5, "r") as f:
-                    states = f["states"][:]              # (T, 62) float32
-                    action_chunks = f["action_chunks"][:] # (T, chunk, 62) float32
+                    states = f["states"][:]               # (T, 62) float32
+                    action_chunks = f["action_chunks"][:]  # (T, chunk, 62) float32
                     language = f.attrs.get("language", "")
-
-                    # Load pre-extracted JPEG frames if available
-                    has_frames = "frames_jpeg" in f
-                    if has_frames:
-                        jpeg_frames = [bytes(f["frames_jpeg"][i]) for i in range(states.shape[0])]
-                    else:
-                        jpeg_frames = None
             except Exception:
                 continue
 
             T = states.shape[0]
-            video_path = os.path.join(ep_dir, "ego_view.mp4")
+
+            # Open video once per episode, read frames sequentially
+            cap = cv2.VideoCapture(video_path)
+            if not cap.isOpened():
+                continue
 
             for t in range(T):
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 yield {
-                    "jpeg_bytes": jpeg_frames[t] if jpeg_frames else None,
-                    "video_path": video_path if not jpeg_frames else None,
-                    "frame_idx": t,
+                    "frame": frame_rgb,            # numpy (H, W, 3) uint8
                     "state": states[t],
                     "action_chunk": action_chunks[t],
                     "language": language,
                 }
+
+            cap.release()
 
     def set_epoch(self, epoch: int):
         self._epoch = epoch
@@ -222,16 +230,15 @@ class EgoDexPretrainDataset(IterableDataset):
                 ns = self._normalize(s, self.state_mask, self.state_min, self.state_max)
                 state_raw_list.append(torch.tensor(ns, dtype=torch.bfloat16))
 
-        # ── Images: decode from pre-extracted JPEG (fast) or video (fallback) ──
+        # ── Images: convert numpy frames to PIL, resize ──
         all_input_ids = []
         all_pixel_values = []
         all_grid_thw = []
 
         for x in batch:
-            if x.get("jpeg_bytes") is not None:
-                img = decode_jpeg_bytes(x["jpeg_bytes"])
-            else:
-                img = decode_video_frame(x["video_path"], x["frame_idx"], self.resize)
+            img = PIL.Image.fromarray(x["frame"])
+            if self.image_size is not None:
+                img = img.resize(self.image_size, PIL.Image.LANCZOS)
 
             content = [
                 {"type": "image"},
@@ -288,7 +295,7 @@ class EgoDexPretrainDataset(IterableDataset):
             "state_raw": state_raw,
         }
 
-def save_checkpoint(model, processor, accelerator, args, epoch, global_step, manifest_path):
+def save_checkpoint(model, processor, accelerator, args, epoch, global_step, dataset):
     save_dir = os.path.join(args.output_dir, f"checkpoint-{epoch}-{global_step}")
 
     if accelerator.is_main_process:
@@ -306,7 +313,20 @@ def save_checkpoint(model, processor, accelerator, args, epoch, global_step, man
         if os.path.exists(src_config):
             shutil.copy(src_config, os.path.join(save_dir, "config.json"))
 
-        shutil.copy(manifest_path, os.path.join(save_dir, "pretrain_manifest.json"))
+        # Save aggregated stats for inference
+        with open(os.path.join(save_dir, "stats_data.json"), "w") as f:
+            json.dump({"egodex": {
+                "action": {
+                    "mask": dataset.action_mask.tolist(),
+                    "q01": dataset.action_min.tolist(),
+                    "q99": dataset.action_max.tolist(),
+                },
+                "state": {
+                    "mask": dataset.state_mask.tolist(),
+                    "q01": dataset.state_min.tolist(),
+                    "q99": dataset.state_max.tolist(),
+                },
+            }}, f, indent=2)
 
         with open(os.path.join(save_dir, "training_args.json"), "w") as f:
             json.dump({
@@ -315,7 +335,7 @@ def save_checkpoint(model, processor, accelerator, args, epoch, global_step, man
                 "action_chunk": args.action_chunk,
                 "use_robot_state": args.use_robot_state,
                 "training_stage": 1,
-                "manifest_path": manifest_path,
+                "data_root": args.data_root,
             }, f, indent=2)
 
     accelerator.wait_for_everyone()
@@ -429,7 +449,7 @@ def train(args):
     optimizer = torch.optim.AdamW(param_groups, lr=args.learning_rate)
 
     # Dataset
-    dataset = EgoDexPretrainDataset(args.manifest_path, args, processor, accelerator)
+    dataset = EgoDexPretrainDataset(args.data_root, args, processor, accelerator)
 
     dataloader = DataLoader(
         dataset,
@@ -557,7 +577,7 @@ def train(args):
         if (epoch + 1) % args.save_freq == 0 or epoch == args.n_epochs - 1:
             accelerator.wait_for_everyone()
             save_checkpoint(model, processor, accelerator, args,
-                            epoch, global_step, args.manifest_path)
+                            epoch, global_step, dataset)
 
     accelerator.print("Training finished.")
 
@@ -568,8 +588,8 @@ if __name__ == "__main__":
     parser.add_argument("--experiment_name", type=str, default="qwen3vl_egodex_pretrain")
     parser.add_argument("--run_name", type=str, default="run_1")
     parser.add_argument("--model_path", type=str, required=True)
-    parser.add_argument("--manifest_path", type=str, required=True,
-                        help="Path to pretrain_manifest.json from build_pretrain_data.py")
+    parser.add_argument("--data_root", type=str, required=True,
+                        help="Root dir containing batch subdirs, each with pretrain_manifest.json")
     parser.add_argument("--output_dir", type=str, default="./outputs")
     parser.add_argument("--log_dir", type=str, default="./logs")
     parser.add_argument("--max_ckpts", type=int, default=5)
@@ -589,8 +609,9 @@ if __name__ == "__main__":
     parser.add_argument("--action_dim", type=int, default=62)
     parser.add_argument("--action_chunk", type=int, default=16)
     parser.add_argument("--use_robot_state", type=int, default=0)
-    parser.add_argument("--image_size", type=int, default=0,
-                        help="Resize ego view to this square size. 0 = no resize.")
+    parser.add_argument("--image_size", type=int, nargs=2, default=None, metavar=("W", "H"),
+                        help="Resize ego view to W H before tokenization. "
+                             "E.g. --image_size 384 384. Default: no resize.")
 
     parser.add_argument("--resume_checkpoint", type=str, default="")
 

@@ -355,45 +355,50 @@ def model_predict(
             state_vec = torch.tensor(norm_state, dtype=torch.bfloat16).unsqueeze(0).to(device)  # [1, action_dim]
             state_embeds = model.state_embedder(state_vec).unsqueeze(1)  # [1, 1, H]
 
-        # ── Build processor inputs (state NOT in text) ────────────────────────
-        content = []
-        for _ in slow_images:
-            content.append({"type": "image"})
-        content.append({"type": "text", "text": task_description})
-        for _ in fast_images:
-            content.append({"type": "image"})
-
-        messages = [{"role": "user", "content": content}]
-        text = processor.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True
-        )
-        all_pil = slow_images + fast_images
-        inp = processor(
-            text=text,
-            images=all_pil if all_pil else None,
-            return_tensors="pt",
-            padding=False,
+        # ── Slow: front view + text → latent expert ────────────────────────
+        content_slow = [{"type": "image"} for _ in slow_images]
+        content_slow.append({"type": "text", "text": task_description})
+        msg_slow = [{"role": "user", "content": content_slow}]
+        text_slow = processor.apply_chat_template(
+            msg_slow, tokenize=False, add_generation_prompt=True)
+        inp_slow = processor(
+            text=text_slow,
+            images=slow_images if slow_images else None,
+            return_tensors="pt", padding=False,
         )
 
-        input_ids      = inp.input_ids.to(device)
-        attention_mask = inp.attention_mask.to(device)
-        pixel_values   = (inp.pixel_values.to(device, dtype=torch.bfloat16)
-                          if getattr(inp, "pixel_values", None) is not None else None)
-        image_grid_thw = (inp.image_grid_thw.to(device)
-                          if getattr(inp, "image_grid_thw", None) is not None else None)
+        slow_ids = inp_slow.input_ids.to(device)
+        slow_attn = inp_slow.attention_mask.to(device)
+        slow_pv = (inp_slow.pixel_values.to(device, dtype=torch.bfloat16)
+                   if getattr(inp_slow, "pixel_values", None) is not None else None)
+        slow_thw = (inp_slow.image_grid_thw.to(device)
+                    if getattr(inp_slow, "image_grid_thw", None) is not None else None)
 
-        # ── VLM embeddings ────────────────────────────────────────────────────
-        inputs_embeds = model.prepare_inputs_embeds(
-            input_ids      = input_ids,
-            pixel_values   = pixel_values,
-            image_grid_thw = image_grid_thw,
-        )                                               # [1, L, H]
+        slow_embeds = model.prepare_inputs_embeds(
+            input_ids=slow_ids, pixel_values=slow_pv, image_grid_thw=slow_thw)
 
         position_ids, _ = model.get_rope_index(
-            input_ids      = input_ids,
-            image_grid_thw = image_grid_thw,
-            attention_mask = attention_mask,
-        )                                               # [3, B, L] (Qwen3-VL format)
+            input_ids=slow_ids, image_grid_thw=slow_thw, attention_mask=slow_attn)
+
+        # ── Fast: all views → action expert ──────────────────────────────────
+        fast_embeds = None
+        if fast_images:
+            content_fast = [{"type": "image"} for _ in fast_images]
+            content_fast.append({"type": "text", "text": ""})
+            msg_fast = [{"role": "user", "content": content_fast}]
+            text_fast = processor.apply_chat_template(
+                msg_fast, tokenize=False, add_generation_prompt=True)
+            inp_fast = processor(
+                text=text_fast, images=fast_images,
+                return_tensors="pt", padding=False,
+            )
+            fast_ids = inp_fast.input_ids.to(device)
+            fast_pv = (inp_fast.pixel_values.to(device, dtype=torch.bfloat16)
+                       if getattr(inp_fast, "pixel_values", None) is not None else None)
+            fast_thw = (inp_fast.image_grid_thw.to(device)
+                        if getattr(inp_fast, "image_grid_thw", None) is not None else None)
+            fast_embeds = model.prepare_inputs_embeds(
+                input_ids=fast_ids, pixel_values=fast_pv, image_grid_thw=fast_thw)
 
         # ── Tactile tensors ───────────────────────────────────────────────────
         tac_f6_tensor = None
@@ -402,7 +407,7 @@ def model_predict(
             norm_tacf6 = _normalize(tacf6, statistic["tacf6_mask"],
                                     statistic["tacf6_min"], statistic["tacf6_max"])
             tac_f6_tensor = (torch.tensor(norm_tacf6.reshape(-1, 6), dtype=torch.bfloat16)
-                             .unsqueeze(0).to(device))          # [1, T, 6]
+                             .unsqueeze(0).to(device))
 
         tac_deform_tensor = None
         if args.use_tactile_deform and tactile_deform_input is not None:
@@ -419,11 +424,11 @@ def model_predict(
             if arr.ndim == 3:
                 tac_deform_tensor = (torch.tensor(arr)
                                      .unsqueeze(0).unsqueeze(2)
-                                     .to(device, dtype=torch.bfloat16))  # [1,N,1,H,W]
+                                     .to(device, dtype=torch.bfloat16))
             elif arr.ndim == 4:
                 tac_deform_tensor = (torch.tensor(arr)
                                      .unsqueeze(0)
-                                     .to(device, dtype=torch.bfloat16))  # [1,N,1,H,W]
+                                     .to(device, dtype=torch.bfloat16))
             else:
                 raise ValueError(f"Unexpected tactile_deform shape: {arr.shape}")
 
@@ -432,14 +437,15 @@ def model_predict(
                             dtype=torch.bfloat16, device=device)
 
         samples = model.forward_flow(
-            inputs_embeds  = inputs_embeds,
+            inputs_embeds  = slow_embeds,
             position_ids   = position_ids,
-            attention_mask = attention_mask,
+            attention_mask = slow_attn,
             noise          = noise,
             num_steps      = 10,
             state_embeds   = state_embeds,
             tactile_f6     = tac_f6_tensor,
             tactile_deform = tac_deform_tensor,
+            fast_embeds    = fast_embeds,
         )                                               # [1, chunk, action_dim]
 
         # ── Denormalize ───────────────────────────────────────────────────────

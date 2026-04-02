@@ -163,9 +163,10 @@ class SftDataset(Dataset):
                                              self.state_min, self.state_max)
                 state_raw_list.append(torch.tensor(norm_state, dtype=torch.bfloat16))
 
-        all_input_ids = []
-        all_pixel_values = []
-        all_grid_thw = []
+        # ── Slow: front view + text → latent/reasoning expert ──
+        # ── Fast: all views (front + wrists) → action expert ──
+        all_slow_ids, all_slow_pv, all_slow_thw = [], [], []
+        all_fast_ids, all_fast_pv, all_fast_thw = [], [], []
 
         for x in batch:
             slow_imgs = x.get("input_image_slow", [])
@@ -174,65 +175,77 @@ class SftDataset(Dataset):
             pil_imgs_slow = [self._open(p) for p in slow_imgs]
             pil_imgs_fast = [self._open(p) for p in fast_imgs]
 
-            content = []
-            for _ in pil_imgs_slow:
-                content.append({"type": "image"})
-            content.append({"type": "text", "text": x.get("input_prompt", "")})
-            for _ in pil_imgs_fast:
-                content.append({"type": "image"})
-
-            messages = [{"role": "user", "content": content}]
-            text = self.processor.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=True
+            # Slow: front view + text → latent expert
+            content_slow = [{"type": "image"} for _ in pil_imgs_slow]
+            content_slow.append({"type": "text", "text": x.get("input_prompt", "")})
+            msg_slow = [{"role": "user", "content": content_slow}]
+            text_slow = self.processor.apply_chat_template(
+                msg_slow, tokenize=False, add_generation_prompt=True)
+            inp_slow = self.processor(
+                text=text_slow,
+                images=pil_imgs_slow if pil_imgs_slow else None,
+                return_tensors="pt", padding=False,
             )
-            all_pil = pil_imgs_slow + pil_imgs_fast
+            all_slow_ids.append(inp_slow.input_ids[0])
+            if "pixel_values" in inp_slow and inp_slow.pixel_values is not None:
+                all_slow_pv.append(inp_slow.pixel_values)
+                all_slow_thw.append(inp_slow.image_grid_thw)
 
-            inp = self.processor(
-                text=text,
-                images=all_pil if all_pil else None,
-                return_tensors="pt",
-                padding=False,
+            # Fast: front + wrist views → action expert
+            content_fast = [{"type": "image"} for _ in pil_imgs_fast]
+            content_fast.append({"type": "text", "text": ""})
+            msg_fast = [{"role": "user", "content": content_fast}]
+            text_fast = self.processor.apply_chat_template(
+                msg_fast, tokenize=False, add_generation_prompt=True)
+            inp_fast = self.processor(
+                text=text_fast,
+                images=pil_imgs_fast if pil_imgs_fast else None,
+                return_tensors="pt", padding=False,
             )
-            all_input_ids.append(inp.input_ids[0]) # [L_i]
-            if "pixel_values" in inp and inp.pixel_values is not None:
-                all_pixel_values.append(inp.pixel_values) # [patches_i, ...]
-                all_grid_thw.append(inp.image_grid_thw) # [n_imgs_i, 3]
+            all_fast_ids.append(inp_fast.input_ids[0])
+            if "pixel_values" in inp_fast and inp_fast.pixel_values is not None:
+                all_fast_pv.append(inp_fast.pixel_values)
+                all_fast_thw.append(inp_fast.image_grid_thw)
 
-        max_len = max(ids.shape[0] for ids in all_input_ids)
-        pad_id  = self.processor.tokenizer.pad_token_id or 0
+        pad_id = self.processor.tokenizer.pad_token_id or 0
 
-        padded_ids   = []
-        attention_ms = []
-        for ids in all_input_ids:
-            pad_len = max_len - ids.shape[0]
-            padded_ids.append(F.pad(ids, (pad_len, 0), value=pad_id))
-            attn = torch.ones(max_len, dtype=torch.long)
-            if pad_len > 0:
-                attn[:pad_len] = 0
-            attention_ms.append(attn)
+        def _pad_and_stack(id_list):
+            max_len = max(ids.shape[0] for ids in id_list)
+            padded, masks = [], []
+            for ids in id_list:
+                pad_len = max_len - ids.shape[0]
+                padded.append(F.pad(ids, (pad_len, 0), value=pad_id))
+                attn = torch.ones(max_len, dtype=torch.long)
+                if pad_len > 0:
+                    attn[:pad_len] = 0
+                masks.append(attn)
+            return torch.stack(padded), torch.stack(masks)
 
-        input_ids = torch.stack(padded_ids) # [B, max_len]
-        attention_mask = torch.stack(attention_ms) # [B, max_len]
+        slow_input_ids, slow_attn_mask = _pad_and_stack(all_slow_ids)
+        slow_pixel_values = torch.cat(all_slow_pv, dim=0) if all_slow_pv else None
+        slow_grid_thw = torch.cat(all_slow_thw, dim=0) if all_slow_thw else None
 
-        pixel_values = (torch.cat(all_pixel_values, dim=0)
-                        if all_pixel_values else None)
-        image_grid_thw = (torch.cat(all_grid_thw, dim=0)
-                          if all_grid_thw else None)
+        fast_input_ids, fast_attn_mask = _pad_and_stack(all_fast_ids)
+        fast_pixel_values = torch.cat(all_fast_pv, dim=0) if all_fast_pv else None
+        fast_grid_thw = torch.cat(all_fast_thw, dim=0) if all_fast_thw else None
 
         state_raw = (torch.stack(state_raw_list)
                      if state_raw_list else None)
 
         return {
-            "input_ids": input_ids,
-            "attention_mask": attention_mask,
-            "pixel_values": pixel_values,
-            "image_grid_thw": image_grid_thw,
-            "noisy_actions": x_t, # [B, chunk, dim]
-            "target": u_t, # [B, chunk, dim]
-            "timesteps": time, # [B]
+            "slow_input_ids": slow_input_ids,
+            "slow_attention_mask": slow_attn_mask,
+            "slow_pixel_values": slow_pixel_values,
+            "slow_grid_thw": slow_grid_thw,
+            "fast_input_ids": fast_input_ids,
+            "fast_pixel_values": fast_pixel_values,
+            "fast_grid_thw": fast_grid_thw,
+            "noisy_actions": x_t,
+            "target": u_t,
+            "timesteps": time,
             "tactile_f6s": norm_tacf6,
             "tactile_deforms": deforms_tensor,
-            "state_raw": state_raw, # [B, action_dim] or None
+            "state_raw": state_raw,
         }
 
 def save_checkpoint(model, processor, accelerator, args, epoch, global_step, stats_data):
@@ -481,54 +494,65 @@ def train(args):
         for batch in it:
             raw_model = accelerator.unwrap_model(model)
 
-            inputs_embeds = raw_model.prepare_inputs_embeds(
-                input_ids = batch["input_ids"],
-                pixel_values = batch.get("pixel_values"),
-                image_grid_thw = batch.get("image_grid_thw"),
-            ) # [B, L, H]
+            # Slow embeddings: front view + text → latent expert
+            slow_embeds = raw_model.prepare_inputs_embeds(
+                input_ids = batch["slow_input_ids"],
+                pixel_values = batch.get("slow_pixel_values"),
+                image_grid_thw = batch.get("slow_grid_thw"),
+            )
 
             pos_ids, _ = raw_model.get_rope_index(
-                input_ids = batch["input_ids"],
-                image_grid_thw = batch.get("image_grid_thw"),
-                attention_mask = batch["attention_mask"],
+                input_ids = batch["slow_input_ids"],
+                image_grid_thw = batch.get("slow_grid_thw"),
+                attention_mask = batch["slow_attention_mask"],
+            )
+
+            # Fast embeddings: front + wrist views → action expert
+            fast_embeds = raw_model.prepare_inputs_embeds(
+                input_ids = batch["fast_input_ids"],
+                pixel_values = batch.get("fast_pixel_values"),
+                image_grid_thw = batch.get("fast_grid_thw"),
             )
 
             if args.use_robot_state and batch["state_raw"] is not None:
-                state_vec = batch["state_raw"].to(inputs_embeds.device,
-                                                   dtype=inputs_embeds.dtype)  # [B, action_dim]
-                state_embeds = raw_model.state_embedder(state_vec).unsqueeze(1)  # [B, 1, H]
+                state_vec = batch["state_raw"].to(slow_embeds.device,
+                                                   dtype=slow_embeds.dtype)
+                state_embeds = raw_model.state_embedder(state_vec).unsqueeze(1)
             else:
                 state_embeds = torch.empty(
-                    (inputs_embeds.shape[0], 0, inputs_embeds.shape[2]),
-                    device=inputs_embeds.device, dtype=inputs_embeds.dtype)
-            n_state = state_embeds.shape[1]  # 1 when use_robot_state, 0 otherwise
+                    (slow_embeds.shape[0], 0, slow_embeds.shape[2]),
+                    device=slow_embeds.device, dtype=slow_embeds.dtype)
+            n_state = state_embeds.shape[1]
 
             noisy_actions = raw_model.x_embedder(
-                batch["noisy_actions"].to(inputs_embeds.dtype)) # [B, chunk, H]
+                batch["noisy_actions"].to(slow_embeds.dtype))
             timesteps = raw_model.t_embedder(
-                batch["timesteps"].to(inputs_embeds.dtype)).unsqueeze(1) # [B, 1, H]
+                batch["timesteps"].to(slow_embeds.dtype)).unsqueeze(1)
 
             chunk = args.action_chunk
-            target = batch["target"].to(inputs_embeds.dtype)   # [B, chunk, dim]
+            target = batch["target"].to(slow_embeds.dtype)
+
+            L_slow = slow_embeds.shape[1]
+            n_fast = fast_embeds.shape[1]
 
             if is_stage1:
                 # ── Stage 1: latent + action expert only ─────────────────────
+                # Layout: [slow | fast, state?, t, noisy_act]
                 full_embeds = torch.cat([
-                    inputs_embeds,
-                    state_embeds, timesteps, noisy_actions,
+                    slow_embeds,
+                    fast_embeds, state_embeds, timesteps, noisy_actions,
                 ], dim=1)
 
-                n_action = n_state + 1 + chunk
-                L_latent = inputs_embeds.shape[1]
+                n_action = n_fast + n_state + 1 + chunk
                 L_total  = full_embeds.shape[1]
-                latent_indexes  = torch.arange(0, L_latent, device=full_embeds.device)
-                action_indexes  = torch.arange(L_latent, L_total, device=full_embeds.device)
+                latent_indexes  = torch.arange(0, L_slow, device=full_embeds.device)
+                action_indexes  = torch.arange(L_slow, L_total, device=full_embeds.device)
                 tactile_indexes = torch.arange(0, 0, device=full_embeds.device)
 
                 outputs = model.model(
                     inputs_embeds  = full_embeds,
                     position_ids   = pos_ids,
-                    attention_mask = batch["attention_mask"],
+                    attention_mask = batch["slow_attention_mask"],
                     use_cache      = False,
                     latent_indexes = latent_indexes,
                     action_indexes = action_indexes,
@@ -536,7 +560,7 @@ def train(args):
                 )
                 hidden = outputs.last_hidden_state
 
-                act_pred_start = L_latent + n_state + 1
+                act_pred_start = L_slow + n_fast + n_state + 1
                 v_act = raw_model.final_layer(
                     hidden[:, act_pred_start : act_pred_start + chunk, :])
                 loss_act = nn.MSELoss()(v_act, target)
@@ -550,51 +574,51 @@ def train(args):
                 tac_parts = []
                 if args.use_tactile_vec and batch["tactile_f6s"] is not None:
                     tac_parts.append(raw_model.tacf6_embedder(
-                        batch["tactile_f6s"].to(inputs_embeds.dtype)))
+                        batch["tactile_f6s"].to(slow_embeds.dtype)))
                 if args.use_tactile_deform and batch["tactile_deforms"] is not None:
                     deforms = batch["tactile_deforms"].to(
-                        inputs_embeds.device, dtype=inputs_embeds.dtype)
+                        slow_embeds.device, dtype=slow_embeds.dtype)
                     Bs, nf, C, H, W = deforms.shape
                     with torch.no_grad():
                         feats = raw_model.deform_encoder(deforms.view(-1, C, H, W))
                     feats = feats.view(Bs, nf, -1)
                     tac_parts.append(raw_model.deform_proj(
-                        feats.to(inputs_embeds.dtype)))
+                        feats.to(slow_embeds.dtype)))
 
                 if tac_parts:
                     tactile_embeds = torch.cat(tac_parts, dim=1)
                 else:
                     tactile_embeds = torch.empty(
-                        (inputs_embeds.shape[0], 0, inputs_embeds.shape[2]),
-                        device=inputs_embeds.device, dtype=inputs_embeds.dtype)
+                        (slow_embeds.shape[0], 0, slow_embeds.shape[2]),
+                        device=slow_embeds.device, dtype=slow_embeds.dtype)
 
                 has_tactile = tactile_embeds.shape[1] > 0
 
+                # Layout: [slow | fast, state?, t, noisy_act | tac, t_tac, noisy_act_tac]
+                n_action = n_fast + n_state + 1 + chunk
+
                 if has_tactile:
                     noisy_actions_tac = raw_model.x_embedder(
-                        batch["noisy_actions"].to(inputs_embeds.dtype))
+                        batch["noisy_actions"].to(slow_embeds.dtype))
                     timesteps_tac = raw_model.t_embedder(
-                        batch["timesteps"].to(inputs_embeds.dtype)).unsqueeze(1)
+                        batch["timesteps"].to(slow_embeds.dtype)).unsqueeze(1)
                     full_embeds = torch.cat([
-                        inputs_embeds,
-                        state_embeds, timesteps, noisy_actions,
+                        slow_embeds,
+                        fast_embeds, state_embeds, timesteps, noisy_actions,
                         tactile_embeds, timesteps_tac, noisy_actions_tac,
                     ], dim=1)
                 else:
-                    # No tactile tokens — same layout as stage 1
                     full_embeds = torch.cat([
-                        inputs_embeds,
-                        state_embeds, timesteps, noisy_actions,
+                        slow_embeds,
+                        fast_embeds, state_embeds, timesteps, noisy_actions,
                     ], dim=1)
 
-                n_action  = n_state + 1 + chunk
-                L_latent = inputs_embeds.shape[1]
-                L_total  = full_embeds.shape[1]
-                latent_indexes  = torch.arange(0, L_latent, device=full_embeds.device)
-                action_indexes  = torch.arange(L_latent, L_latent + n_action,
+                L_total = full_embeds.shape[1]
+                latent_indexes  = torch.arange(0, L_slow, device=full_embeds.device)
+                action_indexes  = torch.arange(L_slow, L_slow + n_action,
                                                device=full_embeds.device)
                 if has_tactile:
-                    tactile_indexes = torch.arange(L_latent + n_action, L_total,
+                    tactile_indexes = torch.arange(L_slow + n_action, L_total,
                                                    device=full_embeds.device)
                 else:
                     tactile_indexes = torch.arange(0, 0, device=full_embeds.device)
@@ -602,7 +626,7 @@ def train(args):
                 outputs = model.model(
                     inputs_embeds  = full_embeds,
                     position_ids   = pos_ids,
-                    attention_mask = batch["attention_mask"],
+                    attention_mask = batch["slow_attention_mask"],
                     use_cache      = False,
                     latent_indexes = latent_indexes,
                     action_indexes = action_indexes,
@@ -611,7 +635,7 @@ def train(args):
                 hidden = outputs.last_hidden_state
 
                 # Action expert velocity (from action block's noisy_action positions)
-                act_pred_start = L_latent + n_state + 1
+                act_pred_start = L_slow + n_fast + n_state + 1
                 v_act = raw_model.final_layer(
                     hidden[:, act_pred_start : act_pred_start + chunk, :])
                 loss_act = nn.MSELoss()(v_act, target)

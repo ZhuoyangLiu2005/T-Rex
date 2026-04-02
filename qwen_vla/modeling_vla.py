@@ -302,7 +302,7 @@ class Qwen3VLVLAModel(nn.Module):
 
     def denoise_step(
         self,
-        inputs_embeds: torch.Tensor, # latent embeddings [B, L, H]
+        inputs_embeds: torch.Tensor, # slow/latent embeddings [B, L, H]
         position_ids: torch.Tensor, # M-RoPE [3, B, L] or 1-D [B, L]
         past_key_values,
         x_t: torch.Tensor, # noisy actions [B, chunk, action_dim]
@@ -310,6 +310,7 @@ class Qwen3VLVLAModel(nn.Module):
         tactile_embeds: torch.Tensor, # [B, T, H]  (T=0 when no tactile)
         attention_mask: Optional[torch.Tensor] = None,
         state_embeds: Optional[torch.Tensor] = None, # [B, S, H] or None
+        fast_embeds: Optional[torch.Tensor] = None,  # [B, F, H] or None
     ) -> Tuple[torch.Tensor, object]:
 
         noisy_actions = self.x_embedder(x_t.to(torch.bfloat16)) # [B, chunk, H]
@@ -318,14 +319,17 @@ class Qwen3VLVLAModel(nn.Module):
 
         B = inputs_embeds.shape[0]
 
-        # Sequence layout: [latent | act_seq | tac_seq?]
-        # act_seq = [state? | timestep | noisy_actions]
-        # tac_seq = [tactile_embeds | timestep | noisy_actions]  (omitted when T=0)
-        act_parts = []
+        if fast_embeds is None:
+            fast_embeds = torch.empty(
+                (B, 0, inputs_embeds.shape[2]),
+                device=inputs_embeds.device, dtype=inputs_embeds.dtype)
+
+        # Sequence layout: [slow/latent | fast, state?, timestep, noisy_act | tac_seq?]
+        act_parts = [fast_embeds]
         if state_embeds is not None and state_embeds.shape[1] > 0:
             act_parts.append(state_embeds)
         act_parts.extend([timesteps, noisy_actions])
-        act_seq = torch.cat(act_parts, dim=1) # [B, (S+)1+chunk, H]
+        act_seq = torch.cat(act_parts, dim=1)
         n_act = act_seq.shape[1]
 
         has_tactile = (tactile_embeds.shape[1] > 0)
@@ -362,7 +366,6 @@ class Qwen3VLVLAModel(nn.Module):
             if has_tactile:
                 parts.append(tac_seq)
             full_embeds = torch.cat(parts, dim=1)
-            # Trim cached KVs to remove previous action/tactile entries
             drop = n_act + n_tac
             past_key_values.crop(-drop)
             total = full_embeds.shape[1]
@@ -386,14 +389,11 @@ class Qwen3VLVLAModel(nn.Module):
             )
 
         hidden = outputs.last_hidden_state
-        # ── Residual prediction ──────────────────────────────────────────────
-        # Action expert's noisy_action hidden states (last chunk of action block)
         act_block_end = hidden.shape[1] - n_tac
         h_act_chunk = hidden[:, act_block_end - n_chunk : act_block_end, :]
         v_act = self.final_layer(h_act_chunk)
 
         if has_tactile:
-            # Tactile expert's noisy_action hidden states (last chunk overall)
             h_tac_chunk = hidden[:, -n_chunk:, :]
             delta_v = self.final_layer_tactile(h_tac_chunk)
             v_t = v_act + delta_v
@@ -404,15 +404,16 @@ class Qwen3VLVLAModel(nn.Module):
 
     def forward_flow(
         self,
-        inputs_embeds: torch.Tensor, # latent embeddings
+        inputs_embeds: torch.Tensor, # slow/latent embeddings
         position_ids: torch.Tensor, # M-RoPE for latent
         noise: torch.Tensor, # [B, chunk, action_dim]
-        tactile_inputs: Optional[torch.Tensor] = None, # [B, T, 6] or [B, T, 1, H, W] or None (legacy)
+        tactile_inputs: Optional[torch.Tensor] = None, # legacy
         num_steps: int = 10,
         attention_mask: Optional[torch.Tensor] = None,
         state_embeds: Optional[torch.Tensor] = None,
-        tactile_f6: Optional[torch.Tensor] = None,     # [B, T, 6] or None
-        tactile_deform: Optional[torch.Tensor] = None,  # [B, N, 1, H, W] or None
+        tactile_f6: Optional[torch.Tensor] = None,
+        tactile_deform: Optional[torch.Tensor] = None,
+        fast_embeds: Optional[torch.Tensor] = None, # [B, F, H] fast view embeds for action expert
     ) -> torch.Tensor:
         """Euler integration: x_1 (noise) → x_0 (action)."""
         device = noise.device
@@ -457,6 +458,7 @@ class Qwen3VLVLAModel(nn.Module):
                 tactile_embeds  = tactile_embeds,
                 attention_mask  = attention_mask,
                 state_embeds    = state_embeds,
+                fast_embeds     = fast_embeds,
             )
             x_t = x_t + dt * v_t
             time = time + dt

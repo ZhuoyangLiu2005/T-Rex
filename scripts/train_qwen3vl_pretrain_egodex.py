@@ -1,12 +1,11 @@
 """
 EgoDex large-scale pretraining script for Qwen3-VL VLA (Stage 1, no tactile).
 
-Key differences from train_qwen3vl.py:
-  1. Uses IterableDataset + WebDataset-style sharding for multi-node scaling.
-     Each worker streams from its own shard of episodes — no full JSON in memory.
+Key design:
+  1. Map-style Dataset with a flat (episode, frame) index for balanced multi-node
+     sharding via DistributedSampler — every rank processes exactly the same
+     number of steps per epoch, preventing NCCL deadlocks.
   2. Reads pretrain.hdf5 (states, action_chunks) + ego_view.mp4 per episode.
-     Video is opened once per episode and frames are read sequentially to avoid
-     repeated open/seek overhead.
   3. Bimanual 62D: left_wrist_9d(9) + left_hand_22d(22) + right_wrist_9d(9) + right_hand_22d(22).
   4. Single ego-view duplicated as both slow and fast image inputs.
 """
@@ -24,7 +23,6 @@ import math
 import shutil
 import logging
 import argparse
-import random
 
 import cv2
 import h5py
@@ -37,7 +35,7 @@ import wandb
 import PIL.Image
 
 from typing import Dict, List, Optional
-from torch.utils.data import IterableDataset, DataLoader
+from torch.utils.data import Dataset, DataLoader
 from torch.optim.lr_scheduler import LambdaLR
 from accelerate import Accelerator, DataLoaderConfiguration
 from transformers import AutoProcessor, set_seed
@@ -58,15 +56,12 @@ def get_cosine_schedule_with_warmup(optimizer, num_warmup_steps, num_training_st
         return (1 - min_lr_ratio) * cosine + min_lr_ratio
     return LambdaLR(optimizer, lr_lambda, last_epoch=-1)
 
-class EgoDexPretrainDataset(IterableDataset):
+class EgoDexPretrainDataset(Dataset):
     """
-    Streams transitions from EgoDex episodes.
+    Map-style dataset with a flat (episode_idx, frame_t) index.
 
-    Sharding strategy:
-      - Episodes are split across DDP ranks (world_size).
-      - Within a rank, episodes are further split across DataLoader workers.
-      - Each worker iterates its shard of episodes, yielding one transition at a time.
-      - Episodes are shuffled per epoch via seed rotation.
+    DistributedSampler shards this index evenly across ranks, guaranteeing
+    every rank processes the same number of samples per epoch — no NCCL hangs.
     """
 
     def __init__(self, data_root: str, config, processor, accelerator):
@@ -104,7 +99,6 @@ class EgoDexPretrainDataset(IterableDataset):
         accelerator.print(f"Loaded {len(manifest_paths)} batch manifests")
 
         # Aggregate stats: element-wise min of q01, max of q99 across batches
-        # This gives the most inclusive normalization range
         self.action_min = np.min(np.stack(all_action_q01), axis=0)
         self.action_max = np.max(np.stack(all_action_q99), axis=0)
         self.state_min = np.min(np.stack(all_state_q01), axis=0)
@@ -118,14 +112,24 @@ class EgoDexPretrainDataset(IterableDataset):
         else:
             self.image_size = None
 
-        # Total transitions for LR schedule estimation
-        self._total_transitions = sum(ep["num_frames"] for ep in self.episodes)
+        # ── Build flat index: list of (episode_idx, frame_t) ──
+        # Trust manifest num_frames; bad episodes handled in __getitem__
+        self._index = []
+        for ep_idx, ep_info in enumerate(self.episodes):
+            num_frames = ep_info["num_frames"]
+            for t in range(num_frames):
+                self._index.append((ep_idx, t))
+
+        self._total_transitions = len(self._index)
         accelerator.print(f"EgoDex pretrain: {len(self.episodes)} episodes, "
-                          f"~{self._total_transitions} transitions")
+                          f"{self._total_transitions} transitions")
+
+    def __len__(self):
+        return len(self._index)
 
     @property
     def total_transitions(self):
-        return self._total_transitions
+        return len(self._index)
 
     @staticmethod
     def _normalize(values, mask, vmin, vmax):
@@ -134,28 +138,6 @@ class EgoDexPretrainDataset(IterableDataset):
             np.clip(2 * (values - vmin) / (vmax - vmin + 1e-8) - 1, -1, 1),
             values,
         )
-
-    def _get_worker_episodes(self, epoch: int):
-        """Deterministic shard assignment: rank -> worker -> episode list."""
-        rank = dist.get_rank() if dist.is_initialized() else 0
-        world_size = dist.get_world_size() if dist.is_initialized() else 1
-
-        # Shuffle episodes deterministically per epoch
-        indices = list(range(len(self.episodes)))
-        rng = random.Random(42 + epoch)
-        rng.shuffle(indices)
-
-        # Split by rank
-        rank_indices = indices[rank::world_size]
-
-        # Split by worker
-        worker_info = torch.utils.data.get_worker_info()
-        if worker_info is not None:
-            worker_indices = rank_indices[worker_info.id::worker_info.num_workers]
-        else:
-            worker_indices = rank_indices
-
-        return [self.episodes[i] for i in worker_indices]
 
     @staticmethod
     def _find_head_video(ep_dir: str) -> Optional[str]:
@@ -167,49 +149,49 @@ class EgoDexPretrainDataset(IterableDataset):
         matches = glob.glob(os.path.join(ep_dir, "*head*.mp4"))
         return matches[0] if matches else None
 
-    def __iter__(self):
-        epoch = getattr(self, '_epoch', 0)
-        episodes = self._get_worker_episodes(epoch)
+    def __getitem__(self, idx: int) -> Dict:
+        ep_idx, frame_t = self._index[idx]
+        ep_info = self.episodes[ep_idx]
+        ep_dir = ep_info["episode_dir"]
+        pretrain_h5 = os.path.join(ep_dir, "pretrain.hdf5")
+        video_path = self._find_head_video(ep_dir)
 
-        for ep_info in episodes:
-            ep_dir = ep_info["episode_dir"]
-            pretrain_h5 = os.path.join(ep_dir, "pretrain.hdf5")
-            video_path = self._find_head_video(ep_dir)
+        # Fallback values for bad episodes
+        fallback = {
+            "frame": np.zeros((288, 384, 3), dtype=np.uint8),
+            "state": np.zeros(self.config.action_dim, dtype=np.float32),
+            "action_chunk": np.zeros((self.config.action_chunk, self.config.action_dim), dtype=np.float32),
+            "language": "",
+        }
 
-            if not os.path.isfile(pretrain_h5) or video_path is None:
-                continue
+        if video_path is None or not os.path.isfile(pretrain_h5):
+            return fallback
 
-            try:
-                with h5py.File(pretrain_h5, "r") as f:
-                    states = f["states"][:]               # (T, 62) float32
-                    action_chunks = f["action_chunks"][:]  # (T, chunk, 62) float32
-                    language = f.attrs.get("language", "")
-            except Exception:
-                continue
+        try:
+            with h5py.File(pretrain_h5, "r") as f:
+                state = f["states"][frame_t]              # (62,) float32
+                action_chunk = f["action_chunks"][frame_t]  # (chunk, 62) float32
+                language = f.attrs.get("language", "")
+        except Exception:
+            return fallback
 
-            T = states.shape[0]
+        # Read video frame via seek
+        cap = cv2.VideoCapture(video_path)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_t)
+        ret, frame = cap.read()
+        cap.release()
 
-            # Open video once per episode, read frames sequentially
-            cap = cv2.VideoCapture(video_path)
-            if not cap.isOpened():
-                continue
+        if not ret:
+            frame_rgb = np.zeros((288, 384, 3), dtype=np.uint8)
+        else:
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-            for t in range(T):
-                ret, frame = cap.read()
-                if not ret:
-                    break
-                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                yield {
-                    "frame": frame_rgb,            # numpy (H, W, 3) uint8
-                    "state": states[t],
-                    "action_chunk": action_chunks[t],
-                    "language": language,
-                }
-
-            cap.release()
-
-    def set_epoch(self, epoch: int):
-        self._epoch = epoch
+        return {
+            "frame": frame_rgb,
+            "state": state,
+            "action_chunk": action_chunk,
+            "language": language,
+        }
 
     def collate_fn(self, batch: List[Dict]) -> Dict:
         cfg = self.config
@@ -240,83 +222,64 @@ class EgoDexPretrainDataset(IterableDataset):
                 ns = self._normalize(s, self.state_mask, self.state_min, self.state_max)
                 state_raw_list.append(torch.tensor(ns, dtype=torch.bfloat16))
 
-        # ── Slow: front view + text (latent/reasoning expert) ──
-        # ── Fast: front view (+ wrist views when available) (action expert) ──
-        all_slow_ids, all_slow_pv, all_slow_thw = [], [], []
-        all_fast_ids, all_fast_pv, all_fast_thw = [], [], []
+        # ── Single message: [slow_img | text | fast_img] ──────────────
+        # Ego-view is used for both slow (latent) and fast (action).
+        all_input_ids = []
+        all_pixel_values = []
+        all_grid_thw = []
+        n_slow_images = 1  # 1 ego-view for latent expert
 
         for x in batch:
             img = PIL.Image.fromarray(x["frame"])
             if self.image_size is not None:
                 img = img.resize(self.image_size, PIL.Image.LANCZOS)
 
-            # Slow: [front_view, text] → latent expert
-            content_slow = [
+            # [slow_img, text, fast_img] — same ego-view duplicated
+            content = [
                 {"type": "image"},
                 {"type": "text", "text": x.get("language", "")},
-            ]
-            msg_slow = [{"role": "user", "content": content_slow}]
-            text_slow = self.processor.apply_chat_template(
-                msg_slow, tokenize=False, add_generation_prompt=True)
-            inp_slow = self.processor(
-                text=text_slow, images=[img],
-                return_tensors="pt", padding=False,
-            )
-            all_slow_ids.append(inp_slow.input_ids[0])
-            if "pixel_values" in inp_slow and inp_slow.pixel_values is not None:
-                all_slow_pv.append(inp_slow.pixel_values)
-                all_slow_thw.append(inp_slow.image_grid_thw)
-
-            # Fast: [front_view] → action expert
-            # (During fine-tuning this becomes [front, wrist_L, wrist_R])
-            content_fast = [
                 {"type": "image"},
-                {"type": "text", "text": ""},
             ]
-            msg_fast = [{"role": "user", "content": content_fast}]
-            text_fast = self.processor.apply_chat_template(
-                msg_fast, tokenize=False, add_generation_prompt=True)
-            inp_fast = self.processor(
-                text=text_fast, images=[img],
+            messages = [{"role": "user", "content": content}]
+            text = self.processor.apply_chat_template(
+                messages, tokenize=False, add_generation_prompt=True)
+            inp = self.processor(
+                text=text, images=[img, img],
                 return_tensors="pt", padding=False,
             )
-            all_fast_ids.append(inp_fast.input_ids[0])
-            if "pixel_values" in inp_fast and inp_fast.pixel_values is not None:
-                all_fast_pv.append(inp_fast.pixel_values)
-                all_fast_thw.append(inp_fast.image_grid_thw)
+            all_input_ids.append(inp.input_ids[0])
+            if "pixel_values" in inp and inp.pixel_values is not None:
+                all_pixel_values.append(inp.pixel_values)
+                all_grid_thw.append(inp.image_grid_thw)
 
         pad_id = self.processor.tokenizer.pad_token_id or 0
+        max_len = max(ids.shape[0] for ids in all_input_ids)
 
-        def _pad_and_stack(id_list):
-            max_len = max(ids.shape[0] for ids in id_list)
-            padded, masks = [], []
-            for ids in id_list:
-                pad_len = max_len - ids.shape[0]
-                padded.append(F.pad(ids, (pad_len, 0), value=pad_id))
-                attn = torch.ones(max_len, dtype=torch.long)
-                if pad_len > 0:
-                    attn[:pad_len] = 0
-                masks.append(attn)
-            return torch.stack(padded), torch.stack(masks)
+        padded_ids = []
+        attention_ms = []
+        for ids in all_input_ids:
+            pad_len = max_len - ids.shape[0]
+            padded_ids.append(F.pad(ids, (pad_len, 0), value=pad_id))
+            attn = torch.ones(max_len, dtype=torch.long)
+            if pad_len > 0:
+                attn[:pad_len] = 0
+            attention_ms.append(attn)
 
-        slow_input_ids, slow_attn = _pad_and_stack(all_slow_ids)
-        slow_pv = torch.cat(all_slow_pv, dim=0) if all_slow_pv else None
-        slow_thw = torch.cat(all_slow_thw, dim=0) if all_slow_thw else None
-
-        fast_input_ids, fast_attn = _pad_and_stack(all_fast_ids)
-        fast_pv = torch.cat(all_fast_pv, dim=0) if all_fast_pv else None
-        fast_thw = torch.cat(all_fast_thw, dim=0) if all_fast_thw else None
+        input_ids = torch.stack(padded_ids)
+        attention_mask = torch.stack(attention_ms)
+        pixel_values = (torch.cat(all_pixel_values, dim=0)
+                        if all_pixel_values else None)
+        image_grid_thw = (torch.cat(all_grid_thw, dim=0)
+                          if all_grid_thw else None)
 
         state_raw = torch.stack(state_raw_list) if state_raw_list else None
 
         return {
-            "slow_input_ids": slow_input_ids,
-            "slow_attention_mask": slow_attn,
-            "slow_pixel_values": slow_pv,
-            "slow_grid_thw": slow_thw,
-            "fast_input_ids": fast_input_ids,
-            "fast_pixel_values": fast_pv,
-            "fast_grid_thw": fast_thw,
+            "input_ids": input_ids,
+            "attention_mask": attention_mask,
+            "pixel_values": pixel_values,
+            "image_grid_thw": image_grid_thw,
+            "n_slow_images": n_slow_images,
             "noisy_actions": x_t,
             "target": u_t,
             "timesteps": time,
@@ -482,17 +445,24 @@ def train(args):
     dataloader = DataLoader(
         dataset,
         batch_size=args.train_bsz_per_gpu,
+        shuffle=True,
+        drop_last=True,
         collate_fn=dataset.collate_fn,
         num_workers=args.num_workers,
         pin_memory=True,
         prefetch_factor=2 if args.num_workers > 0 else None,
+        persistent_workers=True if args.num_workers > 0 else False,
     )
 
-    # Estimate steps per epoch for LR schedule
-    world_size = dist.get_world_size() if dist.is_initialized() else 1
-    steps_per_epoch = dataset.total_transitions // (args.train_bsz_per_gpu * world_size)
+    # Prepare FIRST so accelerate handles distributed sharding,
+    # then compute steps_per_epoch from the prepared dataloader.
+    model, optimizer, dataloader = accelerator.prepare(model, optimizer, dataloader)
+
+    # After prepare(), len(dataloader) already reflects per-rank sharding.
+    steps_per_epoch = len(dataloader)
     num_training_steps = steps_per_epoch * args.n_epochs // accelerator.gradient_accumulation_steps
-    accelerator.print(f"Estimated {steps_per_epoch} steps/epoch, "
+    accelerator.print(f"Estimated {steps_per_epoch} steps/epoch "
+                      f"(world={accelerator.num_processes}), "
                       f"{num_training_steps} total training steps")
 
     lr_scheduler = get_cosine_schedule_with_warmup(
@@ -501,15 +471,16 @@ def train(args):
         num_training_steps=num_training_steps,
         min_lr_ratio=args.min_lr_ratio,
     )
-
-    model, optimizer, dataloader = accelerator.prepare(model, optimizer, dataloader)
+    lr_scheduler = accelerator.prepare(lr_scheduler)
 
     metric = TrainingMetrics(device=torch.cuda.current_device())
     global_step = 0
     model.train()
 
     for epoch in range(args.n_epochs):
-        dataset.set_epoch(epoch)
+        # accelerate's prepared dataloader handles set_epoch internally
+        if hasattr(dataloader, "set_epoch"):
+            dataloader.set_epoch(epoch)
 
         from tqdm import tqdm
         it = (tqdm(dataloader, total=steps_per_epoch, desc=f"Epoch {epoch}")
@@ -520,54 +491,41 @@ def train(args):
         for batch in it:
             raw_model = accelerator.unwrap_model(model)
 
-            # ── Debug: print first batch on rank 0 ──
-            if not _debug_printed and accelerator.is_main_process:
-                _debug_printed = True
-                _proc = dataset.processor
-                print("\n" + "=" * 70)
-                print("  DEBUG — First batch (rank 0)")
-                print("=" * 70)
-                # Token sequence (first sample)
-                _ids = batch["slow_input_ids"][0]
-                _decoded = _proc.tokenizer.decode(_ids, skip_special_tokens=False)
-                print(f"[Slow] input_ids shape : {batch['slow_input_ids'].shape}")
-                print(f"[Slow] token seq (sample 0, first 200 chars):\n  {_decoded[:200]}")
-                print(f"[Slow] pixel_values    : {batch['slow_pixel_values'].shape if batch.get('slow_pixel_values') is not None else None}")
-                print(f"[Slow] grid_thw        : {batch['slow_grid_thw'] if batch.get('slow_grid_thw') is not None else None}")
-
-                _fids = batch["fast_input_ids"][0]
-                _fdecoded = _proc.tokenizer.decode(_fids, skip_special_tokens=False)
-                print(f"\n[Fast] input_ids shape : {batch['fast_input_ids'].shape}")
-                print(f"[Fast] token seq (sample 0, first 200 chars):\n  {_fdecoded[:200]}")
-                print(f"[Fast] pixel_values    : {batch['fast_pixel_values'].shape if batch.get('fast_pixel_values') is not None else None}")
-                print(f"[Fast] grid_thw        : {batch['fast_grid_thw'] if batch.get('fast_grid_thw') is not None else None}")
-
-                print(f"\n[Actions] noisy shape  : {batch['noisy_actions'].shape}")
-                print(f"[Actions] target shape : {batch['target'].shape}")
-                print(f"[Actions] target[0,0,:5]: {batch['target'][0, 0, :5].tolist()}")
-                print(f"[Actions] timesteps    : {batch['timesteps'][:4].tolist()}")
-                print(f"[State]   state_raw    : {batch['state_raw'].shape if batch.get('state_raw') is not None else None}")
-                print("=" * 70 + "\n")
-
-            # Slow embeddings: front view + text → latent expert
-            slow_embeds = raw_model.prepare_inputs_embeds(
-                input_ids=batch["slow_input_ids"],
-                pixel_values=batch.get("slow_pixel_values"),
-                image_grid_thw=batch.get("slow_grid_thw"),
+            # ── Single VLM forward: all images in one sequence ───────────
+            inputs_embeds = raw_model.prepare_inputs_embeds(
+                input_ids      = batch["input_ids"],
+                pixel_values   = batch.get("pixel_values"),
+                image_grid_thw = batch.get("image_grid_thw"),
             )
 
+            # ── Split into slow (latent) and fast (action) portions ──────
+            n_slow_imgs = batch["n_slow_images"]
+            grid_thw = batch.get("image_grid_thw")
+            B = inputs_embeds.shape[0]
+            if grid_thw is not None and grid_thw.shape[0] > n_slow_imgs:
+                merge = getattr(raw_model.visual, "spatial_merge_size",
+                                getattr(dataset.processor.image_processor, "merge_size", 2))
+                n_imgs_per_sample = grid_thw.shape[0] // B
+                fast_grid = grid_thw[n_slow_imgs : n_imgs_per_sample]
+                n_fast_tokens = sum(
+                    int(g[0] * (g[1] // merge) * (g[2] // merge))
+                    for g in fast_grid
+                )
+                slow_embeds = inputs_embeds[:, :-n_fast_tokens]
+                fast_embeds = inputs_embeds[:, -n_fast_tokens:]
+            else:
+                slow_embeds = inputs_embeds
+                fast_embeds = inputs_embeds[:, :0]
+
+            L_slow = slow_embeds.shape[1]
+
+            # ── M-RoPE: compute for full VLM sequence, truncate to slow ──
             pos_ids, _ = raw_model.get_rope_index(
-                input_ids=batch["slow_input_ids"],
-                image_grid_thw=batch.get("slow_grid_thw"),
-                attention_mask=batch["slow_attention_mask"],
+                input_ids      = batch["input_ids"],
+                image_grid_thw = batch.get("image_grid_thw"),
+                attention_mask = batch["attention_mask"],
             )
-
-            # Fast embeddings: front view (+ wrist views later) → action expert
-            fast_embeds = raw_model.prepare_inputs_embeds(
-                input_ids=batch["fast_input_ids"],
-                pixel_values=batch.get("fast_pixel_values"),
-                image_grid_thw=batch.get("fast_grid_thw"),
-            )
+            pos_ids = pos_ids[:, :, :L_slow]
 
             if args.use_robot_state and batch["state_raw"] is not None:
                 state_vec = batch["state_raw"].to(slow_embeds.device, dtype=slow_embeds.dtype)
@@ -588,49 +546,30 @@ def train(args):
 
             # Stage 1: latent + action expert only
             # Layout: [slow_embeds | fast_embeds, state?, timestep, noisy_actions]
-            #          latent_idx    action_idx
             full_embeds = torch.cat([
                 slow_embeds,
                 fast_embeds, state_embeds, timesteps, noisy_actions,
             ], dim=1)
 
-            L_slow = slow_embeds.shape[1]
             n_fast = fast_embeds.shape[1]
             n_action = n_fast + n_state + 1 + chunk
             L_total = full_embeds.shape[1]
-            latent_indexes = torch.arange(0, L_slow, device=full_embeds.device)
-            action_indexes = torch.arange(L_slow, L_total, device=full_embeds.device)
+            latent_indexes  = torch.arange(0, L_slow, device=full_embeds.device)
+            action_indexes  = torch.arange(L_slow, L_total, device=full_embeds.device)
             tactile_indexes = torch.arange(0, 0, device=full_embeds.device)
 
             if global_step == 0 and accelerator.is_main_process:
-                print("\n" + "-" * 70)
-                print("  DEBUG — Sequence layout (first step)")
-                print("-" * 70)
-                print(f"  slow_embeds   : {slow_embeds.shape}  (latent expert)")
-                print(f"  fast_embeds   : {fast_embeds.shape}  (action expert visual)")
-                print(f"  state_embeds  : {state_embeds.shape}")
-                print(f"  timesteps     : {timesteps.shape}")
-                print(f"  noisy_actions : {noisy_actions.shape}")
-                print(f"  full_embeds   : {full_embeds.shape}")
-                print(f"  latent_indexes: [{latent_indexes[0]}..{latent_indexes[-1]}] len={len(latent_indexes)}")
-                print(f"  action_indexes: [{action_indexes[0]}..{action_indexes[-1]}] len={len(action_indexes)}")
-                print(f"    → fast_img [{L_slow}..{L_slow + n_fast - 1}] ({n_fast} tokens)")
-                print(f"    → state    [{L_slow + n_fast}..{L_slow + n_fast + n_state - 1}] ({n_state} tokens)")
-                print(f"    → timestep [{L_slow + n_fast + n_state}]")
-                _aps = L_slow + n_fast + n_state + 1
-                print(f"    → actions  [{_aps}..{_aps + chunk - 1}] ({chunk} tokens)")
-                print(f"  tactile_idxs  : len={len(tactile_indexes)} (empty)")
-                print(f"  pos_ids shape : {pos_ids.shape}")
-                print("-" * 70 + "\n")
+                print(f"\n[Layout] slow={slow_embeds.shape[1]} fast={n_fast} "
+                      f"state={n_state} t=1 act={chunk} total={L_total}")
 
             outputs = model.model(
-                inputs_embeds=full_embeds,
-                position_ids=pos_ids,
-                attention_mask=batch["slow_attention_mask"],
-                use_cache=False,
-                latent_indexes=latent_indexes,
-                action_indexes=action_indexes,
-                tactile_indexes=tactile_indexes,
+                inputs_embeds   = full_embeds,
+                position_ids    = pos_ids,
+                attention_mask  = batch["attention_mask"],
+                use_cache       = False,
+                latent_indexes  = latent_indexes,
+                action_indexes  = action_indexes,
+                tactile_indexes = tactile_indexes,
             )
             hidden = outputs.last_hidden_state
 

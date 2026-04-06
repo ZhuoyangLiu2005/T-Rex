@@ -56,6 +56,7 @@ class Qwen3VLVLAModel(nn.Module):
         use_robot_state:     bool  = False,
         image_token_id:      int   = _DEFAULT_IMAGE_TOKEN_ID,
         tactile_intermediate_size: int = None,
+        n_flare_tokens:     int   = 0,
     ):
         super().__init__()
         self.config             = config
@@ -66,6 +67,7 @@ class Qwen3VLVLAModel(nn.Module):
         self.use_robot_state    = use_robot_state
         self.image_token_id     = image_token_id
         self.tactile_intermediate_size = tactile_intermediate_size
+        self.n_flare_tokens    = n_flare_tokens
 
         self.visual = None
 
@@ -85,6 +87,13 @@ class Qwen3VLVLAModel(nn.Module):
         if use_robot_state:
             self.state_embedder = ActionEmbedder(action_dim, H)
 
+        # Flare visual prediction tokens for the latent expert
+        if n_flare_tokens > 0:
+            self.flare_queries = nn.Parameter(
+                torch.randn(1, n_flare_tokens, H) * 0.02)
+            self.flare_proj = nn.Sequential(
+                nn.Linear(H, H), nn.GELU(), nn.Linear(H, H))
+
         # Lightweight callable for get_rope_index (NOT an nn.Module — avoids
         # registering the full base model as a submodule).
         # Use object.__setattr__ to bypass nn.Module registration.
@@ -101,6 +110,7 @@ class Qwen3VLVLAModel(nn.Module):
         use_robot_state:    bool = False,
         torch_dtype              = torch.bfloat16,
         tactile_intermediate_size: int = None,
+        n_flare_tokens:    int  = 0,
     ) -> "Qwen3VLVLAModel":
         """
         Build a Qwen3VLVLAModel by:
@@ -139,6 +149,7 @@ class Qwen3VLVLAModel(nn.Module):
             use_robot_state = use_robot_state,
             image_token_id = image_token_id,
             tactile_intermediate_size = tactile_intermediate_size,
+            n_flare_tokens = n_flare_tokens,
         )
         # Capture only the get_rope_index function — do NOT store the full
         # base model as an attribute, because nn.Module.__setattr__ would
@@ -244,6 +255,13 @@ class Qwen3VLVLAModel(nn.Module):
             nn.init.zeros_(fl.mlp.fc2.weight)
             if fl.mlp.fc2.bias is not None:
                 nn.init.zeros_(fl.mlp.fc2.bias)
+        # Flare prediction projection
+        if self.n_flare_tokens > 0:
+            for mm in self.flare_proj.modules():
+                if isinstance(mm, nn.Linear):
+                    nn.init.xavier_uniform_(mm.weight)
+                    if mm.bias is not None:
+                        nn.init.zeros_(mm.bias)
 
     def prepare_inputs_embeds(
         self,
@@ -469,3 +487,28 @@ class Qwen3VLVLAModel(nn.Module):
 
     def parameters(self, *args, **kwargs):
         return super().parameters(*args, **kwargs)
+
+
+def extend_position_ids_for_flare(
+    pos_ids: torch.Tensor,
+    n_flare: int,
+) -> torch.Tensor:
+    """
+    Extend M-RoPE position_ids by n_flare sequential positions.
+
+    Parameters
+    ----------
+    pos_ids : [3, B, L_slow]  M-RoPE positions for slow tokens
+    n_flare : int  number of flare query tokens
+
+    Returns
+    -------
+    [3, B, L_slow + n_flare]  extended positions
+    """
+    if n_flare == 0:
+        return pos_ids
+    device = pos_ids.device
+    max_pos = pos_ids.max(dim=-1, keepdim=True)[0]  # [3, B, 1]
+    offsets = torch.arange(1, n_flare + 1, device=device).view(1, 1, n_flare)
+    flare_pos = max_pos + offsets  # [3, B, n_flare]
+    return torch.cat([pos_ids, flare_pos], dim=-1)

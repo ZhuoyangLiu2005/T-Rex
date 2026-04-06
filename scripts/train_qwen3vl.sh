@@ -8,13 +8,13 @@ export PATH=/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/bin:$PATH
 export HF_HOME=/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/huggingface
 export PYTHONPATH=/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen:$PYTHONPATH
 
-export WANDB_MODE=online
+export WANDB_MODE=offline
 export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 
 # export NCCL_DEBUG=INFO # only for communication debug
 export NCCL_DEBUG_SUBSYS=INIT,NET
 
-BASE_RUN_NAME="qwen3vl_2b_tri_mot_pretrainvlm_flip_book_page_0313view2_tacdeform_wostate_deltabase_eef_stride2_f1s1_res_resize_0331"
+BASE_RUN_NAME="qwen3vl_2b_tri_mot_pretrainvlm_flip_book_page_0313view2_tacdeform_wostate_deltabase_eef_stride2_f1s1_res_resize_0403"
 EXPERIMENT_NAME="qwen3vl_mot_flow"
 OUTPUT_ROOT_DIR="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp"
 
@@ -26,7 +26,7 @@ DEFORM_ENCODER_PATH="/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/bi-mot/janus/De
 # Stage 1 resume checkpoint (set to stage1 model.pt for stage 2 training)
 RESUME_CHECKPOINT=""
 
-MASTER_ADDR=10.244.27.42   # run 'ifconfig' to get the ip address of eth0
+MASTER_ADDR=10.244.117.13   # run 'ifconfig' to get the ip address of eth0
 MASTER_PORT=29500
 NUM_MACHINES=1
 MACHINE_RANK=0 # remember to modify in different nodes

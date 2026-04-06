@@ -9,16 +9,23 @@ export HF_HOME=/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/huggingface
 export PYTHONPATH=/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen:$PYTHONPATH
 
 export WANDB_MODE=online
+export WANDB_API_KEY=5bdc90c568050775a6d10650e64857fbbc76742e
 export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
+# export NCCL_DEBUG=INFO
+export NCCL_DEBUG_SUBSYS=INIT,NET
+export NCCL_SOCKET_IFNAME=eth0
+# export NCCL_IB_DISABLE=0
+export NCCL_TIMEOUT=18000
+ulimit -c 0
 
 # ─── Multi-node config (override via env vars) ───
-MASTER_ADDR=10.244.43.215    # run 'ifconfig' to get the ip address of eth0
-MASTER_PORT=29500
-NUM_MACHINES=1
-MACHINE_RANK=0 # remember to modify in different nodes
+MASTER_ADDR=${MASTER_ADDR:-10.244.27.42}
+MASTER_PORT=${MASTER_PORT:-29500}
+NUM_MACHINES=${NUM_MACHINES:-4}
+MACHINE_RANK=${MACHINE_RANK:-3}
 NUM_PROCESSES=$((NUM_MACHINES * 8))
 
-BASE_RUN_NAME="qwen3vl_2b_egodex_pretrain_bimanual_62d_stage1_0322_test"
+BASE_RUN_NAME="qwen3vl_2b_egodex_pretrain_bimanual_62d_stage1_handabs_0403"
 EXPERIMENT_NAME="qwen3vl_egodex_pretrain"
 OUTPUT_ROOT_DIR="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp"
 
@@ -36,7 +43,7 @@ for group_dir in "${BKL_SRC}"/*/; do
     fi
 done
 
-TRAIN_BSZ=8
+TRAIN_BSZ=16
 LR=1e-4
 
 accelerate launch \
@@ -66,7 +73,7 @@ accelerate launch \
     --run_name ${BASE_RUN_NAME} \
     --use_robot_state 1 \
     --image_size 384 288 \
-    --num_workers 8
+    --num_workers 6
 
 echo ">>> EgoDex pretraining finished."
 

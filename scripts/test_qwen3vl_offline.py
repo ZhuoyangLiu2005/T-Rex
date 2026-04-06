@@ -355,50 +355,57 @@ def model_predict(
             state_vec = torch.tensor(norm_state, dtype=torch.bfloat16).unsqueeze(0).to(device)  # [1, action_dim]
             state_embeds = model.state_embedder(state_vec).unsqueeze(1)  # [1, 1, H]
 
-        # ── Slow: front view + text → latent expert ────────────────────────
-        content_slow = [{"type": "image"} for _ in slow_images]
-        content_slow.append({"type": "text", "text": task_description})
-        msg_slow = [{"role": "user", "content": content_slow}]
-        text_slow = processor.apply_chat_template(
-            msg_slow, tokenize=False, add_generation_prompt=True)
-        inp_slow = processor(
-            text=text_slow,
-            images=slow_images if slow_images else None,
+        # ── Single message: [slow_imgs | text | fast_imgs] ────────────────
+        n_slow = len(slow_images)
+        all_pil = slow_images + fast_images
+
+        content = []
+        for _ in slow_images:
+            content.append({"type": "image"})
+        content.append({"type": "text", "text": task_description})
+        for _ in fast_images:
+            content.append({"type": "image"})
+
+        messages = [{"role": "user", "content": content}]
+        text = processor.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True)
+        inp = processor(
+            text=text,
+            images=all_pil if all_pil else None,
             return_tensors="pt", padding=False,
         )
 
-        slow_ids = inp_slow.input_ids.to(device)
-        slow_attn = inp_slow.attention_mask.to(device)
-        slow_pv = (inp_slow.pixel_values.to(device, dtype=torch.bfloat16)
-                   if getattr(inp_slow, "pixel_values", None) is not None else None)
-        slow_thw = (inp_slow.image_grid_thw.to(device)
-                    if getattr(inp_slow, "image_grid_thw", None) is not None else None)
+        input_ids = inp.input_ids.to(device)
+        attention_mask = inp.attention_mask.to(device)
+        pixel_values = (inp.pixel_values.to(device, dtype=torch.bfloat16)
+                        if getattr(inp, "pixel_values", None) is not None else None)
+        image_grid_thw = (inp.image_grid_thw.to(device)
+                          if getattr(inp, "image_grid_thw", None) is not None else None)
 
-        slow_embeds = model.prepare_inputs_embeds(
-            input_ids=slow_ids, pixel_values=slow_pv, image_grid_thw=slow_thw)
+        inputs_embeds = model.prepare_inputs_embeds(
+            input_ids=input_ids, pixel_values=pixel_values,
+            image_grid_thw=image_grid_thw)
 
-        position_ids, _ = model.get_rope_index(
-            input_ids=slow_ids, image_grid_thw=slow_thw, attention_mask=slow_attn)
-
-        # ── Fast: all views → action expert ──────────────────────────────────
+        # Split into slow (latent) and fast (action) portions
         fast_embeds = None
-        if fast_images:
-            content_fast = [{"type": "image"} for _ in fast_images]
-            content_fast.append({"type": "text", "text": ""})
-            msg_fast = [{"role": "user", "content": content_fast}]
-            text_fast = processor.apply_chat_template(
-                msg_fast, tokenize=False, add_generation_prompt=True)
-            inp_fast = processor(
-                text=text_fast, images=fast_images,
-                return_tensors="pt", padding=False,
+        if image_grid_thw is not None and fast_images:
+            merge = getattr(model.visual, "spatial_merge_size",
+                            getattr(processor.image_processor, "merge_size", 2))
+            fast_grid = image_grid_thw[n_slow:]
+            n_fast_tokens = sum(
+                int(g[0] * (g[1] // merge) * (g[2] // merge))
+                for g in fast_grid
             )
-            fast_ids = inp_fast.input_ids.to(device)
-            fast_pv = (inp_fast.pixel_values.to(device, dtype=torch.bfloat16)
-                       if getattr(inp_fast, "pixel_values", None) is not None else None)
-            fast_thw = (inp_fast.image_grid_thw.to(device)
-                        if getattr(inp_fast, "image_grid_thw", None) is not None else None)
-            fast_embeds = model.prepare_inputs_embeds(
-                input_ids=fast_ids, pixel_values=fast_pv, image_grid_thw=fast_thw)
+            slow_embeds = inputs_embeds[:, :-n_fast_tokens]
+            fast_embeds = inputs_embeds[:, -n_fast_tokens:]
+        else:
+            slow_embeds = inputs_embeds
+
+        # M-RoPE: compute for full sequence, truncate to slow portion
+        position_ids, _ = model.get_rope_index(
+            input_ids=input_ids, image_grid_thw=image_grid_thw,
+            attention_mask=attention_mask)
+        position_ids = position_ids[:, :, :slow_embeds.shape[1]]
 
         # ── Tactile tensors ───────────────────────────────────────────────────
         tac_f6_tensor = None
@@ -439,7 +446,7 @@ def model_predict(
         samples = model.forward_flow(
             inputs_embeds  = slow_embeds,
             position_ids   = position_ids,
-            attention_mask = slow_attn,
+            attention_mask = attention_mask,
             noise          = noise,
             num_steps      = 10,
             state_embeds   = state_embeds,

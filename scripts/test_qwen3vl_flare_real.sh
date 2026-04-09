@@ -9,14 +9,27 @@ export PYTHONPATH=/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen:$PYTH
 
 export CUDA_VISIBLE_DEVICES=0
 
+# ── Task config: uncomment ONE section ──────────────────────────────────────
+
+# --- Single-arm: flip_book_page (right hand only, 1 wrist camera) ---
 MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mot_flare/stage2_future_v1/checkpoint-199-70400"
+ACTION_DIM=31
+ACTION_CHUNK=8
+
+# --- Dual-arm: remove_card (bimanual, 2 wrist cameras: right + left) ---
+# MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mot_flare/qwen3vl_2b_tri_mot_pretrainvlm_remove_card_0405view2_tacdeform_wostate_deltabase_eef_stride2_f1s1_res_flare_resize_0405/checkpoint-199-166000"
+# ACTION_DIM=62
+# ACTION_CHUNK=16
+
+# ────────────────────────────────────────────────────────────────────────────
+
 python test_qwen3vl_flare_real.py \
   --checkpoint_path ${MODEL_PATH} \
   --dataset_name 'rlbench' \
   --cuda 0 \
   --use_robot_state 0 \
   --use_tactile_deform 1 \
-  --action_dim 31 \
-  --action_chunk 8 \
+  --action_dim ${ACTION_DIM} \
+  --action_chunk ${ACTION_CHUNK} \
   --port 5678 \
-  --image_size 384 288 
+  --image_size 384 288

@@ -56,7 +56,9 @@ class Qwen3VLVLAModel(nn.Module):
         use_robot_state:     bool  = False,
         image_token_id:      int   = _DEFAULT_IMAGE_TOKEN_ID,
         tactile_intermediate_size: int = None,
-        n_flare_tokens:     int   = 0,
+        n_flare_tokens_per_frame: int = 0,
+        n_flare_steps:           int = 0,
+        flare_layer_index:       int = -1,
     ):
         super().__init__()
         self.config             = config
@@ -67,7 +69,10 @@ class Qwen3VLVLAModel(nn.Module):
         self.use_robot_state    = use_robot_state
         self.image_token_id     = image_token_id
         self.tactile_intermediate_size = tactile_intermediate_size
-        self.n_flare_tokens    = n_flare_tokens
+        self.n_flare_tokens_per_frame = n_flare_tokens_per_frame
+        self.n_flare_steps            = n_flare_steps
+        self.n_flare_tokens           = n_flare_tokens_per_frame * n_flare_steps
+        self.flare_layer_index        = flare_layer_index
 
         self.visual = None
 
@@ -88,9 +93,9 @@ class Qwen3VLVLAModel(nn.Module):
             self.state_embedder = ActionEmbedder(action_dim, H)
 
         # Flare visual prediction tokens for the latent expert
-        if n_flare_tokens > 0:
+        if self.n_flare_tokens > 0:
             self.flare_queries = nn.Parameter(
-                torch.randn(1, n_flare_tokens, H) * 0.02)
+                torch.randn(1, self.n_flare_tokens, H) * 0.02)
             self.flare_proj = nn.Sequential(
                 nn.Linear(H, H), nn.GELU(), nn.Linear(H, H))
 
@@ -110,7 +115,9 @@ class Qwen3VLVLAModel(nn.Module):
         use_robot_state:    bool = False,
         torch_dtype              = torch.bfloat16,
         tactile_intermediate_size: int = None,
-        n_flare_tokens:    int  = 0,
+        n_flare_tokens_per_frame: int = 0,
+        n_flare_steps:            int = 0,
+        flare_layer_index:        int = -1,
     ) -> "Qwen3VLVLAModel":
         """
         Build a Qwen3VLVLAModel by:
@@ -149,7 +156,9 @@ class Qwen3VLVLAModel(nn.Module):
             use_robot_state = use_robot_state,
             image_token_id = image_token_id,
             tactile_intermediate_size = tactile_intermediate_size,
-            n_flare_tokens = n_flare_tokens,
+            n_flare_tokens_per_frame = n_flare_tokens_per_frame,
+            n_flare_steps = n_flare_steps,
+            flare_layer_index = flare_layer_index,
         )
         # Capture only the get_rope_index function — do NOT store the full
         # base model as an attribute, because nn.Module.__setattr__ would

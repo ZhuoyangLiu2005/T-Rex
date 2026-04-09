@@ -3,9 +3,9 @@ Offline test + ZeroMQ inference server for the Qwen3-VL MoT VLA model
 with flare visual prediction tokens.
 
 Identical to test_qwen3vl_offline.py except:
-  - Builds the model with n_flare_tokens (auto-detected from training_args.json)
+  - Builds the model with n_flare_tokens_per_frame * n_flare_steps (auto-detected from training_args.json)
   - Appends flare_queries to slow_embeds before calling forward_flow
-  - Extends position_ids by n_flare_tokens
+  - Extends position_ids by total flare tokens
 """
 
 import os
@@ -22,8 +22,10 @@ import io
 import pickle
 import traceback
 
+import re
 import numpy as np
 import torch
+import torch.nn.functional as F
 from PIL import Image
 import zmq
 import matplotlib
@@ -75,7 +77,8 @@ def _build_qwen3vl_from_config(config_path, args):
 
     tac_isize = getattr(args, "tactile_intermediate_size", 0)
     tac_isize = tac_isize if tac_isize > 0 else None
-    n_flare = getattr(args, "n_flare_tokens", 0)
+    n_flare_tpf = getattr(args, "n_flare_tokens_per_frame", 0)
+    n_flare_steps = getattr(args, "n_flare_steps", 0)
 
     model = Qwen3VLVLAModel(
         config             = text_config,
@@ -85,7 +88,8 @@ def _build_qwen3vl_from_config(config_path, args):
         use_robot_state    = bool(args.use_robot_state),
         image_token_id     = image_token_id,
         tactile_intermediate_size = tac_isize,
-        n_flare_tokens    = n_flare,
+        n_flare_tokens_per_frame = n_flare_tpf,
+        n_flare_steps            = n_flare_steps,
     )
 
     vis_cfg_dict = full_cfg.get("vision_config", {})
@@ -150,15 +154,18 @@ def model_load(args):
         with open(ta_path) as f:
             ta = json.load(f)
         for key, default in [("tactile_intermediate_size", 0),
-                             ("n_flare_tokens", 0)]:
+                             ("n_flare_tokens_per_frame", 0),
+                             ("n_flare_steps", 0),
+                             ("flare_layer_index", -1)]:
             saved = ta.get(key, default)
             cli_val = getattr(args, key, default)
-            if saved and cli_val == default:
+            if saved != default and cli_val == default:
                 setattr(args, key, saved)
                 print(f"Auto-detected {key}={saved} from training_args.json")
 
     tac_isize = args.tactile_intermediate_size if args.tactile_intermediate_size > 0 else None
-    n_flare = getattr(args, "n_flare_tokens", 0)
+    n_flare_tpf = getattr(args, "n_flare_tokens_per_frame", 0)
+    n_flare_steps = getattr(args, "n_flare_steps", 0)
 
     proc_dir = os.path.join(ckpt, "processor")
     if not os.path.isdir(proc_dir):
@@ -177,7 +184,8 @@ def model_load(args):
             use_robot_state=bool(args.use_robot_state),
             torch_dtype=torch.bfloat16,
             tactile_intermediate_size=tac_isize,
-            n_flare_tokens=n_flare,
+            n_flare_tokens_per_frame=n_flare_tpf,
+            n_flare_steps=n_flare_steps,
         )
     elif os.path.exists(ckpt_config):
         model = _build_qwen3vl_from_config(ckpt_config, args)
@@ -196,7 +204,8 @@ def model_load(args):
             use_robot_state=bool(args.use_robot_state),
             torch_dtype=torch.bfloat16,
             tactile_intermediate_size=tac_isize,
-            n_flare_tokens=n_flare,
+            n_flare_tokens_per_frame=n_flare_tpf,
+            n_flare_steps=n_flare_steps,
         )
 
     ckpt_file = os.path.join(ckpt, "model.pt")
@@ -207,8 +216,9 @@ def model_load(args):
         print(f"  missing (first 10): {missing[:10]}")
     model = model.to(torch.bfloat16)
 
-    if n_flare > 0:
-        print(f"Flare alignment: {n_flare} tokens enabled")
+    n_flare_total = n_flare_tpf * n_flare_steps
+    if n_flare_total > 0:
+        print(f"Flare alignment: {n_flare_steps} steps × {n_flare_tpf} tok/frame = {n_flare_total} total tokens")
 
     stats_path = args.stats_path or ""
     if not stats_path:
@@ -380,15 +390,271 @@ def model_predict(
     return list(actions)
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Flare similarity evaluation
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _load_flare_frame(slow_path, k, frame_stride, data_dir, image_size=None):
+    """Load the k-th future frame relative to the current slow image."""
+    match = re.search(r'image(\d+)_', os.path.basename(slow_path))
+    if not match:
+        return None
+    current_idx = int(match.group(1))
+    flare_idx = current_idx + (k + 1) * frame_stride
+    flare_path = re.sub(r'image\d+_', f'image{flare_idx}_', slow_path)
+    full_path = os.path.join(data_dir, flare_path) if not os.path.isabs(flare_path) else flare_path
+    if not os.path.exists(full_path):
+        return None
+    img = Image.open(full_path).convert("RGB")
+    if image_size is not None:
+        img = img.resize(image_size, Image.LANCZOS)
+    return img
+
+
+def compute_flare_similarity(
+    args, model, processor, statistic,
+    sample, data_dir,
+    slow_images, fast_images,
+    tactile_f6_input=None, tactile_deform_input=None, state_fast=None,
+):
+    """
+    Run a single forward pass (t=1.0, pure noise) and compare flare predictions
+    against ViT-encoded future frame representations.
+
+    Returns
+    -------
+    dict with:
+      "mean_cos_sim": float – average cosine similarity across all K flare tokens
+      "per_step_cos_sim": list[float] – average cosine similarity per future step
+                          (averaged over tokens_per_frame within each step)
+    or None if flare is disabled or future frames are unavailable.
+    """
+    if model.n_flare_tokens == 0:
+        return None
+
+    n_tpf = model.n_flare_tokens_per_frame
+    n_steps = model.n_flare_steps
+    K = model.n_flare_tokens
+    flare_layer_idx = getattr(args, "flare_layer_index", -1)
+    frame_stride = args.flare_frame_stride
+    device = f"cuda:{args.cuda}"
+    img_size = tuple(args.image_size) if args.image_size else None
+
+    # ── Load future frames ──────────────────────────────────────────────
+    slow_path = sample["input_image_slow"][0]
+    future_pil = []
+    for k in range(n_steps):
+        fimg = _load_flare_frame(slow_path, k, frame_stride, data_dir, img_size)
+        if fimg is None:
+            return None  # can't evaluate if future frames are out of range
+        future_pil.append(fimg)
+
+    with torch.inference_mode():
+        # ── Encode future frames → ViT targets ─────────────────────────
+        flare_inp = processor.image_processor(future_pil, return_tensors="pt")
+        f_pv = flare_inp.pixel_values.to(device, dtype=torch.bfloat16)
+        f_thw = flare_inp.image_grid_thw.to(device)
+
+        vit_out = model.visual(f_pv, grid_thw=f_thw)
+        features = vit_out[0] if isinstance(vit_out, (tuple, list)) else vit_out
+
+        merge = getattr(model.visual, "spatial_merge_size", 2)
+        frame_feats = []
+        offset = 0
+        for g in f_thw:
+            n_tok = int(g[0] * (g[1] // merge) * (g[2] // merge))
+            frame_tokens = features[offset: offset + n_tok]  # [n_tok, H]
+            pooled = F.adaptive_avg_pool1d(
+                frame_tokens.unsqueeze(0).permute(0, 2, 1),  # [1, H, n_tok]
+                n_tpf,
+            ).permute(0, 2, 1).squeeze(0)  # [n_tpf, H]
+            frame_feats.append(pooled)
+            offset += n_tok
+        flare_targets = torch.stack(frame_feats).view(1, K, -1)  # [1, K, H]
+
+        # ── Build inputs for a single forward pass ──────────────────────
+        # Reuse the same preprocessing as model_predict
+        if img_size:
+            slow_images = [img.resize(img_size, Image.LANCZOS) for img in slow_images]
+            fast_images = [img.resize(img_size, Image.LANCZOS) for img in fast_images]
+
+        n_slow = len(slow_images)
+        all_pil = slow_images + fast_images
+        content = []
+        for _ in slow_images:
+            content.append({"type": "image"})
+        content.append({"type": "text", "text": sample.get("input_prompt", "")})
+        for _ in fast_images:
+            content.append({"type": "image"})
+        messages = [{"role": "user", "content": content}]
+        text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        inp = processor(text=text, images=all_pil if all_pil else None,
+                        return_tensors="pt", padding=False)
+
+        input_ids = inp.input_ids.to(device)
+        attention_mask = inp.attention_mask.to(device)
+        pixel_values = (inp.pixel_values.to(device, dtype=torch.bfloat16)
+                        if getattr(inp, "pixel_values", None) is not None else None)
+        image_grid_thw = (inp.image_grid_thw.to(device)
+                          if getattr(inp, "image_grid_thw", None) is not None else None)
+
+        inputs_embeds = model.prepare_inputs_embeds(
+            input_ids=input_ids, pixel_values=pixel_values,
+            image_grid_thw=image_grid_thw)
+
+        # Split slow / fast
+        fast_embeds = inputs_embeds[:, :0]
+        if image_grid_thw is not None and fast_images:
+            mg = getattr(model.visual, "spatial_merge_size",
+                         getattr(processor.image_processor, "merge_size", 2))
+            fast_grid = image_grid_thw[n_slow:]
+            n_fast_tokens = sum(int(g[0] * (g[1] // mg) * (g[2] // mg)) for g in fast_grid)
+            slow_embeds = inputs_embeds[:, :-n_fast_tokens]
+            fast_embeds = inputs_embeds[:, -n_fast_tokens:]
+        else:
+            slow_embeds = inputs_embeds
+
+        L_slow = slow_embeds.shape[1]
+
+        # M-RoPE
+        position_ids, _ = model.get_rope_index(
+            input_ids=input_ids, image_grid_thw=image_grid_thw,
+            attention_mask=attention_mask)
+        position_ids = position_ids[:, :, :L_slow]
+
+        # Append flare queries
+        flare_q = model.flare_queries.to(device=slow_embeds.device, dtype=slow_embeds.dtype)
+        slow_embeds_ext = torch.cat([slow_embeds, flare_q.expand(1, -1, -1)], dim=1)
+        position_ids = extend_position_ids_for_flare(position_ids, K)
+        L_latent = slow_embeds_ext.shape[1]  # L_slow + K
+
+        # State
+        state_embeds = torch.empty((1, 0, slow_embeds.shape[2]),
+                                    device=device, dtype=slow_embeds.dtype)
+        if args.use_robot_state and state_fast is not None:
+            ns = _normalize(np.array(state_fast, dtype=np.float32),
+                            statistic["state_mask"], statistic["state_min"], statistic["state_max"])
+            sv = torch.tensor(ns, dtype=torch.bfloat16).unsqueeze(0).to(device)
+            state_embeds = model.state_embedder(sv).unsqueeze(1)
+        n_state = state_embeds.shape[1]
+
+        # Dummy action tokens at t=1.0 (first denoising step)
+        noise = torch.randn(1, args.action_chunk, args.action_dim,
+                            dtype=torch.bfloat16, device=device)
+        noisy_actions = model.x_embedder(noise)
+        t_one = torch.tensor([1.0], dtype=torch.bfloat16, device=device)
+        timesteps = model.t_embedder(t_one).unsqueeze(1)
+
+        # Tactile embeddings
+        tac_parts = []
+        if args.use_tactile_vec and tactile_f6_input is not None:
+            tacf6 = np.array(tactile_f6_input, dtype=np.float32).reshape(-1)
+            norm_tacf6 = _normalize(tacf6, statistic["tacf6_mask"],
+                                    statistic["tacf6_min"], statistic["tacf6_max"])
+            tf6 = torch.tensor(norm_tacf6.reshape(-1, 6), dtype=torch.bfloat16).unsqueeze(0).to(device)
+            tac_parts.append(model.tacf6_embedder(tf6))
+        if args.use_tactile_deform and tactile_deform_input is not None:
+            if isinstance(tactile_deform_input, (list, tuple)):
+                arr = np.stack([
+                    (np.array(t, dtype=np.float32) / 255.0 if t.dtype == np.uint8
+                     else np.array(t, dtype=np.float32))
+                    for t in tactile_deform_input])
+            else:
+                arr = np.array(tactile_deform_input, dtype=np.float32)
+                if arr.max() > 1.0:
+                    arr = arr / 255.0
+            deform_t = torch.tensor(arr).to(device, dtype=torch.bfloat16)
+            if deform_t.ndim == 3:
+                deform_t = deform_t.unsqueeze(0).unsqueeze(2)
+            elif deform_t.ndim == 4:
+                deform_t = deform_t.unsqueeze(0)
+            Bs, nf, C, H, W = deform_t.shape
+            feats = model.deform_encoder(deform_t.view(-1, C, H, W))
+            feats = feats.view(Bs, nf, -1)
+            tac_parts.append(model.deform_proj(feats))
+
+        tactile_embeds = (torch.cat(tac_parts, dim=1) if tac_parts
+                          else torch.empty((1, 0, slow_embeds.shape[2]),
+                                           device=device, dtype=slow_embeds.dtype))
+        has_tactile = tactile_embeds.shape[1] > 0
+
+        # ── Build full sequence & forward ───────────────────────────────
+        n_fast = fast_embeds.shape[1]
+        n_action = n_fast + n_state + 1 + args.action_chunk
+
+        if has_tactile:
+            noisy_actions_tac = model.x_embedder(noise)
+            timesteps_tac = model.t_embedder(t_one).unsqueeze(1)
+            full_embeds = torch.cat([
+                slow_embeds_ext,
+                fast_embeds, state_embeds, timesteps, noisy_actions,
+                tactile_embeds, timesteps_tac, noisy_actions_tac,
+            ], dim=1)
+        else:
+            full_embeds = torch.cat([
+                slow_embeds_ext,
+                fast_embeds, state_embeds, timesteps, noisy_actions,
+            ], dim=1)
+
+        L_total = full_embeds.shape[1]
+        dev = full_embeds.device
+        latent_indexes  = torch.arange(0, L_latent, device=dev)
+        action_indexes  = torch.arange(L_latent, L_latent + n_action, device=dev)
+        if has_tactile:
+            tactile_indexes = torch.arange(L_latent + n_action, L_total, device=dev)
+        else:
+            tactile_indexes = torch.arange(0, 0, device=dev)
+
+        need_all_hs = (flare_layer_idx != -1)
+        outputs = model.model(
+            inputs_embeds=full_embeds,
+            position_ids=position_ids,
+            attention_mask=attention_mask,
+            use_cache=False,
+            output_hidden_states=need_all_hs,
+            latent_indexes=latent_indexes,
+            action_indexes=action_indexes,
+            tactile_indexes=tactile_indexes,
+        )
+
+        # ── Extract flare hidden states ─────────────────────────────────
+        if flare_layer_idx == -1:
+            flare_source = outputs.last_hidden_state
+        else:
+            all_hs = outputs.hidden_states
+            n_layers = len(all_hs) - 1
+            li = (n_layers + flare_layer_idx) if flare_layer_idx < 0 else flare_layer_idx
+            li = max(0, min(li, n_layers - 1))
+            flare_source = all_hs[li + 1]
+
+        flare_hidden = flare_source[:, L_slow: L_slow + K, :]  # [1, K, H]
+        flare_pred = model.flare_proj(flare_hidden)             # [1, K, H]
+
+        # ── Cosine similarity ───────────────────────────────────────────
+        pred_norm = F.normalize(flare_pred, dim=-1)
+        tgt_norm  = F.normalize(flare_targets, dim=-1)
+        cos_sim = (pred_norm * tgt_norm).sum(dim=-1)  # [1, K]
+        cos_sim = cos_sim.squeeze(0)                   # [K]
+
+        # Per-step: average over tokens_per_frame within each step
+        per_step = cos_sim.view(n_steps, n_tpf).mean(dim=1)  # [n_steps]
+
+        return {
+            "mean_cos_sim": cos_sim.mean().item(),
+            "per_step_cos_sim": per_step.cpu().tolist(),
+        }
+
+
 def main(args):
     print(f"Loading VLA model from checkpoint: {args.checkpoint_path}")
     model, processor, statistic, action_tokenizer = model_load(args)
     print("Model loaded successfully!")
 
-    # Warm-up
+    # Warm-up (use 2 fast images for bimanual / dual-arm tasks)
     print("Warming up model...")
     dummy_slow  = [Image.new("RGB", (224, 224), color="black")]
-    dummy_fast  = [Image.new("RGB", (224, 224), color="black")]
+    n_fast_cams = 2 if args.action_dim > 31 else 1
+    dummy_fast  = [Image.new("RGB", (224, 224), color="black") for _ in range(n_fast_cams)]
     dummy_state = np.zeros(args.action_dim, dtype=np.float32) if args.use_robot_state else None
     dummy_f6    = np.zeros((5, 6), dtype=np.float32) if args.use_tactile_vec else None
     dummy_deform = np.zeros((5, 240, 240), dtype=np.float32) if args.use_tactile_deform else None
@@ -409,6 +675,11 @@ def main(args):
 
         error_sum, n_valid = 0, 0
         all_pred, all_gt = [], []
+
+        # Flare evaluation accumulators
+        use_flare_eval = (model.n_flare_tokens > 0)
+        flare_sim_sum, flare_n_valid = 0.0, 0
+        all_per_step_sims = []  # list of per-step similarity arrays
 
         for step, sample in enumerate(tqdm(train_data, desc="Testing")):
             try:
@@ -435,10 +706,35 @@ def main(args):
                                gt_action[:min(len(pred), len(gt_action))]) ** 2)
                 error_sum += mse
                 n_valid += 1
+
+                # Flare similarity evaluation
+                if use_flare_eval:
+                    # Re-open images (model_predict may have resized in-place)
+                    slow_imgs_flare = [Image.open(_abs(p)).convert("RGB")
+                                       for p in sample["input_image_slow"]]
+                    fast_imgs_flare = [Image.open(_abs(p)).convert("RGB")
+                                       for p in sample["input_image_fast"]]
+                    flare_result = compute_flare_similarity(
+                        args, model, processor, statistic,
+                        sample, data_dir,
+                        slow_imgs_flare, fast_imgs_flare,
+                        tac_f6, tac_deform, state_fast,
+                    )
+                    if flare_result is not None:
+                        flare_sim_sum += flare_result["mean_cos_sim"]
+                        all_per_step_sims.append(flare_result["per_step_cos_sim"])
+                        flare_n_valid += 1
+
             except FileNotFoundError as e:
                 print(f"\n[Warning] Step {step}: {e}")
 
         print(f"\n=== Test: {n_valid}/{len(train_data)} valid, MSE={error_sum/max(n_valid,1):.6f} ===")
+        if use_flare_eval and flare_n_valid > 0:
+            avg_sim = flare_sim_sum / flare_n_valid
+            per_step_avg = np.mean(all_per_step_sims, axis=0)
+            print(f"=== Flare: {flare_n_valid} valid, mean cos_sim={avg_sim:.4f} ===")
+            for s_i, s_val in enumerate(per_step_avg):
+                print(f"    step {s_i} (t+{(s_i+1)*args.flare_frame_stride}): cos_sim={s_val:.4f}")
 
         if all_pred and args.save_dir:
             os.makedirs(args.save_dir, exist_ok=True)
@@ -453,6 +749,35 @@ def main(args):
                 plt.savefig(os.path.join(args.save_dir, f"action_dim_{idx}.png")); plt.close()
             np.savez(os.path.join(args.save_dir, "action_trajectory.npz"),
                      pred=all_pred, gt=all_gt)
+
+            # Save flare similarity results
+            if use_flare_eval and all_per_step_sims:
+                sims_arr = np.array(all_per_step_sims)  # [n_samples, n_steps]
+                np.savez(os.path.join(args.save_dir, "flare_similarity.npz"),
+                         per_sample_per_step=sims_arr,
+                         per_step_mean=np.mean(sims_arr, axis=0),
+                         overall_mean=np.mean(sims_arr))
+
+                # Per-step similarity over samples (trajectory)
+                plt.figure(figsize=(10, 4))
+                for s_i in range(sims_arr.shape[1]):
+                    plt.plot(sims_arr[:, s_i], label=f"step {s_i} (t+{(s_i+1)*args.flare_frame_stride})",
+                             alpha=0.7)
+                plt.xlabel("Sample"); plt.ylabel("Cosine Similarity")
+                plt.title("Flare Prediction Similarity (per step over samples)")
+                plt.legend(fontsize=7); plt.grid(True, linestyle=":", alpha=0.7); plt.tight_layout()
+                plt.savefig(os.path.join(args.save_dir, "flare_sim_per_step.png")); plt.close()
+
+                # Bar chart: average similarity per future step
+                plt.figure(figsize=(8, 4))
+                step_means = np.mean(sims_arr, axis=0)
+                step_labels = [f"t+{(i+1)*args.flare_frame_stride}" for i in range(len(step_means))]
+                plt.bar(step_labels, step_means, color="steelblue", alpha=0.8)
+                plt.xlabel("Future Step"); plt.ylabel("Mean Cosine Similarity")
+                plt.title("Flare: Mean Similarity per Future Step")
+                plt.ylim(0, 1); plt.grid(True, axis="y", linestyle=":", alpha=0.7); plt.tight_layout()
+                plt.savefig(os.path.join(args.save_dir, "flare_sim_bar.png")); plt.close()
+
             print(f"Saved to {args.save_dir}")
 
     input("\nPress Enter to start ZMQ server...")
@@ -501,8 +826,10 @@ if __name__ == "__main__":
     parser.add_argument("--use_tactile_deform", type=int, default=1)
     parser.add_argument("--use_tactile_vec", type=int, default=0)
     parser.add_argument("--tactile_intermediate_size", type=int, default=0)
-    parser.add_argument("--n_flare_tokens", type=int, default=0,
-                        help="0 = auto-detect from training_args.json")
+    parser.add_argument("--n_flare_tokens_per_frame", type=int, default=0, help="0 = auto-detect from training_args.json")
+    parser.add_argument("--n_flare_steps", type=int, default=0, help="0 = auto-detect from training_args.json")
+    parser.add_argument("--flare_frame_stride", type=int, default=8, help="Temporal stride for flare evaluation future frames")
+    parser.add_argument("--flare_layer_index", type=int, default=-1, help="Layer to extract flare hidden states from (-1=last)")
     parser.add_argument("--save_dir", type=str, default="./test_output_flare")
     parser.add_argument("--num_test_samples", type=int, default=300)
     parser.add_argument("--cuda", type=str, default="0")

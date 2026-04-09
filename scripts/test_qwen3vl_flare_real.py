@@ -1,6 +1,6 @@
 """
 Real-world ZeroMQ inference server for the Qwen3-VL MoT VLA model
-with flare visual prediction tokens.
+with flare visual prediction tokens (multi-token per frame).
 
 Self-contained — does not import from the offline test script.
 """
@@ -68,7 +68,8 @@ def _build_qwen3vl_from_config(config_path, args):
 
     tac_isize = getattr(args, "tactile_intermediate_size", 0)
     tac_isize = tac_isize if tac_isize > 0 else None
-    n_flare = getattr(args, "n_flare_tokens", 0)
+    n_flare_tpf = getattr(args, "n_flare_tokens_per_frame", 0)
+    n_flare_steps = getattr(args, "n_flare_steps", 0)
 
     model = Qwen3VLVLAModel(
         config             = text_config,
@@ -78,7 +79,8 @@ def _build_qwen3vl_from_config(config_path, args):
         use_robot_state    = bool(args.use_robot_state),
         image_token_id     = image_token_id,
         tactile_intermediate_size = tac_isize,
-        n_flare_tokens    = n_flare,
+        n_flare_tokens_per_frame = n_flare_tpf,
+        n_flare_steps            = n_flare_steps,
     )
 
     vis_cfg_dict = full_cfg.get("vision_config", {})
@@ -143,7 +145,8 @@ def model_load(args):
         with open(ta_path) as f:
             ta = json.load(f)
         for key, default in [("tactile_intermediate_size", 0),
-                             ("n_flare_tokens", 0)]:
+                             ("n_flare_tokens_per_frame", 0),
+                             ("n_flare_steps", 0)]:
             saved = ta.get(key, default)
             cli_val = getattr(args, key, default)
             if saved and cli_val == default:
@@ -151,7 +154,8 @@ def model_load(args):
                 print(f"Auto-detected {key}={saved} from training_args.json")
 
     tac_isize = args.tactile_intermediate_size if args.tactile_intermediate_size > 0 else None
-    n_flare = getattr(args, "n_flare_tokens", 0)
+    n_flare_tpf = getattr(args, "n_flare_tokens_per_frame", 0)
+    n_flare_steps = getattr(args, "n_flare_steps", 0)
 
     proc_dir = os.path.join(ckpt, "processor")
     if not os.path.isdir(proc_dir):
@@ -170,7 +174,8 @@ def model_load(args):
             use_robot_state=bool(args.use_robot_state),
             torch_dtype=torch.bfloat16,
             tactile_intermediate_size=tac_isize,
-            n_flare_tokens=n_flare,
+            n_flare_tokens_per_frame=n_flare_tpf,
+            n_flare_steps=n_flare_steps,
         )
     elif os.path.exists(ckpt_config):
         model = _build_qwen3vl_from_config(ckpt_config, args)
@@ -189,7 +194,8 @@ def model_load(args):
             use_robot_state=bool(args.use_robot_state),
             torch_dtype=torch.bfloat16,
             tactile_intermediate_size=tac_isize,
-            n_flare_tokens=n_flare,
+            n_flare_tokens_per_frame=n_flare_tpf,
+            n_flare_steps=n_flare_steps,
         )
 
     ckpt_file = os.path.join(ckpt, "model.pt")
@@ -200,8 +206,9 @@ def model_load(args):
         print(f"  missing (first 10): {missing[:10]}")
     model = model.to(torch.bfloat16)
 
-    if n_flare > 0:
-        print(f"Flare prediction: {n_flare} tokens enabled")
+    n_flare_total = n_flare_tpf * n_flare_steps
+    if n_flare_total > 0:
+        print(f"Flare prediction: {n_flare_steps} steps × {n_flare_tpf} tok/frame = {n_flare_total} total tokens")
 
     stats_path = args.stats_path or ""
     if not stats_path:
@@ -370,10 +377,11 @@ def main(args):
     model, processor, statistic, action_tokenizer = model_load(args)
     print("Model loaded successfully!")
 
-    # Warm-up
+    # Warm-up (use 2 fast images for bimanual / dual-arm tasks)
     print("Warming up model...")
     dummy_slow  = [Image.new("RGB", (224, 224), color="black")]
-    dummy_fast  = [Image.new("RGB", (224, 224), color="black")]
+    n_fast_cams = 2 if args.action_dim > 31 else 1
+    dummy_fast  = [Image.new("RGB", (224, 224), color="black") for _ in range(n_fast_cams)]
     dummy_state = np.zeros(args.action_dim, dtype=np.float32) if args.use_robot_state else None
     dummy_f6    = np.zeros((5, 6), dtype=np.float32) if args.use_tactile_vec else None
     dummy_deform = np.zeros((5, 240, 240), dtype=np.float32) if args.use_tactile_deform else None
@@ -430,7 +438,10 @@ if __name__ == "__main__":
     parser.add_argument("--use_tactile_deform", type=int, default=1)
     parser.add_argument("--use_tactile_vec", type=int, default=0)
     parser.add_argument("--tactile_intermediate_size", type=int, default=0)
-    parser.add_argument("--n_flare_tokens", type=int, default=0, help="0 = auto-detect from training_args.json")
+    parser.add_argument("--n_flare_tokens_per_frame", type=int, default=0,
+                        help="0 = auto-detect from training_args.json")
+    parser.add_argument("--n_flare_steps", type=int, default=0,
+                        help="0 = auto-detect from training_args.json")
     parser.add_argument("--cuda", type=str, default="0")
     parser.add_argument("--port", type=int, default=5555)
     parser.add_argument("--image_size", type=int, nargs=2, default=None, metavar=("W", "H"))

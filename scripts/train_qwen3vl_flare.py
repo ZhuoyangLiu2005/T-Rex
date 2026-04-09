@@ -2,10 +2,15 @@
 Qwen3-VL MoT training with flare visual prediction for the latent expert.
 
 Extends train_qwen3vl.py with:
-  --use_flare 1  : enable flare query tokens + cosine similarity loss
-  --n_flare_tokens K        : number of flare prediction tokens (default=8)
-  --flare_loss_weight w     : weight for flare prediction loss (default=0.5)
-  --flare_frame_stride s    : temporal stride for flare frame targets (default=frame_stride)
+  --use_flare 1                   : enable flare query tokens + cosine similarity loss
+  --n_flare_tokens_per_frame T    : number of tokens per future frame (default=4)
+  --n_flare_steps S               : number of future steps to predict (default=8)
+  --flare_loss_weight w           : weight for flare prediction loss (default=0.5)
+  --flare_frame_stride s          : temporal stride for flare frame targets (default=frame_stride)
+  --flare_layer_index L           : which layer to extract flare hidden states from
+                                    (default=-1, i.e. last layer; use e.g. -7 for ~3/4 depth)
+
+  Total flare tokens = n_flare_tokens_per_frame * n_flare_steps.
 
 When --use_flare 0, this script behaves identically to train_qwen3vl.py.
 """
@@ -23,6 +28,7 @@ import logging
 import argparse
 import shutil
 import math
+import re
 import wandb
 import PIL.Image
 import numpy as np
@@ -55,10 +61,6 @@ def get_cosine_schedule_with_warmup(optimizer, num_warmup_steps, num_training_st
 
 
 class SftDataset(Dataset):
-    """
-    Extends the standard SftDataset with flare frame loading for
-    the latent expert's visual prediction objective.
-    """
     def __init__(self, config, processor, accelerator):
         self.config = config
         self.processor = processor
@@ -140,16 +142,6 @@ class SftDataset(Dataset):
         return (d.sample((n,)) * 0.999 + 0.001).to(torch.bfloat16)
 
     def _load_flare_frame(self, sample, k, K, frame_stride):
-        """
-        Load the k-th flare frame for a sample.
-
-        Strategy: use 'output_image' field if it points to a flare frame,
-        otherwise derive from the slow image path by offsetting the frame index.
-        For the in-lab data, the slow image path pattern is:
-          .../taskname/episodename/imageXX_viewname.png
-        We increment XX by (k+1)*frame_stride to get flare frames.
-        """
-        import re
         slow_path = sample.get("input_image_slow", [""])[0]
         if not slow_path:
             return None
@@ -244,16 +236,16 @@ class SftDataset(Dataset):
                 all_pixel_values.append(inp.pixel_values)
                 all_grid_thw.append(inp.image_grid_thw)
 
-        K = cfg.n_flare_tokens if cfg.use_flare else 0
+        n_flare_steps = cfg.n_flare_steps if cfg.use_flare else 0
         flare_stride = cfg.frame_stride
         flare_pixel_values = None
         flare_grid_thw = None
 
-        if K > 0:
+        if n_flare_steps > 0:
             flare_pil_imgs = []
             for x in batch:
-                for k in range(K):
-                    fimg = self._load_flare_frame(x, k, K, flare_stride)
+                for k in range(n_flare_steps):
+                    fimg = self._load_flare_frame(x, k, n_flare_steps, flare_stride)
                     if fimg is None:
                         slow_paths = x.get("input_image_slow", [])
                         fimg = self._open(slow_paths[0]) if slow_paths else PIL.Image.new("RGB", self.image_size or (384, 288))
@@ -295,8 +287,8 @@ class SftDataset(Dataset):
             "tactile_f6s": norm_tacf6,
             "tactile_deforms": deforms_tensor,
             "state_raw": state_raw,
-            "flare_pixel_values": flare_pixel_values,  # [B*K patches, C] or None
-            "flare_grid_thw": flare_grid_thw,          # [B*K, 3] or None
+            "flare_pixel_values": flare_pixel_values,  # [B*S patches, C] or None (S = n_flare_steps)
+            "flare_grid_thw": flare_grid_thw,          # [B*S, 3] or None
         }
 
 
@@ -331,7 +323,9 @@ def save_checkpoint(model, processor, accelerator, args, epoch, global_step, sta
                 "tactile_intermediate_size": getattr(args, "tactile_intermediate_size", 0),
                 "training_stage": args.training_stage,
                 "use_flare": args.use_flare,
-                "n_flare_tokens": args.n_flare_tokens,
+                "n_flare_tokens_per_frame": args.n_flare_tokens_per_frame,
+                "n_flare_steps": args.n_flare_steps,
+                "flare_layer_index": args.flare_layer_index,
             }, f, indent=2)
 
         with open(os.path.join(save_dir, "stats_data.json"), "w") as f:
@@ -402,13 +396,18 @@ def train(args):
         use_robot_state=bool(args.use_robot_state),
         torch_dtype=torch.bfloat16,
         tactile_intermediate_size=tac_isize,
-        n_flare_tokens=args.n_flare_tokens if args.use_flare else 0,
+        n_flare_tokens_per_frame=args.n_flare_tokens_per_frame if args.use_flare else 0,
+        n_flare_steps=args.n_flare_steps if args.use_flare else 0,
+        flare_layer_index=args.flare_layer_index,
     )
     if args.use_tactile_deform:
         model.load_deform_encoder_weights(args.deform_encoder_ckpt)
     model.initialize_vla_weights()
     if args.use_flare:
-        accelerator.print(f"Flare alignment: {args.n_flare_tokens} tokens (in model)")
+        accelerator.print(
+            f"Flare alignment: {args.n_flare_steps} steps × {args.n_flare_tokens_per_frame} tok/frame "
+            f"= {model.n_flare_tokens} total tokens, layer_index={args.flare_layer_index}"
+        )
 
     is_stage1 = (args.training_stage == 1)
     has_any_tactile = bool(args.use_tactile_vec or args.use_tactile_deform)
@@ -424,10 +423,24 @@ def train(args):
         accelerator.print("Action expert initialized from latent expert.")
 
     if args.resume_checkpoint:
-        resume_sd = torch.load(args.resume_checkpoint, map_location="cpu")
+        ckpt_path = args.resume_checkpoint
+        if os.path.isdir(ckpt_path):
+            ckpt_path = os.path.join(ckpt_path, "model.pt")
+        resume_sd = torch.load(ckpt_path, map_location="cpu")
         if "state_dict" in resume_sd:
             resume_sd = resume_sd["state_dict"]
-        missing, unexpected = model.load_state_dict(resume_sd, strict=False)
+        # Filter out keys with shape mismatch (e.g. tactile MLP from pretrain)
+        model_sd = model.state_dict()
+        filtered_sd = {}
+        skipped = []
+        for k, v in resume_sd.items():
+            if k in model_sd and model_sd[k].shape != v.shape:
+                skipped.append(k)
+            else:
+                filtered_sd[k] = v
+        if skipped:
+            accelerator.print(f"Skipped {len(skipped)} keys with shape mismatch (e.g. {skipped[0]})")
+        missing, unexpected = model.load_state_dict(filtered_sd, strict=False)
         accelerator.print(f"Resumed: missing={len(missing)}, unexpected={len(unexpected)}")
 
     if not freeze_tactile:
@@ -486,8 +499,11 @@ def train(args):
 
     metric = TrainingMetrics(device=torch.cuda.current_device())
     global_step = 0
-    K = args.n_flare_tokens
+    T_per_frame = args.n_flare_tokens_per_frame
+    S_steps = args.n_flare_steps
+    K = T_per_frame * S_steps  # total flare tokens
     use_flare = bool(args.use_flare and K > 0)
+    flare_layer_idx = args.flare_layer_index
     model.train()
 
     for epoch in range(args.n_epochs):
@@ -574,6 +590,7 @@ def train(args):
                     position_ids=pos_ids,
                     attention_mask=batch["attention_mask"],
                     use_cache=False,
+                    output_hidden_states=use_flare,
                     latent_indexes=latent_indexes,
                     action_indexes=action_indexes,
                     tactile_indexes=tactile_indexes,
@@ -634,6 +651,7 @@ def train(args):
                     position_ids=pos_ids,
                     attention_mask=batch["attention_mask"],
                     use_cache=False,
+                    output_hidden_states=use_flare,
                     latent_indexes=latent_indexes,
                     action_indexes=action_indexes,
                     tactile_indexes=tactile_indexes,
@@ -654,7 +672,23 @@ def train(args):
 
             loss_flare = 0.0
             if use_flare and batch["flare_pixel_values"] is not None:
-                flare_hidden = hidden[:, L_slow: L_slow + K, :]
+                # Extract flare hidden states from intermediate layer or last layer
+                if flare_layer_idx == -1:
+                    flare_source = hidden  # last layer (already normed)
+                else:
+                    # outputs.hidden_states is a tuple: (embed, layer0, layer1, ..., layerN)
+                    # flare_layer_idx can be negative (e.g. -7 for ~3/4 depth)
+                    all_hs = outputs.hidden_states
+                    # Skip index 0 (embedding), so layer indices are 1..N
+                    n_layers = len(all_hs) - 1  # exclude embedding
+                    if flare_layer_idx < 0:
+                        layer_i = n_layers + flare_layer_idx  # e.g. 28 + (-7) = 21
+                    else:
+                        layer_i = flare_layer_idx
+                    layer_i = max(0, min(layer_i, n_layers - 1))
+                    flare_source = all_hs[layer_i + 1]  # +1 to skip embedding
+
+                flare_hidden = flare_source[:, L_slow: L_slow + K, :]  # [B, K, H]
                 flare_pred = raw_model.flare_proj(flare_hidden)  # [B, K, H]
 
                 f_pv = batch["flare_pixel_values"].to(device=flare_pred.device, dtype=flare_pred.dtype)
@@ -664,14 +698,22 @@ def train(args):
                     vit_out = raw_model.visual(f_pv, grid_thw=f_thw)
                     features = vit_out[0] if isinstance(vit_out, (tuple, list)) else vit_out
 
-                    # Global average pool per frame
+                    # Adaptive pool each frame to T_per_frame tokens
                     merge = getattr(raw_model.visual, "spatial_merge_size", 2)
                     frame_feats = []
                     offset = 0
                     for g in f_thw:
                         n_tok = int(g[0] * (g[1] // merge) * (g[2] // merge))
-                        frame_feats.append(features[offset: offset + n_tok].mean(dim=0))
+                        frame_tokens = features[offset: offset + n_tok]  # [n_tok, H]
+                        # Adaptive average pool: [n_tok, H] → [T_per_frame, H]
+                        pooled = F.adaptive_avg_pool1d(
+                            frame_tokens.unsqueeze(0).permute(0, 2, 1),  # [1, H, n_tok]
+                            T_per_frame,
+                        ).permute(0, 2, 1).squeeze(0)  # [T_per_frame, H]
+                        frame_feats.append(pooled)
                         offset += n_tok
+                    # frame_feats: list of B*S_steps tensors, each [T_per_frame, H]
+                    # Reshape to [B, S_steps * T_per_frame, H] = [B, K, H]
                     flare_targets = torch.stack(frame_feats).view(B, K, -1)
 
                 # Cosine similarity loss
@@ -758,9 +800,11 @@ if __name__ == "__main__":
 
     # Flare
     parser.add_argument("--use_flare", type=int, default=1, help="Enable flare visual prediction for latent expert.")
-    parser.add_argument("--n_flare_tokens", type=int, default=8, help="Number of flare prediction tokens (typically = action_chunk).")
+    parser.add_argument("--n_flare_tokens_per_frame", type=int, default=4, help="Number of tokens per future frame.")
+    parser.add_argument("--n_flare_steps", type=int, default=8, help="Number of future steps to predict.")
     parser.add_argument("--flare_loss_weight", type=float, default=0.5, help="Weight for flare prediction cosine loss.")
     parser.add_argument("--flare_frame_stride", type=int, default=2, help="Temporal stride for flare frame targets.")
+    parser.add_argument("--flare_layer_index", type=int, default=-1, help="Layer to extract flare hidden states from (-1=last, e.g. -7 for ~3/4 depth).")
     parser.add_argument("--frame_stride", type=int, default=2)
 
     args = parser.parse_args()

@@ -18,8 +18,8 @@ ulimit -c 0
 # ─── Multi-node config (override via env vars) ───
 MASTER_ADDR=${MASTER_ADDR:-10.244.27.42}
 MASTER_PORT=${MASTER_PORT:-29500}
-NUM_MACHINES=${NUM_MACHINES:-6}
-MACHINE_RANK=${MACHINE_RANK:-5}
+NUM_MACHINES=${NUM_MACHINES:-12}
+MACHINE_RANK=${MACHINE_RANK:-6}
 NUM_PROCESSES=$((NUM_MACHINES * 8))
 
 BASE_RUN_NAME="qwen3vl_2b_egodex_pretrain_bimanual_62d_stage1_handabs_flare_0407"
@@ -71,6 +71,9 @@ accelerate launch \
     --use_robot_state 1 \
     --image_size 384 288 \
     --num_workers 6 \
+    --val_ratio 0.02 \
+    --val_freq 1000 \
+    --max_val_batches 50 \
     --use_flare 1 \
     --n_flare_tokens_per_frame 4 \
     --n_flare_steps 8 \

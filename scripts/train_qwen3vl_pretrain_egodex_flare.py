@@ -117,7 +117,10 @@ class EgoDexPretrainFlareDataset(Dataset):
         self.n_flare_steps = getattr(config, "n_flare_steps", 0) if self.use_flare else 0
         self.flare_frame_stride = getattr(config, "flare_frame_stride", 4)
 
-        # Build flat index
+        # Build flat index, optionally splitting train/val by episode
+        self.val_ratio = getattr(config, "val_ratio", 0.0)
+        self.is_val = False  # set by create_val_split()
+
         self._index = []
         for ep_idx, ep_info in enumerate(self.episodes):
             num_frames = ep_info["num_frames"]
@@ -128,6 +131,34 @@ class EgoDexPretrainFlareDataset(Dataset):
         accelerator.print(f"EgoDex pretrain (flare): {len(self.episodes)} episodes, "
                           f"{self._total_transitions} transitions, "
                           f"flare={self.n_flare_steps} steps x stride {self.flare_frame_stride}")
+
+    def create_val_split(self, val_ratio=0.02, seed=42):
+        """
+        Split episodes into train/val. Returns a new dataset object for val.
+        Modifies self in-place to keep only train episodes.
+        """
+        rng = np.random.RandomState(seed)
+        n_ep = len(self.episodes)
+        n_val = max(1, int(n_ep * val_ratio))
+        perm = rng.permutation(n_ep)
+        val_ep_indices = set(perm[:n_val].tolist())
+        train_ep_indices = set(perm[n_val:].tolist())
+
+        # Build val dataset (shallow copy with different index)
+        import copy
+        val_ds = copy.copy(self)
+        val_ds.is_val = True
+        val_ds._index = [(ep_idx, t) for ep_idx, t in self._index if ep_idx in val_ep_indices]
+        val_ds._total_transitions = len(val_ds._index)
+
+        # Trim self to train only
+        self._index = [(ep_idx, t) for ep_idx, t in self._index if ep_idx in train_ep_indices]
+        self._total_transitions = len(self._index)
+
+        self.accelerator.print(
+            f"Train/Val split: {len(train_ep_indices)} train eps ({self._total_transitions} frames), "
+            f"{len(val_ep_indices)} val eps ({val_ds._total_transitions} frames)")
+        return val_ds
 
     def __len__(self):
         return len(self._index)
@@ -438,6 +469,148 @@ class TrainingMetrics:
         return m
 
 
+@torch.no_grad()
+def run_validation(model, val_dataloader, accelerator, raw_model_fn,
+                   use_flare, K, T_per_frame, flare_layer_idx, args):
+    """Run validation and return averaged metrics."""
+    model.eval()
+    val_loss_sum = torch.tensor(0.0, device=torch.cuda.current_device())
+    val_act_sum = torch.tensor(0.0, device=torch.cuda.current_device())
+    val_flare_sum = torch.tensor(0.0, device=torch.cuda.current_device())
+    n_val = 0
+    max_val_batches = getattr(args, "max_val_batches", 50)
+
+    for i, batch in enumerate(val_dataloader):
+        if i >= max_val_batches:
+            break
+        raw_model = raw_model_fn()
+
+        inputs_embeds = raw_model.prepare_inputs_embeds(
+            input_ids=batch["input_ids"],
+            pixel_values=batch.get("pixel_values"),
+            image_grid_thw=batch.get("image_grid_thw"),
+        )
+
+        n_slow_imgs = batch["n_slow_images"]
+        grid_thw = batch.get("image_grid_thw")
+        B = inputs_embeds.shape[0]
+        if grid_thw is not None and grid_thw.shape[0] > n_slow_imgs:
+            merge = getattr(raw_model.visual, "spatial_merge_size", 2)
+            n_imgs_per_sample = grid_thw.shape[0] // B
+            fast_grid = grid_thw[n_slow_imgs: n_imgs_per_sample]
+            n_fast_tokens = sum(int(g[0] * (g[1] // merge) * (g[2] // merge)) for g in fast_grid)
+            slow_embeds = inputs_embeds[:, :-n_fast_tokens]
+            fast_embeds = inputs_embeds[:, -n_fast_tokens:]
+        else:
+            slow_embeds = inputs_embeds
+            fast_embeds = inputs_embeds[:, :0]
+
+        L_slow = slow_embeds.shape[1]
+        pos_ids, _ = raw_model.get_rope_index(
+            input_ids=batch["input_ids"],
+            image_grid_thw=batch.get("image_grid_thw"),
+            attention_mask=batch["attention_mask"],
+        )
+        pos_ids = pos_ids[:, :, :L_slow]
+
+        if use_flare:
+            flare_q = raw_model.flare_queries.expand(B, -1, -1).to(
+                device=slow_embeds.device, dtype=slow_embeds.dtype)
+            slow_embeds_ext = torch.cat([slow_embeds, flare_q], dim=1)
+            pos_ids = extend_position_ids_for_flare(pos_ids, K)
+            L_latent = slow_embeds_ext.shape[1]
+        else:
+            slow_embeds_ext = slow_embeds
+            L_latent = L_slow
+
+        if args.use_robot_state and batch["state_raw"] is not None:
+            state_vec = batch["state_raw"].to(slow_embeds.device, dtype=slow_embeds.dtype)
+            state_embeds = raw_model.state_embedder(state_vec).unsqueeze(1)
+        else:
+            state_embeds = torch.empty((B, 0, slow_embeds.shape[2]),
+                                        device=slow_embeds.device, dtype=slow_embeds.dtype)
+        n_state = state_embeds.shape[1]
+
+        noisy_actions = raw_model.x_embedder(batch["noisy_actions"].to(slow_embeds.dtype))
+        timesteps = raw_model.t_embedder(batch["timesteps"].to(slow_embeds.dtype)).unsqueeze(1)
+        chunk = args.action_chunk
+        target = batch["target"].to(slow_embeds.dtype)
+
+        full_embeds = torch.cat([
+            slow_embeds_ext, fast_embeds, state_embeds, timesteps, noisy_actions,
+        ], dim=1)
+        n_fast = fast_embeds.shape[1]
+        L_total = full_embeds.shape[1]
+
+        outputs = model.model(
+            inputs_embeds=full_embeds,
+            position_ids=pos_ids,
+            attention_mask=batch["attention_mask"],
+            use_cache=False,
+            output_hidden_states=use_flare and (flare_layer_idx != -1),
+            latent_indexes=torch.arange(0, L_latent, device=full_embeds.device),
+            action_indexes=torch.arange(L_latent, L_total, device=full_embeds.device),
+            tactile_indexes=torch.arange(0, 0, device=full_embeds.device),
+        )
+        hidden = outputs.last_hidden_state
+
+        act_pred_start = L_latent + n_fast + n_state + 1
+        v_act = raw_model.final_layer(hidden[:, act_pred_start: act_pred_start + chunk, :])
+        loss_act = nn.MSELoss()(v_act, target)
+
+        loss_flare = torch.tensor(0.0, device=loss_act.device)
+        if use_flare and batch["flare_pixel_values"] is not None:
+            if flare_layer_idx == -1:
+                flare_source = hidden
+            else:
+                all_hs = outputs.hidden_states
+                n_layers = len(all_hs) - 1
+                li = (n_layers + flare_layer_idx) if flare_layer_idx < 0 else flare_layer_idx
+                li = max(0, min(li, n_layers - 1))
+                flare_source = all_hs[li + 1]
+
+            flare_hidden = flare_source[:, L_slow: L_slow + K, :]
+            flare_pred = raw_model.flare_proj(flare_hidden)
+            f_pv = batch["flare_pixel_values"].to(device=flare_pred.device, dtype=flare_pred.dtype)
+            f_thw = batch["flare_grid_thw"].to(device=flare_pred.device)
+            vit_out = raw_model.visual(f_pv, grid_thw=f_thw)
+            features = vit_out[0] if isinstance(vit_out, (tuple, list)) else vit_out
+            merge = getattr(raw_model.visual, "spatial_merge_size", 2)
+            frame_feats = []
+            offset = 0
+            for g in f_thw:
+                n_tok = int(g[0] * (g[1] // merge) * (g[2] // merge))
+                pooled = F.adaptive_avg_pool1d(
+                    features[offset: offset + n_tok].unsqueeze(0).permute(0, 2, 1),
+                    T_per_frame).permute(0, 2, 1).squeeze(0)
+                frame_feats.append(pooled)
+                offset += n_tok
+            flare_targets = torch.stack(frame_feats).view(B, K, -1)
+            pred_norm = F.normalize(flare_pred, dim=-1)
+            tgt_norm = F.normalize(flare_targets, dim=-1)
+            loss_flare = (1.0 - (pred_norm * tgt_norm).sum(dim=-1)).mean()
+
+        loss = loss_act + args.flare_loss_weight * loss_flare
+        val_loss_sum += loss.item()
+        val_act_sum += loss_act.item()
+        val_flare_sum += loss_flare.item()
+        n_val += 1
+
+    # All-reduce across ranks
+    for t in [val_loss_sum, val_act_sum, val_flare_sum]:
+        if dist.is_initialized():
+            dist.all_reduce(t, op=dist.ReduceOp.SUM)
+    ws = dist.get_world_size() if dist.is_initialized() else 1
+    denom = ws * max(n_val, 1)
+
+    model.train()
+    return {
+        "val/total_loss": val_loss_sum.item() / denom,
+        "val/action_loss": val_act_sum.item() / denom,
+        "val/flare_loss": val_flare_sum.item() / denom,
+    }
+
+
 # ───────────────────────────────────────────────────────────────────
 #  Main training loop
 # ───────────────────────────────────────────────────────────────────
@@ -533,6 +706,20 @@ def train(args):
 
     dataset = EgoDexPretrainFlareDataset(args.data_root, args, processor, accelerator)
 
+    # Train/val split
+    val_dataloader = None
+    if args.val_ratio > 0:
+        val_dataset = dataset.create_val_split(val_ratio=args.val_ratio, seed=args.seed)
+        val_dataloader = DataLoader(
+            val_dataset,
+            batch_size=args.train_bsz_per_gpu,
+            shuffle=False,
+            drop_last=True,
+            collate_fn=val_dataset.collate_fn,
+            num_workers=max(1, args.num_workers // 2),
+            pin_memory=True,
+        )
+
     dataloader = DataLoader(
         dataset,
         batch_size=args.train_bsz_per_gpu,
@@ -545,7 +732,11 @@ def train(args):
         persistent_workers=True if args.num_workers > 0 else False,
     )
 
-    model, optimizer, dataloader = accelerator.prepare(model, optimizer, dataloader)
+    if val_dataloader is not None:
+        model, optimizer, dataloader, val_dataloader = accelerator.prepare(
+            model, optimizer, dataloader, val_dataloader)
+    else:
+        model, optimizer, dataloader = accelerator.prepare(model, optimizer, dataloader)
 
     steps_per_epoch = len(dataloader)
     num_training_steps = steps_per_epoch * args.n_epochs // accelerator.gradient_accumulation_steps
@@ -741,6 +932,22 @@ def train(args):
                         "epoch": epoch,
                     }, step=global_step)
 
+            # ── Validation ──
+            if (val_dataloader is not None
+                    and args.val_freq > 0
+                    and (global_step + 1) % args.val_freq == 0):
+                val_m = run_validation(
+                    model, val_dataloader, accelerator,
+                    lambda: accelerator.unwrap_model(model),
+                    use_flare, K, T_per_frame, flare_layer_idx, args)
+                if accelerator.is_main_process:
+                    accelerator.print(
+                        f"  [Val step={global_step}] "
+                        f"loss={val_m['val/total_loss']:.6f} "
+                        f"act={val_m['val/action_loss']:.6f} "
+                        f"flare={val_m['val/flare_loss']:.6f}")
+                    wandb.log(val_m, step=global_step)
+
             global_step += 1
 
         if (epoch + 1) % args.save_freq == 0 or epoch == args.n_epochs - 1:
@@ -780,6 +987,14 @@ if __name__ == "__main__":
     parser.add_argument("--image_size", type=int, nargs=2, default=None, metavar=("W", "H"))
 
     parser.add_argument("--resume_checkpoint", type=str, default="")
+
+    # Validation
+    parser.add_argument("--val_ratio", type=float, default=0.02,
+                        help="Fraction of episodes to hold out for validation (0=disable)")
+    parser.add_argument("--val_freq", type=int, default=1000,
+                        help="Run validation every N training steps (0=disable)")
+    parser.add_argument("--max_val_batches", type=int, default=50,
+                        help="Max batches per validation run")
 
     # Flare
     parser.add_argument("--use_flare", type=int, default=1)

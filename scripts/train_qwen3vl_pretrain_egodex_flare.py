@@ -42,10 +42,67 @@ from torch.optim.lr_scheduler import LambdaLR
 from accelerate import Accelerator, DataLoaderConfiguration, InitProcessGroupKwargs
 from transformers import AutoProcessor, set_seed
 
-from qwen_vla import Qwen3VLVLAModel, extend_position_ids_for_flare
+from qwen_vla import Qwen3VLVLAModel, extend_position_ids_for_flare, split_slow_fast_embeds
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level="INFO")
+
+
+# ---------------------------------------------------------------------------
+# Tracking-error noise injection: augment robot state with realistic noise
+# sampled from the tracking error distribution computed during data generation.
+# ---------------------------------------------------------------------------
+
+def _rot6d_to_mat(rot6d):
+    """6D rotation (first two columns) → 3×3 rotation matrix."""
+    col1 = rot6d[:3]
+    col2 = rot6d[3:6]
+    col3 = np.cross(col1, col2)
+    return np.column_stack([col1, col2, col3])
+
+
+def _arm9d_to_axis_angle(arm_9d):
+    """[trans(3), rot6d(6)] → [trans(3), axis_angle(3)]."""
+    R = _rot6d_to_mat(arm_9d[3:9])
+    aa, _ = cv2.Rodrigues(R)
+    return np.concatenate([arm_9d[:3], aa.flatten()])
+
+
+def _axis_angle_to_arm9d(arm_aa):
+    """[trans(3), axis_angle(3)] → [trans(3), rot6d(6)]."""
+    R, _ = cv2.Rodrigues(arm_aa[3:6])
+    return np.concatenate([arm_aa[:3], R[:, 0], R[:, 1]])
+
+
+def add_tracking_error_noise(state, te_mean, te_std, action_dim):
+    """Add tracking-error noise to robot state.
+
+    Supports single-arm (action_dim=31, te=28D) and bimanual (action_dim=62, te=56D).
+    Per arm (28D tracking error = 3 xyz + 3 axis-angle + 22 hand):
+      1. Convert arm 9D [trans, rot6d] → [trans, axis_angle]
+      2. Sample noise ~ N(te_mean, te_std)
+      3. Add noise
+      4. Convert back to [trans, rot6d]
+    """
+    noisy = state.copy()
+    n_arms = action_dim // 31
+    for arm_idx in range(n_arms):
+        offset = arm_idx * 31
+        arm_9d = state[offset:offset + 9]
+        hand_22d = state[offset + 9:offset + 31]
+
+        arm_aa = _arm9d_to_axis_angle(arm_9d)  # (6,)
+
+        te_off = arm_idx * 28
+        noise_arm = np.random.normal(te_mean[te_off:te_off + 6],
+                                     te_std[te_off:te_off + 6]).astype(np.float32)
+        noise_hand = np.random.normal(te_mean[te_off + 6:te_off + 28],
+                                      te_std[te_off + 6:te_off + 28]).astype(np.float32)
+
+        noisy_arm_9d = _axis_angle_to_arm9d(arm_aa + noise_arm)
+        noisy[offset:offset + 9] = noisy_arm_9d
+        noisy[offset + 9:offset + 31] = hand_22d + noise_hand
+    return noisy
 
 
 def get_cosine_schedule_with_warmup(optimizer, num_warmup_steps, num_training_steps,
@@ -78,6 +135,8 @@ class EgoDexPretrainFlareDataset(Dataset):
         all_action_q99 = []
         all_state_q01 = []
         all_state_q99 = []
+        all_te_mean = []
+        all_te_std = []
 
         manifest_paths = sorted(
             glob.glob(os.path.join(data_root, "*", "pretrain_manifest.json"))
@@ -96,6 +155,9 @@ class EgoDexPretrainFlareDataset(Dataset):
                 all_action_q99.append(np.array(stats["action"]["q99"], dtype=np.float32))
                 all_state_q01.append(np.array(stats["state"]["q01"], dtype=np.float32))
                 all_state_q99.append(np.array(stats["state"]["q99"], dtype=np.float32))
+            if "tracking_error" in stats:
+                all_te_mean.append(np.array(stats["tracking_error"]["mean"], dtype=np.float32))
+                all_te_std.append(np.array(stats["tracking_error"]["std"], dtype=np.float32))
 
         accelerator.print(f"Loaded {len(manifest_paths)} batch manifests")
 
@@ -103,6 +165,15 @@ class EgoDexPretrainFlareDataset(Dataset):
         self.action_max = np.max(np.stack(all_action_q99), axis=0)
         self.state_min = np.min(np.stack(all_state_q01), axis=0)
         self.state_max = np.max(np.stack(all_state_q99), axis=0)
+
+        # Tracking error stats for state noise injection
+        te_dim = (config.action_dim // 31) * 28
+        if all_te_mean:
+            self.te_mean = np.mean(np.stack(all_te_mean), axis=0)
+            self.te_std  = np.mean(np.stack(all_te_std),  axis=0)
+        else:
+            self.te_mean = np.zeros(te_dim, dtype=np.float32)
+            self.te_std  = np.zeros(te_dim, dtype=np.float32)
 
         self.action_mask = np.ones(config.action_dim, dtype=bool)
         self.state_mask = np.ones(config.action_dim, dtype=bool)
@@ -305,6 +376,8 @@ class EgoDexPretrainFlareDataset(Dataset):
         if cfg.use_robot_state:
             for x in batch:
                 s = np.array(x["state"], dtype=np.float32)
+                s = add_tracking_error_noise(s, self.te_mean, self.te_std,
+                                             cfg.action_dim)
                 ns = self._normalize(s, self.state_mask, self.state_min, self.state_max)
                 state_raw_list.append(torch.tensor(ns, dtype=torch.bfloat16))
 
@@ -497,10 +570,13 @@ def run_validation(model, val_dataloader, accelerator, raw_model_fn,
         if grid_thw is not None and grid_thw.shape[0] > n_slow_imgs:
             merge = getattr(raw_model.visual, "spatial_merge_size", 2)
             n_imgs_per_sample = grid_thw.shape[0] // B
-            fast_grid = grid_thw[n_slow_imgs: n_imgs_per_sample]
-            n_fast_tokens = sum(int(g[0] * (g[1] // merge) * (g[2] // merge)) for g in fast_grid)
-            slow_embeds = inputs_embeds[:, :-n_fast_tokens]
-            fast_embeds = inputs_embeds[:, -n_fast_tokens:]
+            n_slow_img_tokens = sum(
+                int(g[0] * (g[1] // merge) * (g[2] // merge))
+                for g in grid_thw[:n_imgs_per_sample][:n_slow_imgs]
+            )
+            slow_embeds, fast_embeds = split_slow_fast_embeds(
+                inputs_embeds, batch["input_ids"],
+                raw_model.image_token_id, n_slow_img_tokens)
         else:
             slow_embeds = inputs_embeds
             fast_embeds = inputs_embeds[:, :0]
@@ -779,13 +855,13 @@ def train(args):
                 merge = getattr(raw_model.visual, "spatial_merge_size",
                                 getattr(dataset.processor.image_processor, "merge_size", 2))
                 n_imgs_per_sample = grid_thw.shape[0] // B
-                fast_grid = grid_thw[n_slow_imgs: n_imgs_per_sample]
-                n_fast_tokens = sum(
+                n_slow_img_tokens = sum(
                     int(g[0] * (g[1] // merge) * (g[2] // merge))
-                    for g in fast_grid
+                    for g in grid_thw[:n_imgs_per_sample][:n_slow_imgs]
                 )
-                slow_embeds = inputs_embeds[:, :-n_fast_tokens]
-                fast_embeds = inputs_embeds[:, -n_fast_tokens:]
+                slow_embeds, fast_embeds = split_slow_fast_embeds(
+                    inputs_embeds, batch["input_ids"],
+                    raw_model.image_token_id, n_slow_img_tokens)
             else:
                 slow_embeds = inputs_embeds
                 fast_embeds = inputs_embeds[:, :0]

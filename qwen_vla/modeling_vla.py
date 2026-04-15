@@ -498,6 +498,58 @@ class Qwen3VLVLAModel(nn.Module):
         return super().parameters(*args, **kwargs)
 
 
+def split_slow_fast_embeds(
+    inputs_embeds: torch.Tensor,
+    input_ids: torch.LongTensor,
+    image_token_id: int,
+    n_slow_img_tokens: int,
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """
+    Split inputs_embeds into slow (latent) and fast (action) portions.
+
+    Splits at the <|vision_start|> of the first fast image: everything
+    before it is slow (contiguous prefix), everything from it onward is
+    fast (contiguous suffix).  This preserves token order — critical
+    because the MoT routes tokens by contiguous index ranges and
+    position_ids are computed for the original sequence order.
+
+    Fast embeds include the vision brackets, image patches, AND any
+    trailing tokens (``<|im_end|>``, generation prompt) that follow the
+    fast images in the original sequence.
+
+    Parameters
+    ----------
+    inputs_embeds     : [B, L, H]
+    input_ids         : [B, L]
+    image_token_id    : int — the <|image_pad|> token id (e.g. 151655)
+    n_slow_img_tokens : int — total <|image_pad|> count for slow images
+
+    Returns
+    -------
+    slow_embeds : [B, L_slow, H]  — contiguous prefix (text + slow image)
+    fast_embeds : [B, L_fast, H]  — contiguous suffix (fast images + trailing)
+    """
+    B = inputs_embeds.shape[0]
+    img_pad_mask = (input_ids == image_token_id)             # [B, L]
+    img_cumcount = img_pad_mask.long().cumsum(dim=1)         # [B, L]
+    fast_pad_mask = img_pad_mask & (img_cumcount > n_slow_img_tokens)
+
+    n_fast_pads = int(fast_pad_mask[0].sum().item())
+    if n_fast_pads == 0:
+        return inputs_embeds, inputs_embeds[:, :0]
+
+    # Split at <|vision_start|> of the first fast image (one position
+    # before the first fast <|image_pad|> token).
+    # All samples have the same fast content length (same image sizes +
+    # same trailing tokens), so split_pos is identical across the batch.
+    fast_pad_pos = fast_pad_mask[0].nonzero(as_tuple=True)[0]
+    split_pos = int(fast_pad_pos[0].item()) - 1  # <|vision_start|>
+
+    slow_embeds = inputs_embeds[:, :split_pos]
+    fast_embeds = inputs_embeds[:, split_pos:]
+    return slow_embeds, fast_embeds
+
+
 def extend_position_ids_for_flare(
     pos_ids: torch.Tensor,
     n_flare: int,

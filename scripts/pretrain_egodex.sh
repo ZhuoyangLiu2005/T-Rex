@@ -37,11 +37,17 @@ BKL_SRC="/mnt/amlfs-02/shared/human_egocentric/dniu/datasets/bkl_inlab/raw/playd
 for group_dir in "${BKL_SRC}"/*/; do
     group_name=$(basename "${group_dir}")
     link_path="${DATA_ROOT}/bkl_inlab_${group_name}"
-    if [ ! -e "${link_path}" ]; then
+    if [ ! -e "${link_path}" ] && [ ! -L "${link_path}" ]; then
         ln -s "${group_dir}" "${link_path}"
         echo "Symlinked: ${link_path} -> ${group_dir}"
     fi
 done
+
+# Allow data-prep-only mode (used by launch_pretrain_ray.py to avoid race conditions)
+if [ "${SKIP_TRAINING:-0}" = "1" ]; then
+    echo ">>> SKIP_TRAINING=1: data prep done, exiting before training."
+    exit 0
+fi
 
 TRAIN_BSZ=16
 LR=1e-4

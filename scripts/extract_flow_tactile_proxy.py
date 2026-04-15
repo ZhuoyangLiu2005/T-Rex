@@ -115,31 +115,47 @@ def resolve_raw_h5_path(episode_dir, raw_data_roots=None):
     """
     import json as _json
 
+    import re as _re
+
     ep_name = os.path.basename(episode_dir)
     meta_path = os.path.join(episode_dir, "metadata.json")
-    traj_id = None
+    meta_traj_id = None
     if os.path.exists(meta_path):
         with open(meta_path) as f:
-            traj_id = _json.load(f).get("trajectory_id")
+            meta_traj_id = _json.load(f).get("trajectory_id")
 
+    # Strip batch prefix: extra_, part1_, part2_, ..., bkl_inlab_*
     task_name = ep_name
-    if task_name.startswith("extra_"):
-        task_name = task_name[len("extra_"):]
-    if traj_id is not None:
-        suffix = f"_{traj_id}"
-        if task_name.endswith(suffix):
-            task_name = task_name[:-len(suffix)]
+    prefix_match = _re.match(r'^(extra_|part\d+_|bkl_inlab_\w+_)', task_name)
+    if prefix_match:
+        task_name = task_name[prefix_match.end():]
+
+    # Extract trailing numeric ID from dir name: e.g. "assemble_foo_3181" → ("assemble_foo", "3181")
+    dir_id_match = _re.match(r'^(.+?)_(\d+)$', task_name)
+    dir_task = dir_id_match.group(1) if dir_id_match else task_name
+    dir_id = dir_id_match.group(2) if dir_id_match else None
+
+    # Candidate IDs to try: dir name ID, metadata ID
+    candidate_ids = []
+    if dir_id is not None:
+        candidate_ids.append(dir_id)
+    if meta_traj_id is not None:
+        candidate_ids.append(str(meta_traj_id))
 
     if raw_data_roots is None:
         raw_data_roots = [
             "/mnt/amlfs-03/shared/datasets/dniu/egodex/extra",
             "/mnt/amlfs-03/shared/datasets/dniu/egodex/part1",
             "/mnt/amlfs-03/shared/datasets/dniu/egodex/part2",
+            "/mnt/amlfs-03/shared/datasets/dniu/egodex/part3",
+            "/mnt/amlfs-03/shared/datasets/dniu/egodex/part4",
+            "/mnt/amlfs-03/shared/datasets/dniu/egodex/part5",
         ]
     for root in raw_data_roots:
-        candidate = os.path.join(root, task_name, f"{traj_id}.hdf5")
-        if os.path.isfile(candidate):
-            return candidate
+        for tid in candidate_ids:
+            candidate = os.path.join(root, dir_task, f"{tid}.hdf5")
+            if os.path.isfile(candidate):
+                return candidate
     return None
 
 
@@ -286,14 +302,17 @@ def compute_proxy_metrics(flows, fingertip_coords_per_frame):
 # Flow visualization helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
-def flow_to_color(flow, max_flow=None):
-    """Convert optical flow to HSV color visualization."""
+def flow_to_color(flow, max_flow=None, percentile=98):
+    """
+    Convert optical flow to HSV color visualization.
+    Uses per-frame percentile normalization for better contrast.
+    """
     h, w = flow.shape[:2]
     mag = np.linalg.norm(flow, axis=-1)
     ang = np.arctan2(flow[:, :, 1], flow[:, :, 0])
 
     if max_flow is None:
-        max_flow = max(mag.max(), 1e-5)
+        max_flow = max(np.percentile(mag, percentile), 1e-5)
 
     hsv = np.zeros((h, w, 3), dtype=np.uint8)
     hsv[:, :, 0] = ((ang + np.pi) / (2 * np.pi) * 179).astype(np.uint8)
@@ -302,8 +321,12 @@ def flow_to_color(flow, max_flow=None):
     return cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
 
 
-def draw_fingertips_on_image(img, coords, colors=None, inner_size=16):
-    """Draw fingertip locations and patches on an image (in-place)."""
+def draw_fingertips_on_image(img, coords, colors=None, inner_size=16,
+                             flow=None, arrow_scale=3.0):
+    """
+    Draw fingertip locations, patches, and optionally flow arrows on an image.
+    When flow is provided, draws an arrow at each fingertip showing flow direction/magnitude.
+    """
     vis = img.copy()
     half = inner_size // 2
     if colors is None:
@@ -311,11 +334,20 @@ def draw_fingertips_on_image(img, coords, colors=None, inner_size=16):
     for idx, (cx, cy) in enumerate(coords):
         color = colors[idx % len(colors)]
         pt = (int(cx), int(cy))
-        cv2.circle(vis, pt, 5, color, -1)
-        cv2.circle(vis, pt, 6, (255, 255, 255), 1)
+        # Patch rectangle
         tl = (int(cx) - half, int(cy) - half)
         br = (int(cx) + half, int(cy) + half)
-        cv2.rectangle(vis, tl, br, color, 1)
+        cv2.rectangle(vis, tl, br, color, 2)
+        # Center dot
+        cv2.circle(vis, pt, 4, color, -1)
+        cv2.circle(vis, pt, 5, (255, 255, 255), 1)
+        # Flow arrow
+        if flow is not None:
+            iy, ix = int(np.clip(cy, 0, flow.shape[0] - 1)), int(np.clip(cx, 0, flow.shape[1] - 1))
+            dx, dy = flow[iy, ix]
+            end_pt = (int(cx + dx * arrow_scale), int(cy + dy * arrow_scale))
+            cv2.arrowedLine(vis, pt, end_pt, (255, 255, 255), 2, tipLength=0.3)
+            cv2.arrowedLine(vis, pt, end_pt, color, 1, tipLength=0.3)
     return vis
 
 
@@ -591,18 +623,18 @@ def run_pipeline(args):
     if n_panels == 1:
         axes = axes[:, np.newaxis]
 
-    max_flow_global = max(np.linalg.norm(f, axis=-1).max() for f in flows)
-
     for col, t in enumerate(panel_indices):
-        # Row 0: RGB + fingertips
-        vis_rgb = draw_fingertips_on_image(frames[t + 1], fingertip_coords[t + 1], finger_colors)
+        # Row 0: RGB + fingertips + flow arrows
+        vis_rgb = draw_fingertips_on_image(frames[t + 1], fingertip_coords[t + 1],
+                                           finger_colors, flow=flows[t])
         axes[0, col].imshow(vis_rgb)
         axes[0, col].set_title(f"Frame {t+1}", fontsize=9)
         axes[0, col].axis("off")
 
-        # Row 1: Flow color + fingertip patches
-        flow_vis = flow_to_color(flows[t], max_flow=max_flow_global)
-        flow_vis = draw_fingertips_on_image(flow_vis, fingertip_coords[t + 1], finger_colors)
+        # Row 1: Flow color (per-frame normalization) + fingertip patches + arrows
+        flow_vis = flow_to_color(flows[t])  # per-frame percentile normalization
+        flow_vis = draw_fingertips_on_image(flow_vis, fingertip_coords[t + 1],
+                                            finger_colors, flow=flows[t])
         axes[1, col].imshow(flow_vis)
         axes[1, col].set_title(f"Flow {t}→{t+1}", fontsize=9)
         axes[1, col].axis("off")
@@ -636,9 +668,11 @@ def run_pipeline(args):
         writer = cv2.VideoWriter(out_video, fourcc, 15, (img_w, out_h))
 
         for t in tqdm(range(T - 1), desc="Writing video"):
-            top = draw_fingertips_on_image(frames[t + 1], fingertip_coords[t + 1])
-            flow_vis = flow_to_color(flows[t], max_flow=max_flow_global)
-            flow_vis = draw_fingertips_on_image(flow_vis, fingertip_coords[t + 1], finger_colors)
+            top = draw_fingertips_on_image(frames[t + 1], fingertip_coords[t + 1],
+                                           finger_colors, flow=flows[t])
+            flow_vis = flow_to_color(flows[t])  # per-frame normalization
+            flow_vis = draw_fingertips_on_image(flow_vis, fingertip_coords[t + 1],
+                                                finger_colors, flow=flows[t])
             stacked = np.vstack([top, flow_vis])
             writer.write(cv2.cvtColor(stacked, cv2.COLOR_RGB2BGR))
 
@@ -648,40 +682,109 @@ def run_pipeline(args):
     # ── Step 6: Contact detection & contact video ────────────────────────
     print("Detecting contact events...")
 
-    # Per-finger adaptive threshold: median + 3*MAD
-    state = np.zeros((T - 1, n_fingers), dtype=int)  # 0=free, 1=contact, 2=grasping
-    contact_events = {}
-    for f in range(n_fingers):
-        trans_f = transient[:, f]
-        steady_f = steady[:, f]
-        flow_f = flow_mags[:, f]
+    # Temporally consistent tactile detection:
+    #   1. Smooth raw signals with EMA to remove single-frame noise
+    #   2. Hysteresis thresholding: high threshold to enter, low to exit
+    #   3. Morphological cleanup: remove short events, fill short gaps
 
+    ema_alpha = 0.3  # smoothing factor (lower = smoother)
+    min_event_frames = 3   # discard tactile events shorter than this
+    min_gap_frames = 5     # fill free gaps shorter than this
+
+    state = np.zeros((T - 1, n_fingers), dtype=int)
+    contact_events = {}
+
+    for f in range(n_fingers):
+        trans_f = transient[:, f].copy()
+        steady_f = steady[:, f].copy()
+        flow_f = flow_mags[:, f].copy()
+
+        # --- Step 1: EMA smoothing ---
+        for t_i in range(1, len(trans_f)):
+            trans_f[t_i] = ema_alpha * trans_f[t_i] + (1 - ema_alpha) * trans_f[t_i - 1]
+            steady_f[t_i] = ema_alpha * steady_f[t_i] + (1 - ema_alpha) * steady_f[t_i - 1]
+            flow_f[t_i] = ema_alpha * flow_f[t_i] + (1 - ema_alpha) * flow_f[t_i - 1]
+
+        # --- Step 2: Adaptive hysteresis thresholds ---
         med_t = np.median(trans_f)
         mad_t = np.median(np.abs(trans_f - med_t))
-        thresh_t = med_t + 3 * max(mad_t, 1.0)
+        thresh_t_high = med_t + 2.0 * max(mad_t, 1.0)   # enter tactile
+        thresh_t_low = med_t + 1.0 * max(mad_t, 1.0)    # exit tactile
 
         med_s = np.median(steady_f)
         mad_s = np.median(np.abs(steady_f - med_s))
         thresh_s = med_s + 1.5 * max(mad_s, 1.0)
-        flow_median = np.median(flow_f)
 
-        events = []
-        in_event = False
-        start = 0
+        # Low-flow = finger is stationary (likely in sustained contact)
+        # Use 25th percentile as the "stationary" threshold — if flow is
+        # in the bottom quarter, the finger isn't moving freely
+        flow_p25 = np.percentile(flow_f, 25)
+        flow_p50 = np.percentile(flow_f, 50)
+
+        # Hysteresis state machine with 3 detection criteria:
+        #   1. Transient spike → contact onset
+        #   2. Low steady-state diff → finger locked to object
+        #   3. Low flow persistence → finger stationary (sustained grasp)
+        in_tactile = False
+        raw_state = np.zeros(T - 1, dtype=int)
         for t_i in range(T - 1):
-            if trans_f[t_i] > thresh_t:
-                state[t_i, f] = 1
-                if not in_event:
-                    start = t_i
-                    in_event = True
+            is_transient = trans_f[t_i] > (thresh_t_low if in_tactile else thresh_t_high)
+            is_synced = steady_f[t_i] < thresh_s
+            is_stationary = flow_f[t_i] < flow_p50
+
+            if is_transient or (is_synced and is_stationary):
+                in_tactile = True
+                raw_state[t_i] = 1
+            elif in_tactile:
+                # Once in tactile, stay in tactile as long as the finger
+                # remains relatively still (below median flow) — this is
+                # the key for sustained grasps
+                if is_stationary:
+                    raw_state[t_i] = 1
+                else:
+                    in_tactile = False
+
+        # --- Step 3: Morphological cleanup ---
+        # Remove short tactile events (< min_event_frames)
+        clean_state = raw_state.copy()
+        i = 0
+        while i < len(clean_state):
+            if clean_state[i] == 1:
+                start = i
+                while i < len(clean_state) and clean_state[i] == 1:
+                    i += 1
+                if i - start < min_event_frames:
+                    clean_state[start:i] = 0
             else:
-                if in_event:
-                    events.append((start, t_i - 1))
-                    in_event = False
-                if steady_f[t_i] < thresh_s and flow_f[t_i] < flow_median * 0.8:
-                    state[t_i, f] = 2
-        if in_event:
-            events.append((start, T - 2))
+                i += 1
+
+        # Fill short gaps between tactile events (< min_gap_frames)
+        i = 0
+        while i < len(clean_state):
+            if clean_state[i] == 0:
+                start = i
+                while i < len(clean_state) and clean_state[i] == 0:
+                    i += 1
+                if (i - start < min_gap_frames
+                        and start > 0 and i < len(clean_state)
+                        and clean_state[start - 1] == 1 and clean_state[i] == 1):
+                    clean_state[start:i] = 1
+            else:
+                i += 1
+
+        state[:, f] = clean_state
+
+        # Extract events from cleaned state
+        events = []
+        i = 0
+        while i < len(clean_state):
+            if clean_state[i] == 1:
+                start = i
+                while i < len(clean_state) and clean_state[i] == 1:
+                    i += 1
+                events.append((start, i - 1))
+            else:
+                i += 1
         contact_events[f] = events
 
     # Save contact state
@@ -691,18 +794,16 @@ def run_pipeline(args):
     # --- 6a: Contact timeline ---
     fig, axes = plt.subplots(n_fingers + 1, 1, figsize=(18, 14),
                               gridspec_kw={"height_ratios": [1] * n_fingers + [2]})
-    state_cmap = {0: (0.7, 0.7, 0.7), 1: (1.0, 0.2, 0.1), 2: (0.2, 0.5, 1.0)}
+    state_cmap = {0: (0.85, 0.85, 0.85), 1: (1.0, 0.2, 0.1)}
     for f in range(n_fingers):
         ax = axes[f]
         for t_i in range(T - 1):
             ax.axvspan(t_i, t_i + 1, color=state_cmap[state[t_i, f]], alpha=0.8)
-        for start, _ in contact_events[f]:
-            ax.axvline(start, color="red", linewidth=1.5, alpha=0.8)
         ax.set_xlim(0, T - 1)
         ax.set_yticks([])
         ax.set_ylabel(finger_names[f], fontsize=8, rotation=0, ha="right", va="center")
         if f == 0:
-            ax.set_title("Contact State Timeline (gray=Free, red=Contact, blue=Grasping)", fontsize=11)
+            ax.set_title("Tactile State Timeline (gray=Free, red=Tactile)", fontsize=11)
         if f < n_fingers - 1:
             ax.set_xticks([])
     ax_bot = axes[-1]
@@ -732,20 +833,16 @@ def run_pipeline(args):
             frame_vis = frames[t_i + 1].copy()
             for f in range(n_fingers):
                 cx, cy = fingertip_coords[t_i + 1][f]
-                if state[t_i, f] == 1:  # CONTACT — big red
+                if state[t_i, f] == 1:  # TACTILE — big red with label
                     cv2.circle(frame_vis, (int(cx), int(cy)), 14, (255, 30, 30), -1)
                     cv2.circle(frame_vis, (int(cx), int(cy)), 15, (255, 255, 255), 2)
-                    cv2.putText(frame_vis, "CONTACT", (int(cx) - 30, int(cy) - 18),
+                    cv2.putText(frame_vis, "TACTILE", (int(cx) - 30, int(cy) - 18),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 50, 50), 1)
-                elif state[t_i, f] == 2:  # GRASPING — blue
-                    cv2.circle(frame_vis, (int(cx), int(cy)), 10, (50, 100, 255), -1)
-                    cv2.circle(frame_vis, (int(cx), int(cy)), 11, (255, 255, 255), 1)
                 else:  # FREE — small green
                     cv2.circle(frame_vis, (int(cx), int(cy)), 5, (50, 200, 50), -1)
 
-            n_contact = (state[t_i] == 1).sum()
-            n_grasp = (state[t_i] == 2).sum()
-            status = f"Frame {t_i:04d} | Contact: {n_contact} | Grasping: {n_grasp}"
+            n_tactile = (state[t_i] == 1).sum()
+            status = f"Frame {t_i:04d} | Tactile: {n_tactile} fingers"
             cv2.putText(frame_vis, status, (20, 40),
                         cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 3)
             cv2.putText(frame_vis, status, (20, 40),
@@ -836,14 +933,12 @@ def run_pipeline(args):
         print(f"  Detection: Precision={prec:.3f}, Recall={rec:.3f}, F1={f1:.3f}")
 
     # ── Summary stats ───────────────────────────────────────────────────
-    total_contact_frames = (state == 1).any(axis=1).sum()
-    total_grasp_frames = (state == 2).any(axis=1).sum()
+    total_tactile_frames = (state == 1).any(axis=1).sum()
     print("\n=== Summary ===")
     print(f"  Frames processed:    {T}")
     print(f"  Flow fields:         {len(flows)}")
     print(f"  Data source:         {data_source}")
-    print(f"  Frames with contact: {total_contact_frames} ({100*total_contact_frames/(T-1):.1f}%)")
-    print(f"  Frames with grasp:   {total_grasp_frames} ({100*total_grasp_frames/(T-1):.1f}%)")
+    print(f"  Frames with tactile: {total_tactile_frames} ({100*total_tactile_frames/(T-1):.1f}%)")
     for f in range(n_fingers):
         print(f"  {finger_names[f]:10s}  flow_mag: "
               f"mean={flow_mags[:, f].mean():.2f}, max={flow_mags[:, f].max():.2f}  |  "

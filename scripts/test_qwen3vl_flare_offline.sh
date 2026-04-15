@@ -9,8 +9,6 @@ export PYTHONPATH=/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen:$PYTH
 
 export CUDA_VISIBLE_DEVICES=0
 
-# ── Task config: uncomment ONE section ──────────────────────────────────────
-
 # --- Single-arm: flip_book_page (right hand only, 1 wrist camera) ---
 # MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mot_flare/stage2_future_v1/checkpoint-199-70400"
 # DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/flip_book_page_0405_deltabase_axis_eef_newclip_right_stride2_train.json"
@@ -18,12 +16,10 @@ export CUDA_VISIBLE_DEVICES=0
 # ACTION_CHUNK=8
 
 # --- Dual-arm: remove_card (bimanual, 2 wrist cameras: right + left) ---
-MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mot_flare/qwen3vl_2b_tri_mot_pretrain0405_remove_card_0405view2_tacdeform_wostate_deltabase_eef_stride2_f1s1_res_flare_[tpf4step4stride4]_resize_0407/checkpoint-99-83000"
-DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/remove_card_0405_deltabase_axis_eef_bimanual_stride2_train.json"
+MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mot_flare/qwen3vl_2b_tri_mot_pretrain0407_pour_sugar_0411view2_tacdeform_wostate_deltabase_eef_stride2_f1s1_res_flare_[tpf4step8stride4]_resize_lr_0412/checkpoint-49-18850"
+DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/pour_sugar_0411_deltabase_axis_eef_lr_bimanual_stride2_train.json"
 ACTION_DIM=62
 ACTION_CHUNK=16
-
-# ────────────────────────────────────────────────────────────────────────────
 
 python test_qwen3vl_flare_offline.py \
   --checkpoint_path ${MODEL_PATH} \

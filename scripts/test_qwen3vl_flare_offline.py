@@ -35,7 +35,7 @@ from tqdm import tqdm
 from transformers import AutoProcessor
 from janus.models.action_tokenizer import ActionTokenizer
 
-from qwen_vla import Qwen3VLVLAModel, extend_position_ids_for_flare
+from qwen_vla import Qwen3VLVLAModel, extend_position_ids_for_flare, split_slow_fast_embeds
 
 
 def _normalize(values, mask, vmin, vmax):
@@ -316,12 +316,12 @@ def model_predict(
         if image_grid_thw is not None and fast_images:
             merge = getattr(model.visual, "spatial_merge_size",
                             getattr(processor.image_processor, "merge_size", 2))
-            fast_grid = image_grid_thw[n_slow:]
-            n_fast_tokens = sum(
+            n_slow_img_tokens = sum(
                 int(g[0] * (g[1] // merge) * (g[2] // merge))
-                for g in fast_grid)
-            slow_embeds = inputs_embeds[:, :-n_fast_tokens]
-            fast_embeds = inputs_embeds[:, -n_fast_tokens:]
+                for g in image_grid_thw[:n_slow])
+            slow_embeds, fast_embeds = split_slow_fast_embeds(
+                inputs_embeds, input_ids,
+                model.image_token_id, n_slow_img_tokens)
         else:
             slow_embeds = inputs_embeds
 
@@ -507,10 +507,12 @@ def compute_flare_similarity(
         if image_grid_thw is not None and fast_images:
             mg = getattr(model.visual, "spatial_merge_size",
                          getattr(processor.image_processor, "merge_size", 2))
-            fast_grid = image_grid_thw[n_slow:]
-            n_fast_tokens = sum(int(g[0] * (g[1] // mg) * (g[2] // mg)) for g in fast_grid)
-            slow_embeds = inputs_embeds[:, :-n_fast_tokens]
-            fast_embeds = inputs_embeds[:, -n_fast_tokens:]
+            n_slow_img_tokens = sum(
+                int(g[0] * (g[1] // mg) * (g[2] // mg))
+                for g in image_grid_thw[:n_slow])
+            slow_embeds, fast_embeds = split_slow_fast_embeds(
+                inputs_embeds, input_ids,
+                model.image_token_id, n_slow_img_tokens)
         else:
             slow_embeds = inputs_embeds
 

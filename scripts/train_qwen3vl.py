@@ -25,7 +25,7 @@ from accelerate import Accelerator
 from transformers import AutoProcessor, set_seed
 from datasets import Dataset as HFDataset
 
-from qwen_vla import Qwen3VLVLAModel
+from qwen_vla import Qwen3VLVLAModel, split_slow_fast_embeds
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level="INFO")
@@ -504,17 +504,14 @@ def train(args):
             if grid_thw is not None and grid_thw.shape[0] > n_slow_imgs:
                 merge = getattr(raw_model.visual, "spatial_merge_size",
                                 getattr(processor.image_processor, "merge_size", 2))
-                # grid_thw is [total_images_in_batch, 3]. Per sample:
                 n_imgs_per_sample = grid_thw.shape[0] // B
-                n_fast_imgs = n_imgs_per_sample - n_slow_imgs
-                # Use first sample's fast grids (all samples have same image sizes)
-                fast_grid = grid_thw[n_slow_imgs : n_imgs_per_sample]
-                n_fast_tokens = sum(
+                n_slow_img_tokens = sum(
                     int(g[0] * (g[1] // merge) * (g[2] // merge))
-                    for g in fast_grid
+                    for g in grid_thw[:n_imgs_per_sample][:n_slow_imgs]
                 )
-                slow_embeds = inputs_embeds[:, :-n_fast_tokens]
-                fast_embeds = inputs_embeds[:, -n_fast_tokens:]
+                slow_embeds, fast_embeds = split_slow_fast_embeds(
+                    inputs_embeds, batch["input_ids"],
+                    raw_model.image_token_id, n_slow_img_tokens)
             else:
                 slow_embeds = inputs_embeds
                 fast_embeds = inputs_embeds[:, :0]

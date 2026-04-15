@@ -43,10 +43,63 @@ from accelerate import Accelerator
 from transformers import AutoProcessor, set_seed
 from datasets import Dataset as HFDataset
 
-from qwen_vla import Qwen3VLVLAModel, extend_position_ids_for_flare
+from qwen_vla import Qwen3VLVLAModel, extend_position_ids_for_flare, split_slow_fast_embeds
+import cv2
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level="INFO")
+
+
+def _rot6d_to_mat(rot6d):
+    """6D rotation (first two columns) → 3×3 rotation matrix."""
+    col1 = rot6d[:3]
+    col2 = rot6d[3:6]
+    col3 = np.cross(col1, col2)
+    return np.column_stack([col1, col2, col3])
+
+
+def _arm9d_to_axis_angle(arm_9d):
+    """[trans(3), rot6d(6)] → [trans(3), axis_angle(3)]."""
+    R = _rot6d_to_mat(arm_9d[3:9])
+    aa, _ = cv2.Rodrigues(R)
+    return np.concatenate([arm_9d[:3], aa.flatten()])
+
+
+def _axis_angle_to_arm9d(arm_aa):
+    """[trans(3), axis_angle(3)] → [trans(3), rot6d(6)]."""
+    R, _ = cv2.Rodrigues(arm_aa[3:6])
+    return np.concatenate([arm_aa[:3], R[:, 0], R[:, 1]])
+
+
+def add_tracking_error_noise(state, te_mean, te_std, action_dim):
+    """Add tracking-error noise to robot state.
+
+    Supports single-arm (action_dim=31, te=28D) and bimanual (action_dim=62, te=56D).
+    Per arm (28D tracking error = 3 xyz + 3 axis-angle + 22 hand):
+      1. Convert arm 9D [trans, rot6d] → [trans, axis_angle]
+      2. Sample noise ~ N(te_mean, te_std)
+      3. Add noise
+      4. Convert back to [trans, rot6d]
+    """
+    noisy = state.copy()
+    n_arms = action_dim // 31
+    for arm_idx in range(n_arms):
+        offset = arm_idx * 31
+        arm_9d = state[offset:offset + 9]
+        hand_22d = state[offset + 9:offset + 31]
+
+        arm_aa = _arm9d_to_axis_angle(arm_9d)  # (6,)
+
+        te_off = arm_idx * 28
+        noise_arm = np.random.normal(te_mean[te_off:te_off + 6],
+                                     te_std[te_off:te_off + 6]).astype(np.float32)
+        noise_hand = np.random.normal(te_mean[te_off + 6:te_off + 28],
+                                      te_std[te_off + 6:te_off + 28]).astype(np.float32)
+
+        noisy_arm_9d = _axis_angle_to_arm9d(arm_aa + noise_arm)
+        noisy[offset:offset + 9] = noisy_arm_9d
+        noisy[offset + 9:offset + 31] = hand_22d + noise_hand
+    return noisy
 
 
 def get_cosine_schedule_with_warmup(optimizer, num_warmup_steps, num_training_steps,
@@ -88,6 +141,13 @@ class SftDataset(Dataset):
         self.tacf6_min   = _arr("tactile_f6", "q01")
         self.tacf6_max   = _arr("tactile_f6", "q99")
 
+        # Tracking error stats for state noise injection (used when use_robot_state=1)
+        # Dimension: 28D per arm (6 arm + 22 hand), scales with n_arms
+        te_dim = (config.action_dim // 31) * 28
+        te_stats = self.stats_data[self.dataset_name].get("tracking_error", {})
+        self.te_mean = np.array(te_stats.get("mean", np.zeros(te_dim)), dtype=np.float32)
+        self.te_std  = np.array(te_stats.get("std",  np.zeros(te_dim)), dtype=np.float32)
+
         self.img_dir = os.path.dirname(config.data_path)
 
         if config.image_size:
@@ -111,6 +171,26 @@ class SftDataset(Dataset):
 
     def __len__(self):
         return len(self.hf_dataset)
+
+    def create_val_split(self, val_ratio=0.05, seed=42):
+        """Split the dataset into train/val. Returns a new SftDataset for val."""
+        import copy
+        n = len(self.hf_dataset)
+        n_val = max(1, int(n * val_ratio))
+        rng = np.random.RandomState(seed)
+        perm = rng.permutation(n)
+        val_indices = sorted(perm[:n_val].tolist())
+        train_indices = sorted(perm[n_val:].tolist())
+
+        val_ds = copy.copy(self)
+        val_ds.hf_dataset = self.hf_dataset.select(val_indices)
+
+        self.hf_dataset = self.hf_dataset.select(train_indices)
+
+        self.accelerator.print(
+            f"Train/Val split: {len(self.hf_dataset)} train, "
+            f"{len(val_ds.hf_dataset)} val samples")
+        return val_ds
 
     def __getitem__(self, idx):
         return self.hf_dataset[idx]
@@ -198,9 +278,12 @@ class SftDataset(Dataset):
         if cfg.use_robot_state:
             for x in batch:
                 state_raw = np.array(x["state_fast"], dtype=np.float32)
-                ns = self._normalize(state_raw, self.state_mask,
+                state_raw = add_tracking_error_noise(state_raw,
+                                                     self.te_mean, self.te_std,
+                                                     cfg.action_dim)
+                norm_state = self._normalize(state_raw, self.state_mask,
                                      self.state_min, self.state_max)
-                state_raw_list.append(torch.tensor(ns, dtype=torch.bfloat16))
+                state_raw_list.append(torch.tensor(norm_state, dtype=torch.bfloat16))
 
         all_input_ids = []
         all_pixel_values = []
@@ -214,7 +297,7 @@ class SftDataset(Dataset):
 
             pil_slow = [self._open(p) for p in slow_imgs]
             pil_fast = [self._open(p) for p in fast_imgs]
-            all_pil = pil_slow + pil_fast
+            all_pil = pil_slow + pil_fast # a list, including all images
 
             content = []
             for _ in pil_slow:
@@ -241,15 +324,15 @@ class SftDataset(Dataset):
         flare_pixel_values = None
         flare_grid_thw = None
 
-        if n_flare_steps > 0:
+        if n_flare_steps > 0: # use flare
             flare_pil_imgs = []
             for x in batch:
                 for k in range(n_flare_steps):
-                    fimg = self._load_flare_frame(x, k, n_flare_steps, flare_stride)
-                    if fimg is None:
+                    flare_images = self._load_flare_frame(x, k, n_flare_steps, flare_stride)
+                    if flare_images is None:
                         slow_paths = x.get("input_image_slow", [])
-                        fimg = self._open(slow_paths[0]) if slow_paths else PIL.Image.new("RGB", self.image_size or (384, 288))
-                    flare_pil_imgs.append(fimg)
+                        flare_images = self._open(slow_paths[0]) if slow_paths else PIL.Image.new("RGB", self.image_size or (384, 288))
+                    flare_pil_imgs.append(flare_images)
 
             flare_inp = self.processor.image_processor(flare_pil_imgs, return_tensors="pt")
             flare_pixel_values = flare_inp.pixel_values.to(torch.bfloat16)
@@ -287,8 +370,8 @@ class SftDataset(Dataset):
             "tactile_f6s": norm_tacf6,
             "tactile_deforms": deforms_tensor,
             "state_raw": state_raw,
-            "flare_pixel_values": flare_pixel_values,  # [B*S patches, C] or None (S = n_flare_steps)
-            "flare_grid_thw": flare_grid_thw,          # [B*S, 3] or None
+            "flare_pixel_values": flare_pixel_values, # [B*S patches, C] or None (S = n_flare_steps)
+            "flare_grid_thw": flare_grid_thw, # [B*S, 3] or None
         }
 
 
@@ -366,6 +449,154 @@ class TrainingMetrics:
             for t in [self.total_loss, self.action_loss, self.tactile_loss, self.flare_loss]:
                 t.fill_(0)
         return m
+
+
+@torch.no_grad()
+def run_validation(model, val_dataloader, accelerator, args,
+                   is_stage1, use_flare, K, T_per_frame, flare_layer_idx):
+    """Run validation and return averaged metrics (action + tactile + flare)."""
+    model.eval()
+    device = torch.cuda.current_device()
+    val_act = torch.tensor(0.0, device=device)
+    val_tac = torch.tensor(0.0, device=device)
+    val_flare = torch.tensor(0.0, device=device)
+    n_val = 0
+    max_batches = getattr(args, "max_val_batches", 50)
+
+    for i, batch in enumerate(val_dataloader):
+        if i >= max_batches:
+            break
+        raw_model = accelerator.unwrap_model(model)
+
+        inputs_embeds = raw_model.prepare_inputs_embeds(
+            input_ids=batch["input_ids"],
+            pixel_values=batch.get("pixel_values"),
+            image_grid_thw=batch.get("image_grid_thw"))
+
+        n_slow_imgs = batch["n_slow_images"]
+        grid_thw = batch.get("image_grid_thw")
+        B = inputs_embeds.shape[0]
+        if grid_thw is not None and grid_thw.shape[0] > n_slow_imgs:
+            merge = getattr(raw_model.visual, "spatial_merge_size", 2)
+            n_imgs_per_sample = grid_thw.shape[0] // B
+            n_slow_img_tokens = sum(
+                int(g[0] * (g[1] // merge) * (g[2] // merge))
+                for g in grid_thw[:n_imgs_per_sample][:n_slow_imgs])
+            slow_embeds, fast_embeds = split_slow_fast_embeds(
+                inputs_embeds, batch["input_ids"],
+                raw_model.image_token_id, n_slow_img_tokens)
+        else:
+            slow_embeds = inputs_embeds
+            fast_embeds = inputs_embeds[:, :0]
+
+        L_slow = slow_embeds.shape[1]
+        pos_ids, _ = raw_model.get_rope_index(
+            input_ids=batch["input_ids"],
+            image_grid_thw=batch.get("image_grid_thw"),
+            attention_mask=batch["attention_mask"])
+        pos_ids = pos_ids[:, :, :L_slow]
+
+        if use_flare:
+            flare_q = raw_model.flare_queries.expand(B, -1, -1).to(
+                device=slow_embeds.device, dtype=slow_embeds.dtype)
+            slow_embeds_ext = torch.cat([slow_embeds, flare_q], dim=1)
+            pos_ids = extend_position_ids_for_flare(pos_ids, K)
+            L_latent = slow_embeds_ext.shape[1]
+        else:
+            slow_embeds_ext = slow_embeds
+            L_latent = L_slow
+
+        if args.use_robot_state and batch["state_raw"] is not None:
+            state_vec = batch["state_raw"].to(slow_embeds.device, dtype=slow_embeds.dtype)
+            state_embeds = raw_model.state_embedder(state_vec).unsqueeze(1)
+        else:
+            state_embeds = torch.empty((B, 0, slow_embeds.shape[2]),
+                                       device=slow_embeds.device, dtype=slow_embeds.dtype)
+        n_state = state_embeds.shape[1]
+
+        noisy_actions = raw_model.x_embedder(batch["noisy_actions"].to(slow_embeds.dtype))
+        timesteps = raw_model.t_embedder(batch["timesteps"].to(slow_embeds.dtype)).unsqueeze(1)
+        chunk = args.action_chunk
+        target = batch["target"].to(slow_embeds.dtype)
+        n_fast = fast_embeds.shape[1]
+        has_any_tac = bool(args.use_tactile_vec or args.use_tactile_deform)
+
+        if is_stage1 or not has_any_tac:
+            full_embeds = torch.cat([
+                slow_embeds_ext, fast_embeds, state_embeds, timesteps, noisy_actions,
+            ], dim=1)
+            L_total = full_embeds.shape[1]
+            outputs = model.model(
+                inputs_embeds=full_embeds, position_ids=pos_ids,
+                attention_mask=batch["attention_mask"], use_cache=False,
+                output_hidden_states=use_flare,
+                latent_indexes=torch.arange(0, L_latent, device=full_embeds.device),
+                action_indexes=torch.arange(L_latent, L_total, device=full_embeds.device),
+                tactile_indexes=torch.arange(0, 0, device=full_embeds.device))
+            hidden = outputs.last_hidden_state
+            act_start = L_latent + n_fast + n_state + 1
+            v_act = raw_model.final_layer(hidden[:, act_start:act_start + chunk, :])
+            loss_act = nn.MSELoss()(v_act, target)
+            loss_tac = 0.0
+        else:
+            tac_parts = []
+            if args.use_tactile_vec and batch["tactile_f6s"] is not None:
+                tac_parts.append(raw_model.tacf6_embedder(batch["tactile_f6s"].to(slow_embeds.dtype)))
+            if args.use_tactile_deform and batch["tactile_deforms"] is not None:
+                deforms = batch["tactile_deforms"].to(slow_embeds.device, dtype=slow_embeds.dtype)
+                Bs, nf, C, H, W = deforms.shape
+                feats = raw_model.deform_encoder(deforms.view(-1, C, H, W))
+                feats = feats.view(Bs, nf, -1)
+                tac_parts.append(raw_model.deform_proj(feats.to(slow_embeds.dtype)))
+            tactile_embeds = torch.cat(tac_parts, dim=1) if tac_parts else \
+                torch.empty((B, 0, slow_embeds.shape[2]), device=slow_embeds.device, dtype=slow_embeds.dtype)
+            has_tac = tactile_embeds.shape[1] > 0
+            n_action = n_fast + n_state + 1 + chunk
+            if has_tac:
+                noisy_actions_tac = raw_model.x_embedder(batch["noisy_actions"].to(slow_embeds.dtype))
+                timesteps_tac = raw_model.t_embedder(batch["timesteps"].to(slow_embeds.dtype)).unsqueeze(1)
+                full_embeds = torch.cat([
+                    slow_embeds_ext, fast_embeds, state_embeds, timesteps, noisy_actions,
+                    tactile_embeds, timesteps_tac, noisy_actions_tac,
+                ], dim=1)
+            else:
+                full_embeds = torch.cat([
+                    slow_embeds_ext, fast_embeds, state_embeds, timesteps, noisy_actions,
+                ], dim=1)
+            L_total = full_embeds.shape[1]
+            outputs = model.model(
+                inputs_embeds=full_embeds, position_ids=pos_ids,
+                attention_mask=batch["attention_mask"], use_cache=False,
+                output_hidden_states=use_flare,
+                latent_indexes=torch.arange(0, L_latent, device=full_embeds.device),
+                action_indexes=torch.arange(L_latent, L_latent + n_action, device=full_embeds.device),
+                tactile_indexes=torch.arange(L_latent + n_action, L_total, device=full_embeds.device) if has_tac
+                    else torch.arange(0, 0, device=full_embeds.device))
+            hidden = outputs.last_hidden_state
+            act_start = L_latent + n_fast + n_state + 1
+            v_act = raw_model.final_layer(hidden[:, act_start:act_start + chunk, :])
+            loss_act = nn.MSELoss()(v_act, target)
+            if has_tac:
+                delta_v = raw_model.final_layer_tactile(hidden[:, -chunk:, :])
+                loss_tac = nn.MSELoss()(delta_v, target - v_act.detach())
+            else:
+                loss_tac = 0.0
+
+        val_act += loss_act.item()
+        val_tac += (loss_tac.item() if torch.is_tensor(loss_tac) else loss_tac)
+        n_val += 1
+
+    for t in [val_act, val_tac, val_flare]:
+        if dist.is_initialized():
+            dist.all_reduce(t, op=dist.ReduceOp.SUM)
+    ws = dist.get_world_size() if dist.is_initialized() else 1
+    denom = ws * max(n_val, 1)
+
+    model.train()
+    return {
+        "val/action_loss": val_act.item() / denom,
+        "val/tactile_loss": val_tac.item() / denom,
+    }
 
 
 def train(args):
@@ -478,6 +709,16 @@ def train(args):
     optimizer = torch.optim.AdamW(param_groups, lr=args.learning_rate)
 
     dataset = SftDataset(args, processor, accelerator)
+
+    val_dataloader = None
+    if getattr(args, "val_ratio", 0) > 0:
+        val_dataset = dataset.create_val_split(
+            val_ratio=args.val_ratio, seed=args.seed)
+        val_dataloader = DataLoader(
+            val_dataset, batch_size=args.train_bsz_per_gpu, shuffle=False,
+            drop_last=True, collate_fn=val_dataset.collate_fn,
+            num_workers=2, pin_memory=True)
+
     dataloader = DataLoader(
         dataset, batch_size=args.train_bsz_per_gpu, shuffle=True,
         collate_fn=dataset.collate_fn, num_workers=4, pin_memory=True,
@@ -495,7 +736,11 @@ def train(args):
         min_lr_ratio=args.min_lr_ratio,
     )
 
-    model, optimizer, dataloader = accelerator.prepare(model, optimizer, dataloader)
+    if val_dataloader is not None:
+        model, optimizer, dataloader, val_dataloader = accelerator.prepare(
+            model, optimizer, dataloader, val_dataloader)
+    else:
+        model, optimizer, dataloader = accelerator.prepare(model, optimizer, dataloader)
 
     metric = TrainingMetrics(device=torch.cuda.current_device())
     global_step = 0
@@ -527,18 +772,26 @@ def train(args):
                 merge = getattr(raw_model.visual, "spatial_merge_size",
                                 getattr(processor.image_processor, "merge_size", 2))
                 n_imgs_per_sample = grid_thw.shape[0] // B
-                fast_grid = grid_thw[n_slow_imgs: n_imgs_per_sample]
-                n_fast_tokens = sum(
+                n_slow_img_tokens = sum(
                     int(g[0] * (g[1] // merge) * (g[2] // merge))
-                    for g in fast_grid
+                    for g in grid_thw[:n_imgs_per_sample][:n_slow_imgs]
                 )
-                slow_embeds = inputs_embeds[:, :-n_fast_tokens]
-                fast_embeds = inputs_embeds[:, -n_fast_tokens:]
+                slow_embeds, fast_embeds = split_slow_fast_embeds(
+                    inputs_embeds, batch["input_ids"],
+                    raw_model.image_token_id, n_slow_img_tokens)
             else:
                 slow_embeds = inputs_embeds
                 fast_embeds = inputs_embeds[:, :0]
 
             L_slow = slow_embeds.shape[1]
+            
+            torch.set_printoptions(profile="full")
+            # print(batch["input_ids"])
+            # print("---------------------")
+            # print(inputs_embeds.shape)
+            # print(slow_embeds.shape)
+            # print(fast_embeds.shape)
+            # input("pause")
 
             pos_ids, _ = raw_model.get_rope_index(
                 input_ids=batch["input_ids"],
@@ -637,14 +890,19 @@ def train(args):
                     ], dim=1)
 
                 L_total = full_embeds.shape[1]
-                latent_indexes  = torch.arange(0, L_latent, device=full_embeds.device)
-                action_indexes  = torch.arange(L_latent, L_latent + n_action,
+                latent_indexes = torch.arange(0, L_latent, device=full_embeds.device)
+                action_indexes = torch.arange(L_latent, L_latent + n_action,
                                                device=full_embeds.device)
                 if has_tactile:
                     tactile_indexes = torch.arange(L_latent + n_action, L_total,
                                                    device=full_embeds.device)
                 else:
                     tactile_indexes = torch.arange(0, 0, device=full_embeds.device)
+                    
+                # print(latent_indexes)
+                # print(action_indexes)
+                # print(tactile_indexes)
+                # input("pause")
 
                 outputs = model.model(
                     inputs_embeds=full_embeds,
@@ -755,6 +1013,20 @@ def train(args):
                         "lr": lr_now,
                     }, step=global_step)
 
+            # ── Validation ──
+            if (val_dataloader is not None
+                    and getattr(args, "val_freq", 0) > 0
+                    and (global_step + 1) % args.val_freq == 0):
+                val_m = run_validation(
+                    model, val_dataloader, accelerator, args,
+                    is_stage1, use_flare, K, T_per_frame, flare_layer_idx)
+                if accelerator.is_main_process:
+                    accelerator.print(
+                        f"  [Val step={global_step}] "
+                        f"act={val_m['val/action_loss']:.6f} "
+                        f"tac={val_m['val/tactile_loss']:.6f}")
+                    wandb.log(val_m, step=global_step)
+
             global_step += 1
 
         if (epoch + 1) % args.save_freq == 0 or epoch == args.n_epochs - 1:
@@ -806,6 +1078,14 @@ if __name__ == "__main__":
     parser.add_argument("--flare_frame_stride", type=int, default=2, help="Temporal stride for flare frame targets.")
     parser.add_argument("--flare_layer_index", type=int, default=-1, help="Layer to extract flare hidden states from (-1=last, e.g. -7 for ~3/4 depth).")
     parser.add_argument("--frame_stride", type=int, default=2)
+
+    # Validation
+    parser.add_argument("--val_ratio", type=float, default=0.0,
+                        help="Fraction of samples for validation (0=disable)")
+    parser.add_argument("--val_freq", type=int, default=0,
+                        help="Run validation every N steps (0=disable)")
+    parser.add_argument("--max_val_batches", type=int, default=50,
+                        help="Max batches per validation run")
 
     args = parser.parse_args()
 

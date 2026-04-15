@@ -12,20 +12,19 @@ ACTION_CHUNK = 16
 FRAME_STRIDE = 2
 
 IMAGE_VIEWS_SLOW = 'image_primary'
-IMAGE_VIEWS_FAST_R = 'image_wrist_right'
 IMAGE_VIEWS_FAST_L = 'image_wrist_left'
+IMAGE_VIEWS_FAST_R = 'image_wrist_right'
 
 VIDEO_SLOW_SUFFIX = 'head_left_rgb.mp4'
-VIDEO_FAST_R_SUFFIX = 'right_wrist.mp4'
 VIDEO_FAST_L_SUFFIX = 'left_wrist.mp4'
+VIDEO_FAST_R_SUFFIX = 'right_wrist.mp4'
 
-DEFAULT_INSTRUCTION = "Pick up the AirPods case from the desk with the right hand and handover it to the left; then, carefully open its lid using the right thumb. Next, using the right index finger and thumb in succession, remove the two wireless earbuds and place them on the desk. Subsequently, close the lid of the case with the right hand finger, and finally, place the case itself onto the desk using the left hand."
+DEFAULT_INSTRUCTION = "  - Using the right thumb and index finger, pick up the egg from the green egg tray and place it into the yellow egg tray."
 
-# Bimanual: Right Arm(9D) + Right Hand(22D) + Left Arm(9D) + Left Hand(22D) = 62D
+# Bimanual: Left Arm(9D) + Left Hand(22D) + Right Arm(9D) + Right Hand(22D) = 62D
 ACTION_MASK = [True] * 62
 STATE_MASK = [True] * 62
 TACTILE_F6_MASK = [True] * 60  # 10 fingers x 6 channels
-
 
 def pose_matrix_to_9d(pose_matrices):
     trans = pose_matrices[:, :3, 3]
@@ -33,13 +32,11 @@ def pose_matrix_to_9d(pose_matrices):
     rot_col2 = pose_matrices[:, :3, 1]
     return np.concatenate([trans, rot_col1, rot_col2], axis=-1)
 
-
 def get_rot_mat(vec6d):
     col1 = vec6d[:3]
     col2 = vec6d[3:6]
     col3 = np.cross(col1, col2)
     return np.column_stack([col1, col2, col3])
-
 
 def compute_chunk_delta_pose(curr_pose, target_pose):
     R_curr = curr_pose[:3, :3]
@@ -49,7 +46,6 @@ def compute_chunk_delta_pose(curr_pose, target_pose):
     t_targ = target_pose[:3, 3]
 
     delta_xyz = R_curr.T @ (t_targ - t_curr)
-
     R_delta = R_curr.T @ R_targ
 
     delta_rot_col1 = R_delta[:3, 0]
@@ -69,24 +65,22 @@ def compute_tracking_error_axis_angle(state_31d, target_31d):
     R_targ = get_rot_mat(t_arm[3:9])
 
     delta_xyz = R_state.T @ (t_targ - t_state)
-
     R_delta = R_state.T @ R_targ
 
     delta_rot_axis_angle, _ = cv2.Rodrigues(R_delta)
     delta_rot_axis_angle = delta_rot_axis_angle.flatten()
 
     arm_error_6d = np.concatenate([delta_xyz, delta_rot_axis_angle])
-
     hand_error_22d = target_31d[9:] - state_31d[9:]
 
     return np.concatenate([arm_error_6d, hand_error_22d])
 
 
 def compute_bimanual_tracking_error(state_62d, target_62d):
-    """Compute tracking error for both arms. Returns 56D (28D right + 28D left)."""
-    right_err = compute_tracking_error_axis_angle(state_62d[:31], target_62d[:31])
-    left_err = compute_tracking_error_axis_angle(state_62d[31:], target_62d[31:])
-    return np.concatenate([right_err, left_err])
+    """Compute tracking error for both arms. Returns 56D (28D left + 28D right)."""
+    left_err = compute_tracking_error_axis_angle(state_62d[:31], target_62d[:31])
+    right_err = compute_tracking_error_axis_angle(state_62d[31:], target_62d[31:])
+    return np.concatenate([left_err, right_err])
 
 
 def extract_frames_from_video(video_path, save_dir, view_name):
@@ -129,8 +123,8 @@ def process_single_episode_worker(args):
 
     h5_path = os.path.join(episode_dir, f"{episode_name}.h5")
     video_slow_path = os.path.join(episode_dir, f"{episode_name}_{VIDEO_SLOW_SUFFIX}")
-    video_fast_r_path = os.path.join(episode_dir, f"{episode_name}_{VIDEO_FAST_R_SUFFIX}")
     video_fast_l_path = os.path.join(episode_dir, f"{episode_name}_{VIDEO_FAST_L_SUFFIX}")
+    video_fast_r_path = os.path.join(episode_dir, f"{episode_name}_{VIDEO_FAST_R_SUFFIX}")
 
     if not os.path.exists(h5_path):
         print(f"skip: H5 file not found")
@@ -141,22 +135,22 @@ def process_single_episode_worker(args):
 
     # Extract frames from all three views (no cropping)
     slow_img_paths = extract_frames_from_video(video_slow_path, episode_img_save_dir, IMAGE_VIEWS_SLOW)
-    fast_r_img_paths = extract_frames_from_video(video_fast_r_path, episode_img_save_dir, IMAGE_VIEWS_FAST_R)
     fast_l_img_paths = extract_frames_from_video(video_fast_l_path, episode_img_save_dir, IMAGE_VIEWS_FAST_L)
+    fast_r_img_paths = extract_frames_from_video(video_fast_r_path, episode_img_save_dir, IMAGE_VIEWS_FAST_R)
 
     with h5py.File(h5_path, 'r') as f:
+        # ----- Left arm state: current pose (Absolute 9D) -----
+        s_l_arm_pose = f['left_arm_current_pose'][:]         # (N, 4, 4)
+        s_l_arm_9d = pose_matrix_to_9d(s_l_arm_pose)        # (N, 9)
+        s_l_hnd = f['left_hand_joint_positions'][:]          # (N, 22)
+        
         # ----- Right arm state: current pose (Absolute 9D) -----
         s_r_arm_pose = f['right_arm_current_pose'][:]       # (N, 4, 4)
         s_r_arm_9d = pose_matrix_to_9d(s_r_arm_pose)        # (N, 9)
         s_r_hnd = f['right_hand_joint_positions'][:]         # (N, 22)
 
-        # ----- Left arm state: current pose (Absolute 9D) -----
-        s_l_arm_pose = f['left_arm_current_pose'][:]         # (N, 4, 4)
-        s_l_arm_9d = pose_matrix_to_9d(s_l_arm_pose)        # (N, 9)
-        s_l_hnd = f['left_hand_joint_positions'][:]          # (N, 22)
-
-        # State: right(31D) + left(31D) = 62D
-        states = np.concatenate([s_r_arm_9d, s_r_hnd, s_l_arm_9d, s_l_hnd], axis=1)
+        # State: left(31D) + right(31D) = 62D
+        states = np.concatenate([s_l_arm_9d, s_l_hnd, s_r_arm_9d, s_r_hnd], axis=1)
 
         # ----- Right arm target: target pose (for delta actions) -----
         a_r_arm_pose = f['right_arm_target_pose'][:]         # (N, 4, 4)
@@ -168,14 +162,14 @@ def process_single_episode_worker(args):
         a_l_arm_9d = pose_matrix_to_9d(a_l_arm_pose)        # (N, 9)
         a_l_hnd = f['left_hand_target_joint_positions'][:]   # (N, 22)
 
-        # Absolute targets: right(31D) + left(31D) = 62D
-        absolute_targets = np.concatenate([a_r_arm_9d, a_r_hnd, a_l_arm_9d, a_l_hnd], axis=1)
+        # Absolute targets: left(31D) + right(31D) = 62D
+        absolute_targets = np.concatenate([a_l_arm_9d, a_l_hnd, a_r_arm_9d, a_r_hnd], axis=1)
 
         # ----- Tactile -----
-        t_r_f6 = f['right_hand_tactile_f6'][:]               # (N, 5, 6)
         t_l_f6 = f['left_hand_tactile_f6'][:]                # (N, 5, 6)
-        t_r_deform = f['right_hand_tactile_deform'][:]       # (N, 5, H, W)
+        t_r_f6 = f['right_hand_tactile_f6'][:]               # (N, 5, 6)
         t_l_deform = f['left_hand_tactile_deform'][:]        # (N, 5, H, W)
+        t_r_deform = f['right_hand_tactile_deform'][:]       # (N, 5, H, W)
 
     episode_length = len(states)
     min_len = min(episode_length, len(slow_img_paths), len(fast_r_img_paths), len(fast_l_img_paths))
@@ -189,46 +183,46 @@ def process_single_episode_worker(args):
         # Tactile deform images: 5 right + 5 left = 10 fingers
         tactile_img_paths_current = []
         for finger_idx in range(5):
+            img_arr = t_l_deform[i, finger_idx]
+            path = os.path.join(episode_img_save_dir, f'image{i}_tactile_left_deform_{finger_idx}.png')
+            if not os.path.exists(path):
+                cv2.imwrite(path, img_arr)
+            tactile_img_paths_current.append(path)
+        
+        for finger_idx in range(5):
             img_arr = t_r_deform[i, finger_idx]
             path = os.path.join(episode_img_save_dir, f'image{i}_tactile_right_deform_{finger_idx}.png')
             if not os.path.exists(path):
                 cv2.imwrite(path, img_arr)
             tactile_img_paths_current.append(path)
 
-        for finger_idx in range(5):
-            img_arr = t_l_deform[i, finger_idx]
-            path = os.path.join(episode_img_save_dir, f'image{i}_tactile_left_deform_{finger_idx}.png')
-            if not os.path.exists(path):
-                cv2.imwrite(path, img_arr)
-            tactile_img_paths_current.append(path)
-
         # ----- Action chunk: delta-base for both arms -----
-        chunk_base_r_arm_pose = s_r_arm_pose[i]
         chunk_base_l_arm_pose = s_l_arm_pose[i]
+        chunk_base_r_arm_pose = s_r_arm_pose[i]
 
         action_chunk_list = []
         for k in range(ACTION_CHUNK):
             base_future_idx = min(i + k * FRAME_STRIDE, min_len - 1)
             actual_future_idx = min(base_future_idx + FRAME_STRIDE - 1, min_len - 1)
+            
+            # Left arm delta
+            target_l_arm_pose = a_l_arm_pose[actual_future_idx]
+            target_l_hand = a_l_hnd[actual_future_idx]
+            delta_l_9d = compute_chunk_delta_pose(chunk_base_l_arm_pose, target_l_arm_pose)
 
             # Right arm delta
             target_r_arm_pose = a_r_arm_pose[actual_future_idx]
             target_r_hand = a_r_hnd[actual_future_idx]
             delta_r_9d = compute_chunk_delta_pose(chunk_base_r_arm_pose, target_r_arm_pose)
 
-            # Left arm delta
-            target_l_arm_pose = a_l_arm_pose[actual_future_idx]
-            target_l_hand = a_l_hnd[actual_future_idx]
-            delta_l_9d = compute_chunk_delta_pose(chunk_base_l_arm_pose, target_l_arm_pose)
-
-            # 62D: right(9+22) + left(9+22)
-            act = np.concatenate([delta_r_9d, target_r_hand, delta_l_9d, target_l_hand]).tolist()
+            # 62D: left(9+22) + right(9+22)
+            act = np.concatenate([delta_l_9d, target_l_hand, delta_r_9d, target_r_hand]).tolist()
             action_chunk_list.append(act)
 
         current_state = states[i].tolist()
 
-        # Tactile f6: concatenate right(5,6) + left(5,6) -> flatten to 60D
-        tactile_f6_combined = np.concatenate([t_r_f6[i], t_l_f6[i]], axis=0).tolist()
+        # Tactile f6: concatenate left(5,6) + right(5,6) -> flatten to 60D
+        tactile_f6_combined = np.concatenate([t_l_f6[i], t_r_f6[i]], axis=0).tolist()
 
         target_idx_next = min(i + FRAME_STRIDE - 1, min_len - 1)
         current_abs_action = absolute_targets[target_idx_next].tolist()
@@ -246,7 +240,6 @@ def process_single_episode_worker(args):
         records.append(episode_data)
 
     return episode_name, records
-
 
 def jsonl_2_json(input_file, output_file):
     with open(input_file, 'r') as f:
@@ -333,7 +326,7 @@ def cal_stats(jsonl_filename):
     state_stats = calculate_stats(states, STATE_MASK)
     tactile_f6_stats = calculate_stats(tactiles_flat, TACTILE_F6_MASK)
 
-    # Tracking error: 28D right + 28D left = 56D
+    # Tracking error: 28D left + 28D right = 56D
     TRACKING_ERROR_MASK = [True] * 56
 
     if len(tracking_errors) > 0:
@@ -427,14 +420,16 @@ def process_dataset(data_root, img_save_root, json_save_root, json_name_base, ta
 
 
 if __name__ == "__main__":
-    DATA_ROOT = "/mnt/amlfs-02/shared/human_egocentric/dniu/datasets/bkl_inlab/raw/task_data/open_airpods_03-25-2026_100"
+    DATA_ROOT = "/mnt/amlfs-02/shared/human_egocentric/dniu/datasets/lambda/raw/task_data/pick_place_egg_04-11-2026_100"
     IMG_SAVE_ROOT = "/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_dense_fastslow_full"
     JSON_SAVE_ROOT = "/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json"
-    TASK_NAME = "open_airpods_0325_bimanual_stride2"
-    JSON_NAME_BASE = "open_airpods_0325_deltabase_axis_eef_bimanual_stride2_train"
+    TASK_NAME = "place_egg_0411_lr_bimanual_stride2"
+    JSON_NAME_BASE = "place_egg_0411_deltabase_axis_eef_lr_bimanual_stride2_train"
 
     # Tune num_workers to fit your machine. None = auto (up to 32).
     NUM_WORKERS = None
 
     process_dataset(DATA_ROOT, IMG_SAVE_ROOT, JSON_SAVE_ROOT, JSON_NAME_BASE, TASK_NAME,
                     num_workers=NUM_WORKERS)
+
+

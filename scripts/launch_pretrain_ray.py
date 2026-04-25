@@ -26,14 +26,18 @@ import sys
 SCRIPT_DIR = "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts"
 
 TRAIN_SCRIPTS = {
-    "egodex": f"{SCRIPT_DIR}/pretrain_egodex.sh",
-    "mecka":  f"{SCRIPT_DIR}/pretrain_mecka.sh",
+    "egodex":       f"{SCRIPT_DIR}/pretrain_egodex.sh",
+    "mecka":        f"{SCRIPT_DIR}/pretrain_mecka.sh",
+    "egodex_flare": f"{SCRIPT_DIR}/pretrain_egodex_flare.sh",
+    "mecka_flare":  f"{SCRIPT_DIR}/pretrain_mecka_flare.sh",
 }
 PY_SCRIPTS = {
-    "egodex": "train_qwen3vl_pretrain_egodex.py",
-    "mecka":  "train_qwen3vl_pretrain_egodex.py",
+    "egodex":       "train_qwen3vl_pretrain_egodex.py",
+    "mecka":        "train_qwen3vl_pretrain_egodex.py",
+    "egodex_flare": "train_qwen3vl_pretrain_egodex_flare.py",
+    "mecka_flare":  "train_qwen3vl_pretrain_egodex_flare.py",
 }
-MASTER_PORT = 29500
+MASTER_PORT = 29501
 
 
 def kill_stale_processes(ips, py_script):
@@ -73,6 +77,86 @@ def get_ray_node_ips():
             ips.append(ip)
     ray.shutdown()
     return sorted(ips)
+
+
+def health_check_nodes(ips, timeout=60):
+    """
+    SSH into each node in parallel and verify:
+      1. SSH is reachable (within timeout)
+      2. nvidia-smi reports 8 healthy GPUs
+      3. MASTER_PORT is not stuck/unreachable
+
+    Returns (healthy_ips, failed_ips) where failed_ips is a list of (ip, reason).
+    """
+    print("Running health checks on all nodes...")
+    # Check 1: nvidia-smi GPU count
+    # Check 2: allocate CUDA memory on all 8 GPUs (catches flaky hardware)
+    # Using subprocess list form (no shell=True) so SSH gets the command
+    # as a single argument — no nested quoting issues.
+    gpu_check_script = (
+        "import torch; "
+        "[torch.zeros(1024,1024,device=torch.device('cuda',i)) for i in range(8)]; "
+        "print('gpu_alloc_ok')"
+    )
+    procs = []
+    for ip in ips:
+        # SSH executes the remote command directly (no bash -c wrapping needed)
+        remote_cmd = (
+            f"nvidia-smi --query-gpu=gpu_uuid --format=csv,noheader 2>/dev/null | wc -l; "
+            f"python3 -c \"{gpu_check_script}\" 2>/dev/null"
+        )
+        cmd = [
+            "ssh", "-o", "StrictHostKeyChecking=no", "-o", "ConnectTimeout=10",
+            ip, remote_cmd,
+        ]
+        p = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        )
+        procs.append((ip, p))
+
+    healthy = []
+    failed = []
+    for ip, p in procs:
+        try:
+            stdout, stderr = p.communicate(timeout=timeout)
+            rc = p.returncode
+            output = stdout.decode().strip()
+            stderr_text = stderr.decode().strip()
+            # exit 255 = SSH connection failed entirely
+            if rc == 255:
+                failed.append((ip, f"SSH connection failed"))
+                continue
+            # Parse nvidia-smi GPU count from first line
+            lines = output.split("\n")
+            try:
+                gpu_count = int(lines[0].strip())
+            except (ValueError, IndexError):
+                failed.append((ip, f"nvidia-smi failed (exit {rc})"))
+                continue
+            if gpu_count < 8:
+                failed.append((ip, f"only {gpu_count} GPUs visible"))
+                continue
+            if "gpu_alloc_ok" not in output:
+                failed.append((ip, "GPU memory allocation failed"))
+                continue
+            healthy.append(ip)
+        except subprocess.TimeoutExpired:
+            p.kill()
+            p.wait()
+            failed.append((ip, "timeout (node unresponsive)"))
+        except Exception as e:
+            failed.append((ip, str(e)))
+
+    for ip in healthy:
+        print(f"  {ip}: OK")
+    for ip, reason in failed:
+        print(f"  {ip}: FAILED ({reason})")
+    print(f"\nHealthy: {len(healthy)}/{len(ips)}")
+    if failed:
+        print(f"Excluded {len(failed)} unhealthy node(s)")
+    print()
+    return healthy, failed
 
 
 def detect_nccl_interface(master_ip):
@@ -218,6 +302,11 @@ if __name__ == "__main__":
                         help="Only kill stale processes on all nodes")
     parser.add_argument("--skip_data_prep", action="store_true",
                         help="Skip data prep step (if symlinks already exist)")
+    parser.add_argument("--skip_health_check", action="store_true",
+                        help="Skip node health check (faster but risky)")
+    parser.add_argument("--exclude", type=str, nargs="+", default=[],
+                        metavar="IP",
+                        help="IPs to exclude (e.g. --exclude 10.244.1.1 10.244.2.2)")
     args = parser.parse_args()
 
     train_script = TRAIN_SCRIPTS[args.script]
@@ -229,8 +318,26 @@ if __name__ == "__main__":
         print(f"  {ip}")
     print()
 
+    # Exclude blacklisted nodes
+    if args.exclude:
+        exclude_set = set(args.exclude)
+        before = len(ips)
+        ips = [ip for ip in ips if ip not in exclude_set]
+        print(f"Excluded {before - len(ips)} blacklisted node(s), {len(ips)} remaining\n")
+
     if args.list_only:
         sys.exit(0)
+
+    # Health check: filter out broken nodes before doing anything
+    if not args.skip_health_check:
+        ips, failed = health_check_nodes(ips)
+        if not ips:
+            print("ERROR: No healthy nodes available!")
+            sys.exit(1)
+        if args.num_nodes and len(ips) < args.num_nodes:
+            print(f"WARNING: Requested {args.num_nodes} nodes but only "
+                  f"{len(ips)} healthy. Using all {len(ips)}.")
+            args.num_nodes = len(ips)
 
     if args.kill_only:
         kill_stale_processes(ips, py_script)

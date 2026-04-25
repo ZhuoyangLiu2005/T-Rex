@@ -237,7 +237,10 @@ class SftDataset(Dataset):
 
         full_path = os.path.join(self.img_dir, flare_path) if not os.path.isabs(flare_path) else flare_path
         if os.path.exists(full_path):
-            return self._open(flare_path)
+            try:
+                return self._open(flare_path)
+            except (PIL.UnidentifiedImageError, OSError):
+                return None
         else:
             # Out of episode range → use last available or return None
             return None

@@ -1,21 +1,50 @@
 """
-Qwen3-VL MoT training with flare visual prediction + Tactile CFG.
+Qwen3-VL MoT training with flare prediction + per-modality Tactile CFG + tactile memory.
 
-Extends train_qwen3vl_flare.py with Tactile Classifier-Free Guidance:
-  --tactile_cfg_drop P   : randomly drop tactile tokens with probability P (default 0.15)
-  --tactile_cfg_scale W  : guidance scale for inference (default 1.0, >1 amplifies tactile)
+Extends train_qwen3vl_flare.py with:
+  --cfg_drop_force P       : probability of replacing F6 tokens with null (default 0.15)
+  --cfg_drop_deform P      : probability of replacing deform tokens with null (default 0.15)
+  --use_learnable_null 1   : use learnable null embeddings instead of zero-masking
+  --tactile_cfg_scale W    : guidance scale at inference (default 1.0, logged only)
+  --tactile_history_len T  : number of tactile timesteps to feed (default 1 = no memory)
+  --tactile_history_stride : frame stride between history steps (default 1)
 
-Key changes from train_qwen3vl_flare.py:
-  1. CFG dropout: tactile tokens are randomly zeroed out during training,
-     forcing the model to learn both conditional and unconditional modes.
-  2. Unified loss: v_final = v_act + delta_v is trained against the full target,
-     so gradients flow through both experts jointly.
-  3. No zero-init of final_layer_tactile: Xavier init + CFG dropout gives the
-     tactile expert strong gradients from step 1.
+Per-modality CFG + learnable null
+---------------------------------
+Force and deform are dropped independently, each replaced by a learned "null
+embedding" specific to that modality. Zero-masking (previous default) puts the
+tactile expert in an arbitrary "pretend no signal" state that is in-distribution
+for the embedder; a learnable null is a cleaner absent-signal marker.
+  tac_null_f6      : [1, 1, H]  learned null for the force modality
+  tac_null_deform  : [1, 1, H]  learned null for the deform modality
 
-At inference, the guidance scale W amplifies the tactile contribution:
-  v_guided = v_uncond + W * (v_cond - v_uncond)
-where v_uncond is the model output without tactile, v_cond is with tactile.
+At inference, two independent guidance scales can be applied:
+  v_guided = v_uncond + W_f*(v_cond_force - v_uncond) + W_d*(v_cond_deform - v_uncond)
+
+Tactile memory (compressed, constant MoT seq length)
+-----------------------------------------------------
+When `tactile_history_len > 1`, the dataset builds a T-frame history window
+per sample. But history is NOT concatenated into the MoT sequence -- naïve
+concat would T× the tactile token count and pay quadratic attention cost at
+every layer × every denoise step. Instead we compress history OUTSIDE the
+MoT with a `TacTemporalPool` (one per modality):
+
+  embedder -> [B, T, n_fingers, H] -> TacTemporalPool -> [B, n_fingers, H]
+
+The pool runs finger-major internally (per-finger independent attention
+pool over T, giving the right inductive bias for slip / contact onset /
+release) and mixes history into the current frame via a zero-init gated
+residual, so memory starts disabled and turns on as training learns to
+use it. The MoT sees the same `n_fingers` tokens per modality regardless
+of T -- no attention-mask surgery, no latency hit.
+
+Final tactile sequence layout (unchanged from no-memory case):
+  [ f6_finger0..N-1,    deform_finger0..N-1 ]
+
+Unified loss (inherited from CFG script)
+----------------------------------------
+  v_final = v_act + delta_v,  loss = MSE(v_final, target).
+Gradients flow through both experts jointly.
 """
 
 import os, sys
@@ -51,6 +80,53 @@ import cv2
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level="INFO")
+
+
+class TacTemporalPool(nn.Module):
+    """Summarize tactile history [B, T, n_fingers, H] -> [B, n_fingers, H].
+
+    Rationale: naïvely concatenating T history tokens inflates the MoT
+    sequence length by T× per modality and adds quadratic attention cost
+    at every layer × every denoise step. We instead pool outside the MoT
+    so the MoT sees the same number of tokens as the no-memory case.
+
+    Structure: per-finger independent attention pool (finger axis treated
+    as batch), giving the correct temporal-per-finger inductive bias for
+    slip / contact onset / release. A single learned query dot-products
+    over the time-stamped history.
+
+    Gating: `out = current + tanh(gate) * history`, `gate` zero-init.
+    Memory starts fully disabled and the model learns to mix it in when
+    it helps -- matches the residual-tactile philosophy already used for
+    `final_layer_tactile`.
+    """
+
+    def __init__(self, hidden_size: int, t_max: int):
+        super().__init__()
+        self.H = hidden_size
+        self.t_max = t_max
+        self.time_embed = nn.Parameter(
+            (torch.randn(t_max, hidden_size) * 0.02).to(torch.bfloat16))
+        self.query = nn.Parameter(
+            (torch.randn(hidden_size) * 0.02).to(torch.bfloat16))
+        self.gate = nn.Parameter(torch.zeros(hidden_size, dtype=torch.bfloat16))
+        self.scale = hidden_size ** -0.5
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # x: [B, T, n_fingers, H]; current frame is x[:, -1].
+        B, T, nf, H = x.shape
+        current = x[:, -1]  # [B, nf, H]
+        if T == 1:
+            return current
+        tpe = self.time_embed[:T].to(dtype=x.dtype).view(1, T, 1, H)
+        x = x + tpe
+        q = self.query.to(dtype=x.dtype).view(1, 1, 1, H)
+        # Finger-major internally: per-finger softmax over time.
+        logits = (x * q).sum(-1) * self.scale            # [B, T, nf]
+        attn = torch.softmax(logits, dim=1)               # softmax over T
+        history = (x * attn.unsqueeze(-1)).sum(1)         # [B, nf, H]
+        gate = torch.tanh(self.gate.to(dtype=x.dtype)).view(1, 1, H)
+        return current + gate * history
 
 
 def _rot6d_to_mat(rot6d):
@@ -175,8 +251,43 @@ class SftDataset(Dataset):
     def __len__(self):
         return len(self.hf_dataset)
 
+    @staticmethod
+    def _episode_prefix(sample):
+        """Episode identifier = directory of the first slow image path."""
+        paths = sample.get("input_image_slow", [])
+        if not paths:
+            return ""
+        return os.path.dirname(paths[0])
+
     def __getitem__(self, idx):
-        return self.hf_dataset[idx]
+        sample = dict(self.hf_dataset[idx])
+        T = max(getattr(self.config, "tactile_history_len", 1), 1)
+        stride = max(getattr(self.config, "tactile_history_stride", 1), 1)
+
+        # Always emit a history window of length T (T=1 = no memory).
+        # Ordering: oldest past first, current last.
+        cur_prefix = self._episode_prefix(sample)
+        f6_hist = []
+        deform_paths_hist = []
+        for t in range(T - 1, 0, -1):
+            past_idx = idx - t * stride
+            past_sample = None
+            if past_idx >= 0:
+                try:
+                    cand = dict(self.hf_dataset[past_idx])
+                    if self._episode_prefix(cand) == cur_prefix:
+                        past_sample = cand
+                except Exception:
+                    pass
+            src = past_sample if past_sample is not None else sample
+            f6_hist.append(src.get("tactile_f6"))
+            deform_paths_hist.append(list(src.get("tactile_image_deform", []) or []))
+        f6_hist.append(sample.get("tactile_f6"))
+        deform_paths_hist.append(list(sample.get("tactile_image_deform", []) or []))
+
+        sample["_tactile_f6_hist"] = f6_hist
+        sample["_tactile_deform_hist"] = deform_paths_hist
+        return sample
 
     @staticmethod
     def _normalize(values, mask, vmin, vmax):
@@ -241,21 +352,32 @@ class SftDataset(Dataset):
         x_t = t_ * noise + (1 - t_) * norm_actions
         u_t = noise - norm_actions
 
+        # Unified temporal shape: [B, T, n_fingers, ...] (T=1 means no memory).
+        T_hist = max(getattr(cfg, "tactile_history_len", 1), 1)
+
         norm_tacf6 = None
         if cfg.use_tactile_vec:
-            tacf6 = np.array([x["tactile_f6"] for x in batch], dtype=np.float32)
-            tacf6 = tacf6.reshape(B, -1)
-            norm_tacf6 = self._normalize(tacf6, self.tacf6_mask,
-                                         self.tacf6_min, self.tacf6_max)
-            norm_tacf6 = torch.tensor(norm_tacf6.reshape(B, -1, 6), dtype=torch.bfloat16)
+            # Each sample carries a history list of length T of flat [n_fingers*6] arrays.
+            tacf6_hist = np.array(
+                [x["_tactile_f6_hist"] for x in batch], dtype=np.float32
+            ).reshape(B, T_hist, -1)
+            flat = tacf6_hist.reshape(B * T_hist, -1)
+            normed = self._normalize(flat, self.tacf6_mask, self.tacf6_min, self.tacf6_max)
+            norm_tacf6 = torch.tensor(
+                normed.reshape(B, T_hist, -1, 6), dtype=torch.bfloat16
+            )  # [B, T, n_fingers, 6]
 
         deforms_tensor = None
         if cfg.use_tactile_deform:
-            deforms = []
+            deforms = []  # [B, T, n_fingers, H, W]
             for x in batch:
-                imgs = [self._open_gray(p) for p in x.get("tactile_image_deform", [])]
-                deforms.append(imgs)
-            deforms_tensor = torch.tensor(np.array(deforms)).unsqueeze(2)
+                frames = []  # [T, n_fingers, H, W]
+                for paths_at_t in x["_tactile_deform_hist"]:
+                    imgs = [self._open_gray(p) for p in paths_at_t]
+                    frames.append(imgs)
+                deforms.append(frames)
+            deforms_tensor = torch.tensor(np.array(deforms)).unsqueeze(3)
+            # Shape: [B, T, n_fingers, 1, H, W]
 
         state_raw_list = []
         if cfg.use_robot_state:
@@ -392,8 +514,12 @@ def save_checkpoint(model, processor, accelerator, args, epoch, global_step, sta
                 "n_flare_tokens_per_frame": args.n_flare_tokens_per_frame,
                 "n_flare_steps": args.n_flare_steps,
                 "flare_layer_index": args.flare_layer_index,
-                "tactile_cfg_drop": args.tactile_cfg_drop,
+                "cfg_drop_force": args.cfg_drop_force,
+                "cfg_drop_deform": args.cfg_drop_deform,
+                "use_learnable_null": args.use_learnable_null,
                 "tactile_cfg_scale": args.tactile_cfg_scale,
+                "tactile_history_len": args.tactile_history_len,
+                "tactile_history_stride": args.tactile_history_stride,
             }, f, indent=2)
 
         with open(os.path.join(save_dir, "stats_data.json"), "w") as f:
@@ -481,10 +607,36 @@ def train(args):
     has_any_tactile = bool(args.use_tactile_vec or args.use_tactile_deform)
     freeze_tactile = is_stage1 or (not has_any_tactile)
 
+    # ── Learnable CFG null embeddings (per modality) + temporal memory pool ──
+    # Registered on the outer VLA wrapper so they are saved/loaded with the
+    # checkpoint. Names start with "tac_" -- the freeze logic below groups
+    # them with the tactile expert (stage-2 only).
+    H_hidden = model.config.hidden_size
+    T_hist = max(args.tactile_history_len, 1)
+    if args.use_tactile_vec and args.use_learnable_null:
+        model.tac_null_f6 = nn.Parameter(
+            (torch.randn(1, 1, H_hidden) * 0.02).to(torch.bfloat16))
+    if args.use_tactile_deform and args.use_learnable_null:
+        model.tac_null_deform = nn.Parameter(
+            (torch.randn(1, 1, H_hidden) * 0.02).to(torch.bfloat16))
+    if T_hist > 1:
+        # One temporal pool per modality (independent params, matching pool
+        # structure but modality-specific dynamics: deform ≠ force over time).
+        if args.use_tactile_vec:
+            model.tac_pool_f6 = TacTemporalPool(H_hidden, T_hist)
+        if args.use_tactile_deform:
+            model.tac_pool_deform = TacTemporalPool(H_hidden, T_hist)
+
     if has_any_tactile:
         accelerator.print(
-            f"Tactile CFG: drop_prob={args.tactile_cfg_drop}, "
+            f"Tactile CFG: drop(force)={args.cfg_drop_force}, "
+            f"drop(deform)={args.cfg_drop_deform}, "
+            f"null={'learnable' if args.use_learnable_null else 'zero'}, "
             f"cfg_scale={args.tactile_cfg_scale} (inference only)")
+        if args.tactile_history_len > 1:
+            accelerator.print(
+                f"Tactile memory: history_len={args.tactile_history_len}, "
+                f"stride={args.tactile_history_stride}")
 
     if not args.resume_checkpoint:
         named_params = dict(model.named_parameters())
@@ -530,7 +682,8 @@ def train(args):
     for name, param in model.named_parameters():
         if name.startswith("visual") or name.startswith("deform_encoder"):
             param.requires_grad = False
-        elif "_tactile" in name or "final_layer_tactile" in name:
+        elif ("_tactile" in name or "final_layer_tactile" in name
+              or name.startswith("tac_")):  # tac_null_*, tac_pool_*
             param.requires_grad = (not freeze_tactile)
         else:
             param.requires_grad = True
@@ -677,29 +830,60 @@ def train(args):
 
             else: # mid/post training with tactile
                 tac_parts = []
+
+                def _cfg_drop(tok, p, null_param_name):
+                    """Per-sample drop → learnable null (or zero) on [B, nf, H]."""
+                    if p <= 0:
+                        return tok
+                    Bs = tok.shape[0]
+                    drop = (torch.rand(Bs, device=tok.device) < p).view(Bs, 1, 1)
+                    if args.use_learnable_null and hasattr(raw_model, null_param_name):
+                        null_emb = getattr(raw_model, null_param_name).to(
+                            dtype=tok.dtype).view(1, 1, -1)
+                    else:
+                        null_emb = torch.zeros(
+                            1, 1, tok.shape[-1],
+                            device=tok.device, dtype=tok.dtype)
+                    return torch.where(drop, null_emb.expand_as(tok), tok)
+
+                # ── F6 force tokens ─────────────────────────────────────────
+                # Shape contract entering MoT: [B, n_fingers, H] (constant in T).
                 if args.use_tactile_vec and batch["tactile_f6s"] is not None:
-                    tac_parts.append(raw_model.tacf6_embedder(batch["tactile_f6s"].to(slow_embeds.dtype)))
+                    f6 = batch["tactile_f6s"].to(
+                        slow_embeds.device, dtype=slow_embeds.dtype)  # [B,T,nf,6]
+                    f6_tok = raw_model.tacf6_embedder(f6)              # [B,T,nf,H]
+                    # Temporal memory: compress T → 1 (per-finger attention pool).
+                    if f6_tok.shape[1] > 1 and hasattr(raw_model, "tac_pool_f6"):
+                        f6_tok = raw_model.tac_pool_f6(f6_tok)         # [B,nf,H]
+                    else:
+                        f6_tok = f6_tok[:, -1]                         # current only
+                    f6_tok = _cfg_drop(f6_tok, args.cfg_drop_force, "tac_null_f6")
+                    tac_parts.append(f6_tok)
+
+                # ── Deform tokens ───────────────────────────────────────────
                 if args.use_tactile_deform and batch["tactile_deforms"] is not None:
-                    deforms = batch["tactile_deforms"].to(slow_embeds.device, dtype=slow_embeds.dtype)
-                    Bs, nf, C, H, W = deforms.shape
+                    deforms = batch["tactile_deforms"].to(
+                        slow_embeds.device, dtype=slow_embeds.dtype)   # [B,T,nf,1,H,W]
+                    Bs, Ts, nf_d, C, Hh, Ww = deforms.shape
                     with torch.no_grad():
-                        feats = raw_model.deform_encoder(deforms.view(-1, C, H, W))
-                    feats = feats.view(Bs, nf, -1)
-                    tac_parts.append(raw_model.deform_proj(feats.to(slow_embeds.dtype)))
+                        feats = raw_model.deform_encoder(deforms.view(-1, C, Hh, Ww))
+                    feats = feats.view(Bs, Ts, nf_d, -1)
+                    d_tok = raw_model.deform_proj(feats.to(slow_embeds.dtype))  # [B,T,nf,H]
+                    if d_tok.shape[1] > 1 and hasattr(raw_model, "tac_pool_deform"):
+                        d_tok = raw_model.tac_pool_deform(d_tok)       # [B,nf,H]
+                    else:
+                        d_tok = d_tok[:, -1]
+                    d_tok = _cfg_drop(d_tok, args.cfg_drop_deform, "tac_null_deform")
+                    tac_parts.append(d_tok)
 
                 if tac_parts:
                     tactile_embeds = torch.cat(tac_parts, dim=1)
                 else:
-                    tactile_embeds = torch.empty((B, 0, slow_embeds.shape[2]), device=slow_embeds.device, dtype=slow_embeds.dtype)
+                    tactile_embeds = torch.empty(
+                        (B, 0, slow_embeds.shape[2]),
+                        device=slow_embeds.device, dtype=slow_embeds.dtype)
 
                 has_tactile = tactile_embeds.shape[1] > 0
-
-                # -- CFG: randomly drop tactile tokens --
-                cfg_drop_mask = (torch.rand(B, device=slow_embeds.device) < args.tactile_cfg_drop)
-                if cfg_drop_mask.any() and has_tactile:
-                    tactile_embeds = tactile_embeds.clone()
-                    tactile_embeds[cfg_drop_mask] = 0.0
-
                 n_action = n_fast + n_state + 1 + chunk
 
                 if has_tactile:
@@ -891,11 +1075,21 @@ if __name__ == "__main__":
     parser.add_argument("--flare_layer_index", type=int, default=-1, help="Layer to extract flare hidden states from (-1=last, e.g. -7 for ~3/4 depth).")
     parser.add_argument("--frame_stride", type=int, default=2)
 
-    # Tactile CFG
-    parser.add_argument("--tactile_cfg_drop", type=float, default=0.15,
-                        help="Probability of dropping tactile tokens during training (CFG)")
+    # Per-modality Tactile CFG with learnable null
+    parser.add_argument("--cfg_drop_force", type=float, default=0.15,
+                        help="Probability of replacing F6 tokens with null (per-sample).")
+    parser.add_argument("--cfg_drop_deform", type=float, default=0.15,
+                        help="Probability of replacing deform tokens with null (per-sample).")
+    parser.add_argument("--use_learnable_null", type=int, default=1,
+                        help="1 = learnable null embedding per modality; 0 = zero-mask.")
     parser.add_argument("--tactile_cfg_scale", type=float, default=1.0,
-                        help="Guidance scale for tactile CFG at inference (logged only, not used in training)")
+                        help="Guidance scale at inference (logged only, not used in training).")
+
+    # Tactile memory (temporal history window)
+    parser.add_argument("--tactile_history_len", type=int, default=1,
+                        help="Number of tactile timesteps to feed (1 = no memory).")
+    parser.add_argument("--tactile_history_stride", type=int, default=1,
+                        help="Frame stride between history steps.")
 
     args = parser.parse_args()
 

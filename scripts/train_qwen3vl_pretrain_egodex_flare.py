@@ -21,9 +21,11 @@ if _PROJECT_DIR not in sys.path:
 import glob
 import json
 import math
+import re
 import shutil
 import logging
 import argparse
+import warnings
 
 import cv2
 import h5py
@@ -38,6 +40,7 @@ from datetime import timedelta
 
 from typing import Dict, List, Optional
 from torch.utils.data import Dataset, DataLoader
+from torch.utils.data.distributed import DistributedSampler as _DistributedSampler
 from torch.optim.lr_scheduler import LambdaLR
 from accelerate import Accelerator, DataLoaderConfiguration, InitProcessGroupKwargs
 from transformers import AutoProcessor, set_seed
@@ -116,12 +119,105 @@ def get_cosine_schedule_with_warmup(optimizer, num_warmup_steps, num_training_st
     return LambdaLR(optimizer, lr_lambda, last_epoch=-1)
 
 
+class EpisodeGroupedSampler(_DistributedSampler):
+    """
+    Distributed sampler that groups frame indices by episode for I/O locality.
+
+    Shuffles *episode* order for randomness, but emits each episode's frame
+    indices contiguously so that per-worker episode caching is effective.
+    Subclasses DistributedSampler so accelerate/DeepSpeed doesn't replace it.
+
+    Memory-efficient: computes only this rank's indices via numpy cumsum +
+    searchsorted, avoiding a full-dataset Python list (which would OOM at
+    billions of transitions).
+    """
+
+    def __init__(self, dataset, num_replicas=None, rank=None,
+                 shuffle=True, seed=0, drop_last=True):
+        super().__init__(dataset, num_replicas=num_replicas, rank=rank,
+                         shuffle=shuffle, seed=seed, drop_last=drop_last)
+        self._cum_frames = dataset._cum_frames.copy()
+        self._num_episodes = dataset._num_episodes
+        # Per-episode frame counts (unshuffled)
+        self._frame_counts = np.diff(self._cum_frames, prepend=0)
+        # Per-episode original start index (unshuffled)
+        self._orig_starts = np.zeros(self._num_episodes, dtype=np.int64)
+        if self._num_episodes > 1:
+            self._orig_starts[1:] = self._cum_frames[:-1]
+
+    def __iter__(self):
+        g = torch.Generator()
+        g.manual_seed(self.seed + self.epoch)
+
+        if self.shuffle:
+            ep_perm = torch.randperm(self._num_episodes, generator=g).numpy()
+        else:
+            ep_perm = np.arange(self._num_episodes)
+
+        # Cumulative frame counts in *shuffled* episode order
+        shuffled_fc = self._frame_counts[ep_perm]
+        shuffled_cum = np.cumsum(shuffled_fc)
+        total_frames = int(shuffled_cum[-1])
+
+        # This rank's contiguous chunk in the flat index space
+        chunk = self.num_samples
+        rank_start = self.rank * chunk
+        rank_end = rank_start + chunk
+        actual_end = min(rank_end, total_frames)
+
+        # Find which shuffled episodes overlap [rank_start, actual_end)
+        ep_first = int(np.searchsorted(shuffled_cum, rank_start, side='right'))
+        ep_last = int(np.searchsorted(shuffled_cum, actual_end, side='right'))
+        ep_last = min(ep_last, self._num_episodes - 1)
+
+        # Build only this rank's indices using numpy (not a 2B Python list)
+        parts = []
+        for i in range(ep_first, ep_last + 1):
+            ep_idx = int(ep_perm[i])
+            shuf_start = int(shuffled_cum[i - 1]) if i > 0 else 0
+            shuf_end = int(shuffled_cum[i])
+
+            # Clip to this rank's range
+            t_start = max(0, rank_start - shuf_start)
+            t_end = min(int(self._frame_counts[ep_idx]), actual_end - shuf_start)
+
+            if t_start < t_end:
+                base = int(self._orig_starts[ep_idx])
+                parts.append(np.arange(base + t_start, base + t_end, dtype=np.int64))
+
+        indices = np.concatenate(parts) if parts else np.array([], dtype=np.int64)
+
+        # Padding: if rank's chunk extends beyond total_frames, wrap around
+        if len(indices) < chunk:
+            needed = chunk - len(indices)
+            wrap_parts = []
+            remaining = needed
+            for i in range(self._num_episodes):
+                if remaining <= 0:
+                    break
+                ep_idx = int(ep_perm[i])
+                base = int(self._orig_starts[ep_idx])
+                n = min(int(self._frame_counts[ep_idx]), remaining)
+                wrap_parts.append(np.arange(base, base + n, dtype=np.int64))
+                remaining -= n
+            if wrap_parts:
+                indices = np.concatenate([indices] + wrap_parts)
+
+        indices = indices[:chunk]
+        return iter(indices.tolist())
+
+
 class EgoDexPretrainFlareDataset(Dataset):
     """
-    Map-style dataset with a flat (episode_idx, frame_t) index.
+    Map-style dataset with a compact cumsum index (same as base pretrain).
+
+    Uses per-worker episode caching: bulk-reads all HDF5 data + video frames
+    once per episode, then serves individual frames from memory.  Combined
+    with EpisodeGroupedSampler this reduces per-sample I/O from ~200ms to
+    ~0.1ms.
 
     Compared to the base EgoDexPretrainDataset, __getitem__ also returns
-    future frames for flare visual prediction, read from the same video.
+    future frames for flare visual prediction, read from the cached video.
     """
 
     def __init__(self, data_root: str, config, processor, accelerator):
@@ -130,7 +226,8 @@ class EgoDexPretrainFlareDataset(Dataset):
         self.processor = processor
         self.accelerator = accelerator
 
-        self.episodes = []
+        _episode_dirs = []
+        _frame_counts = []
         all_action_q01 = []
         all_action_q99 = []
         all_state_q01 = []
@@ -148,7 +245,9 @@ class EgoDexPretrainFlareDataset(Dataset):
         for mp in manifest_paths:
             with open(mp, "r") as f:
                 manifest = json.load(f)
-            self.episodes.extend(manifest["episodes"])
+            for ep in manifest["episodes"]:
+                _episode_dirs.append(ep["episode_dir"])
+                _frame_counts.append(ep["num_frames"])
             stats = manifest.get("statistics", {})
             if "action" in stats and "state" in stats:
                 all_action_q01.append(np.array(stats["action"]["q01"], dtype=np.float32))
@@ -188,51 +287,59 @@ class EgoDexPretrainFlareDataset(Dataset):
         self.n_flare_steps = getattr(config, "n_flare_steps", 0) if self.use_flare else 0
         self.flare_frame_stride = getattr(config, "flare_frame_stride", 4)
 
-        # Build flat index, optionally splitting train/val by episode
-        self.val_ratio = getattr(config, "val_ratio", 0.0)
-        self.is_val = False  # set by create_val_split()
+        # ── Build compact index via cumulative frame counts ──
+        # np.searchsorted on this array maps flat idx → (ep_idx, frame_t)
+        # in O(log N) with negligible memory (~8 bytes/episode vs ~64 bytes/frame).
+        self._episode_dirs = _episode_dirs
+        _frame_counts = np.array(_frame_counts, dtype=np.int64)
+        self._cum_frames = np.cumsum(_frame_counts)
+        self._total_transitions = int(self._cum_frames[-1])
+        self._num_episodes = len(_episode_dirs)
 
-        self._index = []
-        for ep_idx, ep_info in enumerate(self.episodes):
-            num_frames = ep_info["num_frames"]
-            for t in range(num_frames):
-                self._index.append((ep_idx, t))
-
-        self._total_transitions = len(self._index)
-        accelerator.print(f"EgoDex pretrain (flare): {len(self.episodes)} episodes, "
+        accelerator.print(f"EgoDex pretrain (flare): {self._num_episodes} episodes, "
                           f"{self._total_transitions} transitions, "
                           f"flare={self.n_flare_steps} steps x stride {self.flare_frame_stride}")
 
+    def __len__(self):
+        return self._total_transitions
+
+    @property
+    def total_transitions(self):
+        return self._total_transitions
+
     def create_val_split(self, val_ratio=0.02, seed=42):
         """
-        Split episodes into train/val. Returns a new dataset object for val.
-        Modifies self in-place to keep only train episodes.
+        Split episodes into train/val. Returns a new dataset for validation.
+        Modifies *self* in-place to keep only training episodes.
         """
-        rng = np.random.RandomState(seed)
-        n_ep = len(self.episodes)
-        n_val = max(1, int(n_ep * val_ratio))
-        perm = rng.permutation(n_ep)
-        val_ep_indices = set(perm[:n_val].tolist())
-        train_ep_indices = set(perm[n_val:].tolist())
-
-        # Build val dataset (shallow copy with different index)
         import copy
-        val_ds = copy.copy(self)
-        val_ds.is_val = True
-        val_ds._index = [(ep_idx, t) for ep_idx, t in self._index if ep_idx in val_ep_indices]
-        val_ds._total_transitions = len(val_ds._index)
+        rng = np.random.RandomState(seed)
+        n_val = max(1, int(self._num_episodes * val_ratio))
+        perm = rng.permutation(self._num_episodes)
+        val_eps = sorted(perm[:n_val].tolist())
+        train_eps = sorted(perm[n_val:].tolist())
 
-        # Trim self to train only
-        self._index = [(ep_idx, t) for ep_idx, t in self._index if ep_idx in train_ep_indices]
-        self._total_transitions = len(self._index)
+        frame_counts = np.diff(self._cum_frames, prepend=0)
+
+        val_ds = copy.copy(self)
+        val_ds._episode_dirs = [self._episode_dirs[i] for i in val_eps]
+        val_fc = frame_counts[val_eps]
+        val_ds._cum_frames = np.cumsum(val_fc)
+        val_ds._total_transitions = int(val_ds._cum_frames[-1])
+        val_ds._num_episodes = len(val_eps)
+
+        self._episode_dirs = [self._episode_dirs[i] for i in train_eps]
+        train_fc = frame_counts[train_eps]
+        self._cum_frames = np.cumsum(train_fc)
+        self._total_transitions = int(self._cum_frames[-1])
+        self._num_episodes = len(train_eps)
 
         self.accelerator.print(
-            f"Train/Val split: {len(train_ep_indices)} train eps ({self._total_transitions} frames), "
-            f"{len(val_ep_indices)} val eps ({val_ds._total_transitions} frames)")
+            f"Train/Val split: {self._num_episodes} train eps "
+            f"({self._total_transitions} frames), "
+            f"{val_ds._num_episodes} val eps "
+            f"({val_ds._total_transitions} frames)")
         return val_ds
-
-    def __len__(self):
-        return len(self._index)
 
     @staticmethod
     def _normalize(values, mask, vmin, vmax):
@@ -250,55 +357,54 @@ class EgoDexPretrainFlareDataset(Dataset):
         matches = glob.glob(os.path.join(ep_dir, "*head*.mp4"))
         return matches[0] if matches else None
 
-    def _read_video_frames(self, video_path, frame_indices):
+    def _load_episode_cache(self, ep_idx: int):
         """
-        Read multiple frames by seeking once then decoding forward sequentially.
-        Falls back to per-frame seeking if sequential read fails.
+        Preload all HDF5 data + video frames for an episode in one shot.
+
+        HDF5:  single open -> bulk read states[:] and action_chunks[:] -> close.
+        Video: single open -> sequential cap.read() for all frames -> close.
+
+        With EpisodeGroupedSampler, consecutive __getitem__ calls hit the same
+        episode, so this is called once per episode per worker — amortizing
+        the I/O cost to near-zero per frame.
         """
-        if not frame_indices:
-            return []
-
-        try:
-            cap = cv2.VideoCapture(video_path)
-            if not cap.isOpened():
-                return [None] * len(frame_indices)
-
-            need_set = set(frame_indices)
-            collected = {}
-            first = min(frame_indices)
-            last = max(frame_indices)
-
-            # If the range is too large (>200 frames), fall back to per-frame seek
-            # to avoid decoding hundreds of unneeded frames
-            if last - first > 200:
-                for idx in frame_indices:
-                    cap.set(cv2.CAP_PROP_POS_FRAMES, idx)
-                    ret, frame = cap.read()
-                    if ret:
-                        collected[idx] = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            else:
-                cap.set(cv2.CAP_PROP_POS_FRAMES, first)
-                pos = first
-                while pos <= last:
-                    ret, frame = cap.read()
-                    if not ret:
-                        break
-                    if pos in need_set:
-                        collected[pos] = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    pos += 1
-
-            cap.release()
-            return [collected.get(idx) for idx in frame_indices]
-        except Exception:
-            return [None] * len(frame_indices)
-
-    def __getitem__(self, idx: int) -> Dict:
-        ep_idx, frame_t = self._index[idx]
-        ep_info = self.episodes[ep_idx]
-        ep_dir = ep_info["episode_dir"]
-        num_frames = ep_info["num_frames"]
+        ep_dir = self._episode_dirs[ep_idx]
         pretrain_h5 = os.path.join(ep_dir, "pretrain.hdf5")
         video_path = self._find_head_video(ep_dir)
+
+        self._cache_ep_idx = ep_idx
+        self._cache_h5 = None
+        self._cache_frames = None
+
+        # ── Bulk-read HDF5 ──
+        if pretrain_h5 and os.path.isfile(pretrain_h5):
+            try:
+                with h5py.File(pretrain_h5, "r") as f:
+                    self._cache_h5 = {
+                        "states": f["states"][:],
+                        "action_chunks": f["action_chunks"][:],
+                        "language": f.attrs.get("language", ""),
+                    }
+            except Exception:
+                pass
+
+        # ── Sequential video decode (no random seeks) ──
+        if video_path and os.path.isfile(video_path):
+            cap = cv2.VideoCapture(video_path)
+            frames = []
+            while True:
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                frames.append(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            cap.release()
+            if frames:
+                self._cache_frames = frames
+
+    def __getitem__(self, idx: int) -> Dict:
+        # O(log N) lookup: flat idx -> (episode, frame) via cumulative sums
+        ep_idx = int(np.searchsorted(self._cum_frames, idx, side="right"))
+        frame_t = int(idx - (int(self._cum_frames[ep_idx - 1]) if ep_idx > 0 else 0))
 
         fallback_frame = np.zeros((288, 384, 3), dtype=np.uint8)
         fallback = {
@@ -309,38 +415,37 @@ class EgoDexPretrainFlareDataset(Dataset):
             "flare_frames": [fallback_frame.copy() for _ in range(self.n_flare_steps)],
         }
 
-        if video_path is None or not os.path.isfile(pretrain_h5):
+        # ── Per-worker episode cache: load once, reuse for all frames ──
+        if not hasattr(self, "_cache_ep_idx") or self._cache_ep_idx != ep_idx:
+            self._load_episode_cache(ep_idx)
+
+        if self._cache_h5 is None:
             return fallback
 
         try:
-            with h5py.File(pretrain_h5, "r") as f:
-                state = f["states"][frame_t]
-                action_chunk = f["action_chunks"][frame_t]
-                language = f.attrs.get("language", "")
-        except Exception:
+            state = self._cache_h5["states"][frame_t]
+            action_chunk = self._cache_h5["action_chunks"][frame_t]
+            language = self._cache_h5["language"]
+        except (IndexError, KeyError):
             return fallback
 
-        # Build list of frame indices to read: [current, future_1, ..., future_S]
-        frame_indices = [frame_t]
-        for k in range(self.n_flare_steps):
-            future_t = frame_t + (k + 1) * self.flare_frame_stride
-            # Clamp to last frame if out of range
-            future_t = min(future_t, num_frames - 1)
-            frame_indices.append(future_t)
-
-        # Read all frames in one VideoCapture session
-        all_frames = self._read_video_frames(video_path, frame_indices)
-
-        current_frame = all_frames[0]
-        if current_frame is None:
+        # Current frame from cache
+        if self._cache_frames is not None and frame_t < len(self._cache_frames):
+            current_frame = self._cache_frames[frame_t]
+        else:
             current_frame = fallback_frame
 
+        # Future frames for flare (also from cache)
+        num_cached = len(self._cache_frames) if self._cache_frames else 0
         flare_frames = []
         for k in range(self.n_flare_steps):
-            ff = all_frames[k + 1]
-            if ff is None:
-                ff = current_frame.copy()
-            flare_frames.append(ff)
+            future_t = frame_t + (k + 1) * self.flare_frame_stride
+            future_t = min(future_t, num_cached - 1) if num_cached > 0 else -1
+            if future_t >= 0 and self._cache_frames is not None:
+                flare_frames.append(self._cache_frames[future_t])
+            else:
+                flare_frames.append(current_frame.copy() if current_frame is not fallback_frame
+                                    else fallback_frame.copy())
 
         return {
             "frame": current_frame,
@@ -461,8 +566,18 @@ class EgoDexPretrainFlareDataset(Dataset):
         }
 
 
-def save_checkpoint(model, processor, accelerator, args, epoch, global_step, dataset):
+def save_checkpoint(model, processor, accelerator, args, epoch, global_step, dataset,
+                    save_full_state=True):
+    """Save a checkpoint.
+
+    Always writes `model.pt` + metadata (compatible with downstream eval).
+    When save_full_state=True, additionally writes a `state/` subdir via
+    `accelerator.save_state` containing optimizer, LR scheduler and RNG state
+    (sharded in DeepSpeed format), plus `training_state.json` with the
+    global_step / epoch needed to resume.
+    """
     save_dir = os.path.join(args.output_dir, f"checkpoint-{epoch}-{global_step}")
+    state_dir = os.path.join(save_dir, "state")
 
     if accelerator.is_main_process:
         ckpts = [f for f in os.listdir(args.output_dir) if f.startswith("checkpoint-")]
@@ -507,8 +622,58 @@ def save_checkpoint(model, processor, accelerator, args, epoch, global_step, dat
                 "flare_layer_index": args.flare_layer_index,
             }, f, indent=2)
 
+        with open(os.path.join(save_dir, "training_state.json"), "w") as f:
+            json.dump({
+                "epoch": int(epoch),
+                "global_step": int(global_step),
+                "n_epochs": int(args.n_epochs),
+                "seed": int(args.seed),
+                "train_bsz_per_gpu": int(args.train_bsz_per_gpu),
+                "learning_rate": float(args.learning_rate),
+                "warmup_rates": float(args.warmup_rates),
+                "min_lr_ratio": float(args.min_lr_ratio),
+            }, f, indent=2)
+
     accelerator.wait_for_everyone()
-    logger.info(f"Checkpoint {epoch}-{global_step} saved.")
+
+    # Collective: save optimizer / scheduler / RNG for exact resume.
+    if save_full_state:
+        accelerator.save_state(state_dir)
+
+    accelerator.wait_for_everyone()
+    logger.info(f"Checkpoint {epoch}-{global_step} saved"
+                f"{' (with resumable state)' if save_full_state else ''}.")
+
+
+def _resolve_resume(resume_checkpoint):
+    """Normalize the --resume_checkpoint arg to (model_pt_path, ckpt_dir, state_dir_or_None).
+
+    Accepts either a path to `model.pt` or a checkpoint directory.
+    `state_dir` is returned only when `<ckpt_dir>/state/` exists, signaling
+    the new-style full-state checkpoint.
+    """
+    if not resume_checkpoint:
+        return None, None, None
+    path = resume_checkpoint.rstrip("/")
+    if os.path.isdir(path):
+        ckpt_dir = path
+        model_pt = os.path.join(ckpt_dir, "model.pt")
+    else:
+        model_pt = path
+        ckpt_dir = os.path.dirname(path)
+    state_dir = os.path.join(ckpt_dir, "state")
+    if not os.path.isdir(state_dir):
+        state_dir = None
+    return model_pt, ckpt_dir, state_dir
+
+
+def _parse_step_from_ckpt_dir(ckpt_dir):
+    """Parse (epoch, global_step) from 'checkpoint-{epoch}-{step}' dir name, or (None, None)."""
+    base = os.path.basename(os.path.normpath(ckpt_dir)) if ckpt_dir else ""
+    m = re.match(r"checkpoint-(\d+)-(\d+)$", base)
+    if not m:
+        return None, None
+    return int(m.group(1)), int(m.group(2))
 
 
 class TrainingMetrics:
@@ -738,6 +903,9 @@ def train(args):
             f"Flare: {S_steps} steps x {T_per_frame} tok/frame = {K} total, "
             f"layer_index={flare_layer_idx}, stride={args.flare_frame_stride}")
 
+    # Resolve resume paths (supports either a model.pt file or a ckpt directory).
+    resume_model_pt, resume_ckpt_dir, resume_state_dir = _resolve_resume(args.resume_checkpoint)
+
     # Init action expert from latent expert
     if not args.resume_checkpoint:
         named_params = dict(model.named_parameters())
@@ -748,12 +916,16 @@ def train(args):
                     param.data.copy_(named_params[base].data)
         accelerator.print("Action expert initialized from latent expert.")
 
-    if args.resume_checkpoint:
-        resume_sd = torch.load(args.resume_checkpoint, map_location="cpu")
+    # Old-style resume (weights-only): load model weights now, before accelerator.prepare.
+    # New-style (state/ present): model weights are restored by accelerator.load_state
+    # *after* prepare — skip here so the later load takes effect.
+    if args.resume_checkpoint and resume_state_dir is None:
+        resume_sd = torch.load(resume_model_pt, map_location="cpu")
         if "state_dict" in resume_sd:
             resume_sd = resume_sd["state_dict"]
         missing, unexpected = model.load_state_dict(resume_sd, strict=False)
-        accelerator.print(f"Resumed: missing={len(missing)}, unexpected={len(unexpected)}")
+        accelerator.print(f"Resumed weights (old-style) from {resume_model_pt}: "
+                          f"missing={len(missing)}, unexpected={len(unexpected)}")
 
     # Freeze vision + tactile, train latent + action + flare
     for name, param in model.named_parameters():
@@ -796,10 +968,17 @@ def train(args):
             pin_memory=True,
         )
 
+    # Episode-grouped sampler: clusters frame indices by episode so that
+    # consecutive __getitem__ calls hit the same episode.  Combined with
+    # per-worker episode caching, this eliminates per-frame HDF5 open/close
+    # and video seek — reducing per-sample I/O from ~200ms to ~0.1ms.
+    sampler = EpisodeGroupedSampler(
+        dataset, shuffle=True, seed=args.seed, drop_last=True,
+    )
     dataloader = DataLoader(
         dataset,
         batch_size=args.train_bsz_per_gpu,
-        shuffle=True,
+        sampler=sampler,
         drop_last=True,
         collate_fn=dataset.collate_fn,
         num_workers=args.num_workers,
@@ -808,16 +987,30 @@ def train(args):
         persistent_workers=True if args.num_workers > 0 else False,
     )
 
+    # IMPORTANT: Do NOT prepare the training dataloader with accelerate.
+    # Our EpisodeGroupedSampler already shards indices by rank.  accelerate's
+    # prepare() wraps the batch_sampler in BatchSamplerShard which shards
+    # *batches* a second time → each rank sees 1/N^2 of the data (the
+    # "2137 steps" bug).  We prepare model + optimizer only, and move train
+    # batches to device manually.
     if val_dataloader is not None:
-        model, optimizer, dataloader, val_dataloader = accelerator.prepare(
-            model, optimizer, dataloader, val_dataloader)
+        model, optimizer, val_dataloader = accelerator.prepare(
+            model, optimizer, val_dataloader)
     else:
-        model, optimizer, dataloader = accelerator.prepare(model, optimizer, dataloader)
+        model, optimizer = accelerator.prepare(model, optimizer)
 
-    steps_per_epoch = len(dataloader)
+    # steps_per_epoch from ground truth
+    world_size = accelerator.num_processes
+    train_samples = len(dataset)
+    samples_per_rank = train_samples // world_size
+    steps_per_epoch = samples_per_rank // args.train_bsz_per_gpu
     num_training_steps = steps_per_epoch * args.n_epochs // accelerator.gradient_accumulation_steps
-    accelerator.print(f"Estimated {steps_per_epoch} steps/epoch, "
-                      f"{num_training_steps} total training steps")
+    accelerator.print(f"Dataset: {train_samples} training samples, "
+                      f"world_size={world_size}")
+    accelerator.print(f"Estimated {steps_per_epoch} steps/epoch "
+                      f"(samples_per_rank={samples_per_rank}), "
+                      f"{num_training_steps} total training steps, "
+                      f"warmup={int(args.warmup_rates * num_training_steps)}")
 
     lr_scheduler = get_cosine_schedule_with_warmup(
         optimizer,
@@ -827,19 +1020,108 @@ def train(args):
     )
     lr_scheduler = accelerator.prepare(lr_scheduler)
 
+    # ── Resume: restore step counter / LR scheduler / (optionally) optimizer ──
+    # Priority for resume_global_step:
+    #   1) new-style `state/` present → read from training_state.json
+    #   2) user-supplied --resume_step > 0 (one-time override for legacy checkpoints)
+    #   3) 0 (treat as weights-only init, like the original behavior)
+    # Dir-name parsing is NOT used automatically because `checkpoint-0-125000`
+    # may mean "weights-only init from some other run", not "resume step 125000".
+    resume_global_step = 0
+    used_full_state = False
+    if args.resume_checkpoint:
+        if resume_state_dir is not None:
+            accelerator.print(f"Loading full resumable state from {resume_state_dir}")
+            # PyTorch 2.6 flipped torch.load's default to weights_only=True,
+            # but older DeepSpeed serializes classes (LossScaler, etc.) that
+            # aren't on the safe allowlist. Force weights_only=False for the
+            # duration of this call — the checkpoint was written by us and is
+            # trusted.
+            _orig_torch_load = torch.load
+            def _torch_load_trusted(*a, **kw):
+                kw["weights_only"] = False
+                return _orig_torch_load(*a, **kw)
+            torch.load = _torch_load_trusted
+            try:
+                accelerator.load_state(resume_state_dir)
+            finally:
+                torch.load = _orig_torch_load
+            used_full_state = True
+            state_json = os.path.join(resume_ckpt_dir, "training_state.json")
+            if os.path.isfile(state_json):
+                with open(state_json) as f:
+                    tstate = json.load(f)
+                resume_global_step = int(tstate.get("global_step", 0))
+                accelerator.print(
+                    f"Full resume: global_step={resume_global_step} from training_state.json")
+            else:
+                _, parsed = _parse_step_from_ckpt_dir(resume_ckpt_dir)
+                resume_global_step = parsed or 0
+                accelerator.print(
+                    f"Full resume: no training_state.json; global_step from dir name={resume_global_step}")
+
+        if args.resume_step > 0:
+            resume_global_step = args.resume_step
+            accelerator.print(f"--resume_step override: global_step={resume_global_step}")
+
+        # Weights-only resume: fast-forward the LR scheduler to match step.
+        # Optimizer momentum is NOT restored (starts fresh AdamW); the model
+        # typically recovers in a few hundred steps.
+        if resume_global_step > 0 and not used_full_state:
+            accelerator.print(
+                f"[approximate resume] Fast-forwarding LR scheduler by "
+                f"{resume_global_step} steps (optimizer momentum NOT restored).")
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")  # suppress "step before optimizer step" warnings
+                for _ in range(resume_global_step):
+                    lr_scheduler.step()
+            accelerator.print(
+                f"[approximate resume] LR now = "
+                f"{lr_scheduler.get_last_lr()[0]:.3e}")
+
     metric = TrainingMetrics(device=torch.cuda.current_device())
-    global_step = 0
+    global_step = resume_global_step
     model.train()
 
-    for epoch in range(args.n_epochs):
-        if hasattr(dataloader, "set_epoch"):
-            dataloader.set_epoch(epoch)
+    device = accelerator.device
+
+    # Derive starting epoch and within-epoch offset from global_step.
+    start_epoch = global_step // steps_per_epoch if steps_per_epoch > 0 else 0
+    step_in_epoch_offset = global_step - start_epoch * steps_per_epoch
+    if start_epoch >= args.n_epochs:
+        accelerator.print(
+            f"Resume global_step={global_step} is at/past end of training "
+            f"({args.n_epochs} epochs × {steps_per_epoch} steps). Nothing to do.")
+        return
+
+    if start_epoch > 0 or step_in_epoch_offset > 0:
+        accelerator.print(
+            f"Resuming at epoch={start_epoch}, step_in_epoch={step_in_epoch_offset}, "
+            f"global_step={global_step}. "
+            f"{'Will fast-forward data iterator.' if args.resume_skip_data else 'Data iterator restarts from beginning of epoch (some overlap).'}")
+
+    for epoch in range(start_epoch, args.n_epochs):
+        sampler.set_epoch(epoch)
 
         from tqdm import tqdm
         it = (tqdm(dataloader, total=steps_per_epoch, desc=f"Epoch {epoch}")
               if accelerator.is_main_process else dataloader)
 
-        for batch in it:
+        # Data-skip for resume: fast-forward through the already-consumed portion
+        # of this epoch so we re-enter at the same (episode, frame) point as the
+        # interrupted run. Only applies to the first epoch post-resume.
+        skip_n = (step_in_epoch_offset
+                  if (args.resume_skip_data and epoch == start_epoch) else 0)
+        if skip_n > 0:
+            accelerator.print(f"Fast-forwarding dataloader by {skip_n} batches...")
+
+        for batch_idx, batch in enumerate(it):
+            if batch_idx < skip_n:
+                continue
+            # Move batch to device (since dataloader is not prepared by accelerate)
+            batch = {k: v.to(device) if torch.is_tensor(v) else v
+                     for k, v in batch.items()}
+
             raw_model = accelerator.unwrap_model(model)
 
             inputs_embeds = raw_model.prepare_inputs_embeds(
@@ -1024,12 +1306,21 @@ def train(args):
                         f"flare={val_m['val/flare_loss']:.6f}")
                     wandb.log(val_m, step=global_step)
 
+            # ── Step-level checkpoint ──
+            if (args.save_steps > 0
+                    and (global_step + 1) % args.save_steps == 0):
+                accelerator.wait_for_everyone()
+                save_checkpoint(model, processor, accelerator, args,
+                                epoch, global_step + 1, dataset,
+                                save_full_state=bool(args.save_full_state))
+
             global_step += 1
 
         if (epoch + 1) % args.save_freq == 0 or epoch == args.n_epochs - 1:
             accelerator.wait_for_everyone()
             save_checkpoint(model, processor, accelerator, args,
-                            epoch, global_step, dataset)
+                            epoch, global_step, dataset,
+                            save_full_state=bool(args.save_full_state))
 
     accelerator.print("Training finished.")
 
@@ -1062,7 +1353,26 @@ if __name__ == "__main__":
     parser.add_argument("--use_robot_state", type=int, default=0)
     parser.add_argument("--image_size", type=int, nargs=2, default=None, metavar=("W", "H"))
 
-    parser.add_argument("--resume_checkpoint", type=str, default="")
+    parser.add_argument("--resume_checkpoint", type=str, default="",
+                        help="Path to a model.pt file or to a checkpoint dir. "
+                             "If the dir contains a `state/` subfolder, full "
+                             "optimizer+scheduler+RNG state is restored.")
+    parser.add_argument("--resume_step", type=int, default=0,
+                        help="Explicit step to resume at (overrides any saved "
+                             "value). Use this with a weights-only checkpoint "
+                             "(e.g. the legacy checkpoint-0-30000) to fast-"
+                             "forward the LR scheduler and wandb step counter.")
+    parser.add_argument("--resume_skip_data", type=int, default=0,
+                        help="If 1, fast-forward the dataloader past the "
+                             "already-consumed portion of the first epoch on "
+                             "resume. If 0, data iteration restarts from the "
+                             "beginning of the epoch (some overlap).")
+    parser.add_argument("--save_full_state", type=int, default=1,
+                        help="If 1 (default), every checkpoint also writes a "
+                             "`state/` subdir with optimizer+scheduler+RNG "
+                             "state for exact resume. Set to 0 to save disk.")
+    parser.add_argument("--save_steps", type=int, default=0,
+                        help="Save checkpoint every N steps (0=disable, epoch-only)")
 
     # Validation
     parser.add_argument("--val_ratio", type=float, default=0.02,

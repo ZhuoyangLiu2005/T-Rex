@@ -14,20 +14,20 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 
 ORIGIN_MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/Qwen3-VL-2B-Instruct"
 OUTPUT_ROOT_DIR="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp"
-DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/remove_card_0413_deltabase_axis_eef_lr_bimanual_crop_stride1_train.json"
+DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/remove_cup_0406_deltabase_axis_eef_right_crop_stride1_train.json"
 DEFORM_ENCODER_PATH="/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/bi-mot/janus/DeformEncoder/ckpt/sharpa_wave_deform_encoder.pth"
 
 EXPERIMENT_NAME="qwen3vl_mot_flare"
-RUN_NAME="qwen3vl_2b_tri_mot_pretrain0407_remove_card_0413view2_tac[force+deform]_wostate_deltabase_eef_stride1_f1s1_res_flare[tpf4step8stride4]_resize_lr_fix_0414"
+RUN_NAME="qwen3vl_2b_tri_mot_pretrain0407_remove_cup_0406_traj[100]_view2_tac[force+deform]_wostate_deltabase_eef_stride1_f1s1_res_flare[tpf4step8stride4]_resize_lr_fix_$(date +%m%d)"
 RESUME_CHECKPOINT="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_egodex_pretrain_flare/qwen3vl_2b_egodex_pretrain_bimanual_62d_stage1_handabs_flare_0407/checkpoint-0-115665"
 
-MASTER_ADDR=${MASTER_ADDR:-10.244.72.166}
+MASTER_ADDR=${MASTER_ADDR:-10.244.254.74}
 MASTER_PORT=${MASTER_PORT:-29500}
 NUM_MACHINES=${NUM_MACHINES:-2}
 MACHINE_RANK=${MACHINE_RANK:-0}
 NUM_PROCESSES=$((NUM_MACHINES * 8))
 
-TRAIN_BSZ=8
+TRAIN_BSZ=16
 LR=1e-4
 
 accelerate launch \
@@ -41,9 +41,9 @@ accelerate launch \
     train_qwen3vl_flare.py \
     --model_path ${ORIGIN_MODEL_PATH} \
     --data_path ${DATA_JSON} \
-    --n_epochs 200 \
-    --save_freq 50 \
-    --action_dim 62 \
+    --n_epochs 100 \
+    --save_freq 25 \
+    --action_dim 31 \
     --action_chunk 16 \
     --train_bsz_per_gpu ${TRAIN_BSZ} \
     --learning_rate ${LR} \

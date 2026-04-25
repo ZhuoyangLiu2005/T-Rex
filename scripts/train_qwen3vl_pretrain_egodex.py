@@ -76,6 +76,10 @@ class EpisodeGroupedSampler(_DistributedSampler):
 
     Subclasses DistributedSampler so that accelerate/DeepSpeed recognizes it
     and does not replace it with a redundant distributed sampler.
+
+    Memory-efficient: computes only this rank's indices via numpy cumsum +
+    searchsorted, avoiding a full-dataset Python list (which would OOM at
+    billions of transitions).
     """
 
     def __init__(self, dataset, num_replicas=None, rank=None,
@@ -85,6 +89,12 @@ class EpisodeGroupedSampler(_DistributedSampler):
                          shuffle=shuffle, seed=seed, drop_last=drop_last)
         self._cum_frames = dataset._cum_frames.copy()
         self._num_episodes = dataset._num_episodes
+        # Per-episode frame counts (unshuffled)
+        self._frame_counts = np.diff(self._cum_frames, prepend=0)
+        # Per-episode original start index (unshuffled)
+        self._orig_starts = np.zeros(self._num_episodes, dtype=np.int64)
+        if self._num_episodes > 1:
+            self._orig_starts[1:] = self._cum_frames[:-1]
 
     def __iter__(self):
         g = torch.Generator()
@@ -92,30 +102,60 @@ class EpisodeGroupedSampler(_DistributedSampler):
 
         # 1. Shuffle episode order (deterministic, same on all ranks)
         if self.shuffle:
-            ep_perm = torch.randperm(self._num_episodes, generator=g).tolist()
+            ep_perm = torch.randperm(self._num_episodes, generator=g).numpy()
         else:
-            ep_perm = list(range(self._num_episodes))
+            ep_perm = np.arange(self._num_episodes)
 
-        # 2. Emit each episode's frames in sequential order (enables fast
-        #    sequential video decode + single HDF5 open per episode)
-        all_indices = []
-        for ep_idx in ep_perm:
-            start = int(self._cum_frames[ep_idx - 1]) if ep_idx > 0 else 0
-            end = int(self._cum_frames[ep_idx])
-            all_indices.extend(range(start, end))
+        # 2. Cumulative frame counts in *shuffled* order
+        shuffled_fc = self._frame_counts[ep_perm]
+        shuffled_cum = np.cumsum(shuffled_fc)
+        total_frames = int(shuffled_cum[-1])
 
-        # 3. Pad to total_size (DistributedSampler contract)
-        if len(all_indices) < self.total_size:
-            padding = self.total_size - len(all_indices)
-            all_indices += all_indices[:padding]
-        all_indices = all_indices[:self.total_size]
-
-        # 4. Shard by contiguous chunks (NOT interleaved) to preserve
-        #    episode locality within each rank.
+        # 3. This rank's contiguous chunk in the flat index space
         chunk = self.num_samples
-        indices = all_indices[self.rank * chunk : (self.rank + 1) * chunk]
+        rank_start = self.rank * chunk
+        rank_end = rank_start + chunk
+        actual_end = min(rank_end, total_frames)
 
-        return iter(indices)
+        # 4. Find which shuffled episodes overlap [rank_start, actual_end)
+        #    using searchsorted — O(log N) instead of iterating all episodes
+        ep_first = int(np.searchsorted(shuffled_cum, rank_start, side='right'))
+        ep_last = int(np.searchsorted(shuffled_cum, actual_end, side='right'))
+        ep_last = min(ep_last, self._num_episodes - 1)
+
+        # 5. Build only this rank's indices (numpy, not a 2B Python list)
+        parts = []
+        for i in range(ep_first, ep_last + 1):
+            ep_idx = int(ep_perm[i])
+            shuf_start = int(shuffled_cum[i - 1]) if i > 0 else 0
+
+            t_start = max(0, rank_start - shuf_start)
+            t_end = min(int(self._frame_counts[ep_idx]), actual_end - shuf_start)
+
+            if t_start < t_end:
+                base = int(self._orig_starts[ep_idx])
+                parts.append(np.arange(base + t_start, base + t_end, dtype=np.int64))
+
+        indices = np.concatenate(parts) if parts else np.array([], dtype=np.int64)
+
+        # 6. Padding: if rank's chunk extends beyond total_frames, wrap around
+        if len(indices) < chunk:
+            needed = chunk - len(indices)
+            wrap_parts = []
+            remaining = needed
+            for i in range(self._num_episodes):
+                if remaining <= 0:
+                    break
+                ep_idx = int(ep_perm[i])
+                base = int(self._orig_starts[ep_idx])
+                n = min(int(self._frame_counts[ep_idx]), remaining)
+                wrap_parts.append(np.arange(base, base + n, dtype=np.int64))
+                remaining -= n
+            if wrap_parts:
+                indices = np.concatenate([indices] + wrap_parts)
+
+        indices = indices[:chunk]
+        return iter(indices.tolist())
 
 
 class EgoDexPretrainDataset(Dataset):
@@ -715,23 +755,33 @@ def train(args):
         persistent_workers=True if args.num_workers > 0 else False,
     )
 
-    # Prepare with accelerate
+    # IMPORTANT: Do NOT prepare the training dataloader with accelerate.
+    # Our EpisodeGroupedSampler already shards indices by rank.  accelerate's
+    # prepare() wraps the batch_sampler in BatchSamplerShard which shards
+    # *batches* a second time → each rank sees 1/N^2 of the data.
+    # We prepare model + optimizer only, and move train batches to device manually.
     if val_dataloader is not None:
-        model, optimizer, dataloader, val_dataloader = accelerator.prepare(
-            model, optimizer, dataloader, val_dataloader)
+        model, optimizer, val_dataloader = accelerator.prepare(
+            model, optimizer, val_dataloader)
     else:
-        model, optimizer, dataloader = accelerator.prepare(model, optimizer, dataloader)
+        model, optimizer = accelerator.prepare(model, optimizer)
 
-    # Compute steps_per_epoch from the sampler directly.
-    # accelerate's DataLoaderShard.__len__ divides by num_processes again
-    # even though our EpisodeGroupedSampler already handles per-rank sharding,
-    # causing a double-division bug.  Use the sampler's num_samples instead.
-    steps_per_epoch = len(sampler) // args.train_bsz_per_gpu
+    # Compute steps_per_epoch from ground truth: dataset size / (world * batch).
+    # Neither len(sampler) nor len(dataloader) after prepare is reliable:
+    #   - len(sampler) depends on num_replicas set during __init__, which may
+    #     not reflect the true world size if DeepSpeed adjusts it later
+    #   - len(dataloader) after prepare double-divides by num_processes
+    world_size = accelerator.num_processes
+    train_samples = len(dataset)
+    samples_per_rank = train_samples // world_size
+    steps_per_epoch = samples_per_rank // args.train_bsz_per_gpu
     num_training_steps = steps_per_epoch * args.n_epochs // accelerator.gradient_accumulation_steps
+    accelerator.print(f"Dataset: {train_samples} training samples, "
+                      f"world_size={world_size}")
     accelerator.print(f"Estimated {steps_per_epoch} steps/epoch "
-                      f"(world={accelerator.num_processes}, "
-                      f"samples_per_rank={len(sampler)}), "
-                      f"{num_training_steps} total training steps")
+                      f"(samples_per_rank={samples_per_rank}), "
+                      f"{num_training_steps} total training steps, "
+                      f"warmup={int(args.warmup_rates * num_training_steps)}")
 
     lr_scheduler = get_cosine_schedule_with_warmup(
         optimizer,
@@ -745,18 +795,20 @@ def train(args):
     global_step = 0
     model.train()
 
+    device = accelerator.device
+
     for epoch in range(args.n_epochs):
-        # accelerate's prepared dataloader handles set_epoch internally
-        if hasattr(dataloader, "set_epoch"):
-            dataloader.set_epoch(epoch)
+        sampler.set_epoch(epoch)
 
         from tqdm import tqdm
         it = (tqdm(dataloader, total=steps_per_epoch, desc=f"Epoch {epoch}")
               if accelerator.is_main_process else dataloader)
 
-        _debug_printed = False
-
         for batch in it:
+            # Move batch to device (since dataloader is not prepared by accelerate)
+            batch = {k: v.to(device) if torch.is_tensor(v) else v
+                     for k, v in batch.items()}
+
             raw_model = accelerator.unwrap_model(model)
 
             # ── Single VLM forward: all images in one sequence ───────────

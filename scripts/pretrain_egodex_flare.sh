@@ -9,6 +9,7 @@ export HF_HOME=/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/huggingface
 export PYTHONPATH=/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen:$PYTHONPATH
 
 export WANDB_MODE=online
+export WANDB_API_KEY=5bdc90c568050775a6d10650e64857fbbc76742e
 export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 export NCCL_DEBUG_SUBSYS=INIT,NET
 export NCCL_SOCKET_IFNAME=eth0
@@ -39,6 +40,12 @@ for group_dir in "${BKL_SRC}"/*/; do
         echo "Symlinked: ${link_path} -> ${group_dir}"
     fi
 done
+
+# Allow data-prep-only mode (used by launch_pretrain_ray.py to avoid race conditions)
+if [ "${SKIP_TRAINING:-0}" = "1" ]; then
+    echo ">>> SKIP_TRAINING=1: data prep done, exiting before training."
+    exit 0
+fi
 
 TRAIN_BSZ=16
 LR=1e-4
@@ -71,6 +78,7 @@ accelerate launch \
     --use_robot_state 1 \
     --image_size 384 288 \
     --num_workers 6 \
+    --save_steps 5000 \
     --val_ratio 0.02 \
     --val_freq 1000 \
     --max_val_batches 50 \

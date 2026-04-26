@@ -1,11 +1,13 @@
 """
-Launch multi-node pretraining using Ray cluster for node discovery + SSH for execution.
+Launch multi-node training using Ray cluster for node discovery + SSH for execution.
 
 Usage:
     python launch_pretrain_ray.py                             # egodex, all nodes
     python launch_pretrain_ray.py --num_nodes 4               # egodex, 4 nodes
     python launch_pretrain_ray.py --script mecka              # mecka, all nodes
     python launch_pretrain_ray.py --script mecka --num_nodes 5
+    python launch_pretrain_ray.py --script midtrain           # midtrain (mecka NV+BKL)
+    python launch_pretrain_ray.py --script midtrain --from_vlm_scratch  # no resume
 
 Ray is only used to discover node IPs. Training is launched via SSH so that
 NCCL/accelerate run natively on each node (no Ray subprocess overhead).
@@ -14,7 +16,7 @@ Fixes over the original version:
   1. Auto-detects NCCL_SOCKET_IFNAME from the master node's IP (no more
      hardcoded eth0 mismatch causing gradient corruption / training collapse).
   2. Runs data prep (symlinks) on rank 0 only, with a barrier before training.
-  3. Supports both egodex and mecka scripts via --script flag.
+  3. Supports egodex / mecka / midtrain scripts via --script flag.
 """
 
 import ray
@@ -30,12 +32,14 @@ TRAIN_SCRIPTS = {
     "mecka":        f"{SCRIPT_DIR}/pretrain_mecka.sh",
     "egodex_flare": f"{SCRIPT_DIR}/pretrain_egodex_flare.sh",
     "mecka_flare":  f"{SCRIPT_DIR}/pretrain_mecka_flare.sh",
+    "midtrain":     f"{SCRIPT_DIR}/train_qwen3vl_midtrain_flare.sh",
 }
 PY_SCRIPTS = {
     "egodex":       "train_qwen3vl_pretrain_egodex.py",
     "mecka":        "train_qwen3vl_pretrain_egodex.py",
     "egodex_flare": "train_qwen3vl_pretrain_egodex_flare.py",
     "mecka_flare":  "train_qwen3vl_pretrain_egodex_flare.py",
+    "midtrain":     "train_qwen3vl_midtrain_flare.py",
 }
 MASTER_PORT = 29501
 
@@ -181,7 +185,7 @@ def detect_nccl_interface(master_ip):
     return "eth0"  # fallback
 
 
-def run_data_prep(ip, train_script):
+def run_data_prep(ip, train_script, extra_env=""):
     """
     Run data prep (symlinks etc.) on a single node before training starts.
 
@@ -189,14 +193,17 @@ def run_data_prep(ip, train_script):
     SKIP_TRAINING=1, which we add support for. As a fallback, runs the
     full script — the training part will fail with MACHINE_RANK unset but
     the symlinks will be created.
+
+    `extra_env` is a string of additional `export FOO=bar; ` statements
+    (e.g. FROM_VLM_SCRATCH=1) that need to be visible to the script's
+    bash conditionals during the data-prep pass too — these can change
+    the printed run-name or other early decisions, so it's safer to keep
+    the prep run identical to the training run.
     """
     print(f"Running data prep on {ip} ...")
-    # Run the script with SKIP_TRAINING=1 — we'll add this guard to the
-    # training scripts. If not supported, the script exits at accelerate launch
-    # (which is fine — symlinks are already created by that point).
     cmd = (
         f"ssh -o StrictHostKeyChecking=no {ip} "
-        f"'bash -l -c \"export SKIP_TRAINING=1; bash {train_script}\"'"
+        f"'bash -l -c \"{extra_env}export SKIP_TRAINING=1; bash {train_script}\"'"
     )
     proc = subprocess.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
     rc = proc.wait()
@@ -210,7 +217,8 @@ def run_data_prep(ip, train_script):
     print()
 
 
-def launch_on_nodes(ips, train_script, py_script, num_nodes=None, skip_data_prep=False):
+def launch_on_nodes(ips, train_script, py_script, num_nodes=None,
+                    skip_data_prep=False, from_vlm_scratch=False):
     """SSH into each node and launch the training script."""
     if num_nodes is not None:
         ips = ips[:num_nodes]
@@ -226,13 +234,19 @@ def launch_on_nodes(ips, train_script, py_script, num_nodes=None, skip_data_prep
     for i, ip in enumerate(ips):
         print(f"  rank {i}: {ip}")
     print(f"Master: {master_addr}:{MASTER_PORT}")
+    if from_vlm_scratch:
+        print("FROM_VLM_SCRATCH=1 (midtrain only — start from base Qwen3-VL weights)")
     print()
+
+    # Mid-train-only env passthrough. Other scripts ignore this var, so it's
+    # safe to always export it.
+    extra_env = f"export FROM_VLM_SCRATCH={1 if from_vlm_scratch else 0}; "
 
     # Run data prep on rank 0 only (symlinks, merged data root, etc.)
     # This prevents the race condition where multiple nodes try to create
     # the same symlinks simultaneously.
     if not skip_data_prep:
-        run_data_prep(ips[0], train_script)
+        run_data_prep(ips[0], train_script, extra_env=extra_env)
 
     # Environment overrides passed to each node's script.
     # NCCL_SOCKET_IFNAME is set here to override the hardcoded eth0 in the
@@ -242,6 +256,7 @@ def launch_on_nodes(ips, train_script, py_script, num_nodes=None, skip_data_prep
         f"export MASTER_PORT={MASTER_PORT}; "
         f"export NUM_MACHINES={num_machines}; "
         f"export NCCL_SOCKET_IFNAME={nccl_ifname}; "
+        f"{extra_env}"
     )
 
     processes = []
@@ -307,7 +322,15 @@ if __name__ == "__main__":
     parser.add_argument("--exclude", type=str, nargs="+", default=[],
                         metavar="IP",
                         help="IPs to exclude (e.g. --exclude 10.244.1.1 10.244.2.2)")
+    parser.add_argument("--from_vlm_scratch", action="store_true",
+                        help="(midtrain only) Skip RESUME_CHECKPOINT and start "
+                             "from the base Qwen3-VL weights. Sets "
+                             "FROM_VLM_SCRATCH=1 in the launched env.")
     args = parser.parse_args()
+
+    if args.from_vlm_scratch and args.script != "midtrain":
+        print(f"WARNING: --from_vlm_scratch has no effect for --script {args.script} "
+              f"(only midtrain reads FROM_VLM_SCRATCH).")
 
     train_script = TRAIN_SCRIPTS[args.script]
     py_script = PY_SCRIPTS[args.script]
@@ -347,4 +370,5 @@ if __name__ == "__main__":
     kill_stale_processes(ips, py_script)
     launch_on_nodes(ips, train_script, py_script,
                     num_nodes=args.num_nodes,
-                    skip_data_prep=args.skip_data_prep)
+                    skip_data_prep=args.skip_data_prep,
+                    from_vlm_scratch=args.from_vlm_scratch)

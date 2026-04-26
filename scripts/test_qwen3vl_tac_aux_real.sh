@@ -23,7 +23,6 @@ python test_qwen3vl_tac_aux_real.py \
   --use_tactile_deform 1 \
   --action_dim ${ACTION_DIM} \
   --action_chunk ${ACTION_CHUNK} \
-  --tactile_history_len 8 \
   --n_fingers 10 \
   --include_tactile_queries 0 \
   --port 5678 \

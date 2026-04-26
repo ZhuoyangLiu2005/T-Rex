@@ -25,7 +25,6 @@ python test_qwen3vl_tac_aux_offline.py \
   --use_tactile_deform 1 \
   --action_dim ${ACTION_DIM} \
   --action_chunk ${ACTION_CHUNK} \
-  --tactile_history_len 8 \
   --n_fingers 5 \
   --contact_force_threshold 0.5 \
   --force_scale 2.0 \

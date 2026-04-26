@@ -5,13 +5,10 @@ aux heads, no v_tac fusion).
 
 Differences from test_qwen3vl_tflare_gate_real.py:
   - No gate, no v_tac, no fusion.
-  - Tactile tokens live in the action block (via TacTemporalPool on a
-    server-side history buffer of length T).
+  - CURRENT-FRAME tactile only — no history buffer, no temporal pool.
   - Tactile block (queries) is OMITTED at inference by default — action
     expert can't read it via causal mask anyway, so it's pure dead weight.
     Flip --include_tactile_queries 1 to include for diagnostics.
-  - Server maintains a tactile history deque per task_description; resets
-    on task change.
 """
 
 import os, sys, copy
@@ -21,7 +18,6 @@ if _PROJECT_DIR not in sys.path:
     sys.path.insert(0, _PROJECT_DIR)
 
 import argparse, json, io, pickle, traceback
-from collections import deque
 import numpy as np
 import torch
 import torch.nn as nn
@@ -33,9 +29,7 @@ from janus.models.action_tokenizer import ActionTokenizer
 
 from qwen_vla import Qwen3VLVLAModel, extend_position_ids_for_flare, split_slow_fast_embeds
 
-# Bring in the temporal pool class from the training script (identical definition)
 sys.path.insert(0, _SCRIPT_DIR)
-from train_qwen3vl_tac_aux import TacTemporalPool
 
 
 def _normalize(values, mask, vmin, vmax):
@@ -111,17 +105,11 @@ def _has_hf_weights(path):
 
 
 def _attach_tac_aux_modules(model, args):
-    """Attach TacTemporalPool, tflare_queries/proj, contact/force queries+heads,
-    and target encoders that the trained checkpoint expects.
+    """Attach tflare_queries/proj, contact/force queries+heads, and target
+    encoders that the trained checkpoint expects.
     Values are overwritten by state_dict load."""
     H = model.config.hidden_size
-    T = max(args.tactile_history_len, 1)
     nf = args.n_fingers
-
-    if args.use_tactile_vec and T > 1:
-        model.tac_pool_f6 = TacTemporalPool(H, T)
-    if args.use_tactile_deform and T > 1:
-        model.tac_pool_deform = TacTemporalPool(H, T)
 
     if args.use_tactile_flare:
         K_tac = args.n_tfl_tokens_per_step * args.n_tfl_steps
@@ -158,7 +146,6 @@ def model_load(args):
             ("n_tfl_tokens_per_step", 0),
             ("n_tfl_steps", 0),
             ("tactile_flare_stride", 2),
-            ("tactile_history_len", 1),
             ("n_fingers", 10),
         ]:
             saved = ta.get(key, default)
@@ -246,35 +233,28 @@ def model_load(args):
 def denoise_action(
     model, inputs_embeds, position_ids, attention_mask,
     noise, num_steps,
-    state_embeds, tac_f6_hist, tac_deform_hist, fast_embeds,
+    state_embeds, tac_f6_current, tac_deform_current, fast_embeds,
     include_tactile_block=False, n_fingers=10, K_tac=0,
 ):
-    """KV-cached Euler denoising. Tactile tokens sit in the action block;
-    optional tactile-query block can be appended for diagnostics."""
+    """KV-cached Euler denoising. Tactile tokens (current frame only) sit in
+    the action block; optional tactile-query block can be appended for
+    diagnostics."""
     device, dtype = noise.device, noise.dtype
     dt   = torch.tensor(-1.0 / num_steps, dtype=dtype, device=device)
     x_t  = noise.to(dtype)
     time = torch.tensor(1.0, dtype=dtype, device=device)
     B, H = inputs_embeds.shape[0], inputs_embeds.shape[2]
 
-    # Encode tactile history once (constant across denoise steps)
+    # Encode current-frame tactile once (constant across denoise steps).
     tac_f6_tok = None
     tac_deform_tok = None
-    if tac_f6_hist is not None:
-        f6_emb = model.tacf6_embedder(tac_f6_hist.to(dtype))  # [B, T, nf, H]
-        if f6_emb.shape[1] > 1 and hasattr(model, "tac_pool_f6"):
-            tac_f6_tok = model.tac_pool_f6(f6_emb)
-        else:
-            tac_f6_tok = f6_emb[:, -1]
-    if tac_deform_hist is not None:
-        Bs, Ts, nf_d, C, Hh, Ww = tac_deform_hist.shape
-        dfeats = model.deform_encoder(tac_deform_hist.view(-1, C, Hh, Ww))
-        dfeats = dfeats.view(Bs, Ts, nf_d, -1)
-        def_emb = model.deform_proj(dfeats.to(dtype))
-        if def_emb.shape[1] > 1 and hasattr(model, "tac_pool_deform"):
-            tac_deform_tok = model.tac_pool_deform(def_emb)
-        else:
-            tac_deform_tok = def_emb[:, -1]
+    if tac_f6_current is not None:
+        tac_f6_tok = model.tacf6_embedder(tac_f6_current.to(dtype))  # [B, nf, H]
+    if tac_deform_current is not None:
+        Bs, nf_d, C, Hh, Ww = tac_deform_current.shape  # [B, nf, 1, H, W]
+        dfeats = model.deform_encoder(tac_deform_current.view(-1, C, Hh, Ww))
+        dfeats = dfeats.view(Bs, nf_d, -1)
+        tac_deform_tok = model.deform_proj(dfeats.to(dtype))         # [B, nf, H]
 
     if fast_embeds is None:
         fast_embeds = torch.empty((B, 0, H), device=device, dtype=dtype)
@@ -365,51 +345,8 @@ def denoise_action(
     return x_t
 
 
-# ── Server-side tactile history buffer ─────────────────────────────────────
-
-class TactileHistoryBuffer:
-    def __init__(self, T, n_fingers):
-        self.T = T
-        self.n_fingers = n_fingers
-        self._f6 = deque(maxlen=T)
-        self._deform = deque(maxlen=T)
-        self.task_key = None
-
-    def reset_if_new_task(self, task_description):
-        if self.task_key != task_description:
-            self._f6.clear()
-            self._deform.clear()
-            self.task_key = task_description
-
-    def push(self, f6, deform):
-        self._f6.append(f6)
-        self._deform.append(deform)
-
-    def f6_tensor(self, dtype=torch.bfloat16):
-        if not self._f6:
-            return None
-        # Pad with oldest if fewer than T frames
-        items = list(self._f6)
-        while len(items) < self.T:
-            items.insert(0, items[0])
-        arr = np.stack(items)  # [T, n_fingers*6]
-        arr = arr.reshape(self.T, -1, 6)
-        return torch.tensor(arr).unsqueeze(0).to(dtype)  # [1, T, nf, 6]
-
-    def deform_tensor(self, dtype=torch.bfloat16):
-        if not self._deform:
-            return None
-        items = list(self._deform)
-        while len(items) < self.T:
-            items.insert(0, items[0])
-        # Each item is [n_fingers, H, W] (gray images, normalized to [0,1])
-        arr = np.stack(items)  # [T, nf, H, W]
-        return torch.tensor(arr).unsqueeze(0).unsqueeze(3).to(dtype)  # [1, T, nf, 1, H, W]
-
-
 def model_predict(
     args, model, processor, statistic, action_tokenizer,
-    tac_history,
     task_description, slow_images, fast_images,
     tactile_f6_input=None, tactile_deform_input=None, state_fast=None,
 ):
@@ -474,13 +411,16 @@ def model_predict(
             slow_embeds = torch.cat([slow_embeds, flare_q.expand(1, -1, -1)], dim=1)
             position_ids = extend_position_ids_for_flare(position_ids, model.n_flare_tokens)
 
-        # Push current tactile into history buffer
-        tac_history.reset_if_new_task(task_description)
+        # Build current-frame tactile tensors directly (no history buffer).
+        tac_f6_current = None
         if args.use_tactile_vec and tactile_f6_input is not None:
             tacf6 = np.array(tactile_f6_input, dtype=np.float32).reshape(-1)
             norm_f6 = _normalize(tacf6, statistic["tacf6_mask"],
                                  statistic["tacf6_min"], statistic["tacf6_max"])
-            tac_history._f6.append(norm_f6)  # store normalized
+            tac_f6_current = (torch.tensor(norm_f6.reshape(-1, 6), dtype=dtype)
+                              .unsqueeze(0).to(device))   # [1, n_fingers, 6]
+
+        tac_deform_current = None
         if args.use_tactile_deform and tactile_deform_input is not None:
             if isinstance(tactile_deform_input, (list, tuple)):
                 arr = np.stack([
@@ -491,13 +431,9 @@ def model_predict(
                 if arr.max() > 1.0:
                     arr = arr / 255.0
             if arr.ndim == 4:
-                arr = arr[:, 0] if arr.shape[1] == 1 else arr[0]  # shouldn't happen
-            tac_history._deform.append(arr)
-
-        tac_f6_hist = tac_history.f6_tensor(dtype=dtype)
-        tac_deform_hist = tac_history.deform_tensor(dtype=dtype)
-        if tac_f6_hist is not None: tac_f6_hist = tac_f6_hist.to(device)
-        if tac_deform_hist is not None: tac_deform_hist = tac_deform_hist.to(device)
+                arr = arr[:, 0] if arr.shape[1] == 1 else arr[0]
+            tac_deform_current = (torch.tensor(arr).unsqueeze(0).unsqueeze(2)
+                                  .to(device, dtype=dtype))  # [1, n_fingers, 1, H, W]
 
         K_tac = (args.n_tfl_tokens_per_step * args.n_tfl_steps) if args.use_tactile_flare else 0
 
@@ -511,8 +447,8 @@ def model_predict(
             attention_mask=attention_mask,
             noise=noise, num_steps=10,
             state_embeds=state_embeds,
-            tac_f6_hist=tac_f6_hist,
-            tac_deform_hist=tac_deform_hist,
+            tac_f6_current=tac_f6_current,
+            tac_deform_current=tac_deform_current,
             fast_embeds=fast_embeds,
             include_tactile_block=bool(args.include_tactile_queries),
             n_fingers=args.n_fingers,
@@ -531,8 +467,6 @@ def main(args):
     model, processor, statistic, action_tokenizer = model_load(args)
     print("Model loaded successfully!")
 
-    tac_history = TactileHistoryBuffer(T=args.tactile_history_len, n_fingers=args.n_fingers)
-
     print("Warming up model...")
     dummy_slow  = [Image.new("RGB", (224, 224), color="black")]
     n_fast_cams = 2 if args.action_dim > 31 else 1
@@ -542,7 +476,6 @@ def main(args):
     dummy_deform = np.zeros((args.n_fingers, 240, 240), dtype=np.float32) if args.use_tactile_deform else None
 
     dummy_out = model_predict(args, model, processor, statistic, action_tokenizer,
-                              tac_history,
                               "dummy task", dummy_slow, dummy_fast,
                               dummy_f6, dummy_deform, dummy_state)
     print(f"Warm-up output shape: {np.array(dummy_out).shape}")
@@ -566,7 +499,6 @@ def main(args):
                 tac_deform = payload.get("tactile_deform", payload.get("tactile_image_deform"))
 
             actions = model_predict(args, model, processor, statistic, action_tokenizer,
-                                    tac_history,
                                     payload["task_description"], [slow_img], fast_list,
                                     tac_f6, tac_deform, payload.get("state_fast"))
             socket.send(pickle.dumps({"status": "success", "actions": actions}))
@@ -596,7 +528,6 @@ if __name__ == "__main__":
     parser.add_argument("--n_tfl_tokens_per_step", type=int, default=0)
     parser.add_argument("--n_tfl_steps", type=int, default=0)
     parser.add_argument("--tactile_flare_stride", type=int, default=2)
-    parser.add_argument("--tactile_history_len", type=int, default=8)
     parser.add_argument("--n_fingers", type=int, default=10)
     parser.add_argument("--include_tactile_queries", type=int, default=0,
                         help="Include tflare/contact/force queries in the forward "

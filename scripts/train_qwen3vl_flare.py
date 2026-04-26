@@ -323,7 +323,7 @@ class SftDataset(Dataset):
                 all_grid_thw.append(inp.image_grid_thw)
 
         n_flare_steps = cfg.n_flare_steps if cfg.use_flare else 0
-        flare_stride = cfg.frame_stride
+        flare_stride = cfg.flare_frame_stride
         flare_pixel_values = None
         flare_grid_thw = None
 
@@ -1080,7 +1080,6 @@ if __name__ == "__main__":
     parser.add_argument("--flare_loss_weight", type=float, default=0.5, help="Weight for flare prediction cosine loss.")
     parser.add_argument("--flare_frame_stride", type=int, default=2, help="Temporal stride for flare frame targets.")
     parser.add_argument("--flare_layer_index", type=int, default=-1, help="Layer to extract flare hidden states from (-1=last, e.g. -7 for ~3/4 depth).")
-    parser.add_argument("--frame_stride", type=int, default=2)
 
     # Validation
     parser.add_argument("--val_ratio", type=float, default=0.0,

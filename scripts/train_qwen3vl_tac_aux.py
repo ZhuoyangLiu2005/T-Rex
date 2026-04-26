@@ -3,8 +3,8 @@ Qwen3-VL MoT training with tactile auxiliary objectives.
 
 Design (differs from train_qwen3vl_tflare_gate.py):
 
-  - Tactile tokens (F6 + deform, T=8 history compressed via temporal pool)
-    live INSIDE the action block — action expert reads them directly via
+  - Tactile tokens (F6 + deform, CURRENT FRAME ONLY — no history) live
+    INSIDE the action block — action expert reads them directly via
     causal attention. No duplication in the tactile block.
 
   - Tactile block contains only learnable QUERY tokens routed to the
@@ -65,41 +65,6 @@ import cv2
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level="INFO")
-
-
-# ── Tactile temporal pool (reuse idea from the CFG script) ─────────────────
-
-class TacTemporalPool(nn.Module):
-    """Compress tactile history [B, T, n_fingers, H] -> [B, n_fingers, H].
-
-    Per-finger attention pool with zero-gated residual so memory starts
-    disabled and turns on as the model learns to use it.
-    """
-
-    def __init__(self, hidden_size: int, t_max: int):
-        super().__init__()
-        self.H = hidden_size
-        self.t_max = t_max
-        self.time_embed = nn.Parameter(
-            (torch.randn(t_max, hidden_size) * 0.02).to(torch.bfloat16))
-        self.query = nn.Parameter(
-            (torch.randn(hidden_size) * 0.02).to(torch.bfloat16))
-        self.gate = nn.Parameter(torch.zeros(hidden_size, dtype=torch.bfloat16))
-        self.scale = hidden_size ** -0.5
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        B, T, nf, H = x.shape
-        current = x[:, -1]
-        if T == 1:
-            return current
-        tpe = self.time_embed[:T].to(dtype=x.dtype).view(1, T, 1, H)
-        x = x + tpe
-        q = self.query.to(dtype=x.dtype).view(1, 1, 1, H)
-        logits = (x * q).sum(-1) * self.scale
-        attn = torch.softmax(logits, dim=1)
-        history = (x * attn.unsqueeze(-1)).sum(1)
-        gate = torch.tanh(self.gate.to(dtype=x.dtype)).view(1, 1, H)
-        return current + gate * history
 
 
 # ── Rotation helpers (unchanged) ────────────────────────────────────────────
@@ -199,27 +164,9 @@ class SftDataset(Dataset):
         sample = dict(self.hf_dataset[idx])
         cur_prefix = self._episode_prefix(sample)
 
-        # ── Past tactile history (F6 only; deform stays current-frame) ──────
-        # Rationale: F6 is 60 floats/step, essentially free. Deform history
-        # would open T·n_fingers PNGs per sample — the dominant I/O cost —
-        # and TacTemporalPool on deform was not showing an important lift.
-        # Deform current-frame path remains via sample["tactile_image_deform"].
-        T = max(getattr(self.config, "tactile_history_len", 1), 1)
-        f6_hist = []
-        for t in range(T - 1, 0, -1):
-            past_idx = idx - t
-            past_sample = None
-            if past_idx >= 0:
-                try:
-                    cand = dict(self.hf_dataset[past_idx])
-                    if self._episode_prefix(cand) == cur_prefix:
-                        past_sample = cand
-                except Exception:
-                    pass
-            src = past_sample if past_sample is not None else sample
-            f6_hist.append(src.get("tactile_f6"))
-        f6_hist.append(sample.get("tactile_f6"))
-        sample["_tac_f6_hist"] = f6_hist
+        # No tactile history — action expert sees only the CURRENT-frame F6
+        # and CURRENT-frame deform. Tactile is read directly from
+        # sample["tactile_f6"] and sample["tactile_image_deform"] in collate_fn.
 
         # ── Future tactile for tflare: F6 only (no deform future I/O) ───────
         if getattr(self.config, "use_tactile_flare", 0):
@@ -302,16 +249,15 @@ class SftDataset(Dataset):
         u_t = noise - norm_actions
 
         # ── Tactile history (current + T-1 past frames) ────────────────────
-        T_hist = max(cfg.tactile_history_len, 1)
-
-        tactile_f6_hist = None
+        # Current-frame F6 only — no history.
+        tactile_f6_current = None
         if cfg.use_tactile_vec:
-            f6_raw = np.array([x["_tac_f6_hist"] for x in batch], dtype=np.float32)
-            f6_raw = f6_raw.reshape(B, T_hist, -1, 6)
-            flat = f6_raw.reshape(B * T_hist, -1)
-            normed = self._normalize(flat, self.tacf6_mask, self.tacf6_min, self.tacf6_max)
-            tactile_f6_hist = torch.tensor(
-                normed.reshape(B, T_hist, -1, 6), dtype=torch.bfloat16)
+            f6_raw = np.array([x["tactile_f6"] for x in batch], dtype=np.float32)
+            f6_raw = f6_raw.reshape(B, -1, 6)  # [B, n_fingers, 6]
+            normed = self._normalize(
+                f6_raw.reshape(B, -1), self.tacf6_mask, self.tacf6_min, self.tacf6_max)
+            tactile_f6_current = torch.tensor(
+                normed.reshape(B, -1, 6), dtype=torch.bfloat16)
 
         tactile_deform_current = None
         if cfg.use_tactile_deform:
@@ -386,7 +332,7 @@ class SftDataset(Dataset):
             flare_grid_thw = finp.image_grid_thw
 
         # ── Tactile-FLARE future: F6 only (no deform future I/O) ────────────
-        tflare_f6_tensor, tflare_deform_tensor = None, None
+        tflare_f6_tensor = None
         if cfg.use_tactile_flare and cfg.n_tfl_steps > 0:
             S = cfg.n_tfl_steps
             if cfg.use_tactile_vec:
@@ -396,7 +342,7 @@ class SftDataset(Dataset):
                 normed = self._normalize(flat, self.tacf6_mask, self.tacf6_min, self.tacf6_max)
                 tflare_f6_tensor = torch.tensor(
                     normed.reshape(B, S, -1, 6), dtype=torch.bfloat16)
-            # tflare_deform_tensor stays None — deform future removed.
+            # F6 only; deform-future path removed.
 
         pad_id = self.processor.tokenizer.pad_token_id or 0
         max_len = max(ids.shape[0] for ids in all_input_ids)
@@ -424,13 +370,12 @@ class SftDataset(Dataset):
             "noisy_actions": x_t,
             "target": u_t,
             "timesteps": time,
-            "tactile_f6s_hist": tactile_f6_hist,             # [B, T, nf, 6] or None
+            "tactile_f6s_current": tactile_f6_current,         # [B, nf, 6] or None
             "tactile_deforms_current": tactile_deform_current, # [B, nf, 1, H, W] or None
             "state_raw": state_raw,
             "flare_pixel_values": flare_pixel_values,
             "flare_grid_thw": flare_grid_thw,
             "tflare_f6": tflare_f6_tensor,
-            "tflare_deforms": tflare_deform_tensor,
             "contact_labels": contact_labels,            # [B, n_fingers]
             "force_labels": force_labels,                # [B, n_fingers]
         }
@@ -476,7 +421,6 @@ def save_checkpoint(model, processor, accelerator, args, epoch, global_step, sta
                 "n_tfl_steps": args.n_tfl_steps,
                 "tactile_flare_stride": args.tactile_flare_stride,
                 "tflare_loss_weight": args.tflare_loss_weight,
-                "tactile_history_len": args.tactile_history_len,
                 "n_fingers": args.n_fingers,
                 "contact_loss_weight": args.contact_loss_weight,
                 "force_loss_weight": args.force_loss_weight,
@@ -568,14 +512,7 @@ def train(args):
 
     # ── Register new modules on the outer wrapper ──────────────────────────
     H = model.config.hidden_size
-    T_hist = max(args.tactile_history_len, 1)
     n_fingers = args.n_fingers
-
-    # Temporal pools (one per modality)
-    if args.use_tactile_vec and T_hist > 1:
-        model.tac_pool_f6 = TacTemporalPool(H, T_hist)
-    if args.use_tactile_deform and T_hist > 1:
-        model.tac_pool_deform = TacTemporalPool(H, T_hist)
 
     # Tactile-FLARE queries + projection (unchanged from tflare_gate)
     if args.use_tactile_flare and has_any_tactile:
@@ -724,7 +661,7 @@ def train(args):
     accelerator.print(
         f"use_flare={use_flare} K_vis={K} | "
         f"use_tflare={use_tflare} K_tac={K_tac} | "
-        f"T_hist={T_hist} n_fingers={n_fingers} has_tac={has_any_tactile}")
+        f"n_fingers={n_fingers} has_tac={has_any_tactile}")
 
     model.train()
 
@@ -791,17 +728,13 @@ def train(args):
             target = batch["target"].to(dtype)
             n_fast = fast_embeds.shape[1]
 
-            # ── Encode tactile history (action-block tokens) ───────────────
+            # ── Encode CURRENT-frame tactile (action-block tokens) ─────────
             tac_f6_tok = None
             tac_deform_tok = None
             if has_any_tactile:
-                if args.use_tactile_vec and batch["tactile_f6s_hist"] is not None:
-                    f6_hist = batch["tactile_f6s_hist"].to(device=device, dtype=dtype)  # [B,T,nf,6]
-                    f6_emb = raw_model.tacf6_embedder(f6_hist)                          # [B,T,nf,H]
-                    if f6_emb.shape[1] > 1 and hasattr(raw_model, "tac_pool_f6"):
-                        tac_f6_tok = raw_model.tac_pool_f6(f6_emb)                      # [B,nf,H]
-                    else:
-                        tac_f6_tok = f6_emb[:, -1]
+                if args.use_tactile_vec and batch["tactile_f6s_current"] is not None:
+                    f6_cur = batch["tactile_f6s_current"].to(device=device, dtype=dtype)  # [B, nf, 6]
+                    tac_f6_tok = raw_model.tacf6_embedder(f6_cur)                         # [B, nf, H]
                 if args.use_tactile_deform and batch["tactile_deforms_current"] is not None:
                     # Current-frame deform only — no history, no pool.
                     df_cur = batch["tactile_deforms_current"].to(device=device, dtype=dtype)
@@ -1082,8 +1015,6 @@ if __name__ == "__main__":
     parser.add_argument("--tflare_loss_weight", type=float, default=0.5)
 
     # Tactile auxiliary heads
-    parser.add_argument("--tactile_history_len", type=int, default=8,
-                        help="Number of tactile frames including current (T).")
     parser.add_argument("--n_fingers", type=int, default=10,
                         help="Number of tactile fingers (bimanual=10, single=5).")
     parser.add_argument("--contact_loss_weight", type=float, default=0.5)

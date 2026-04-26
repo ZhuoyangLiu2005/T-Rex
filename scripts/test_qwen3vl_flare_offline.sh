@@ -16,8 +16,8 @@ export CUDA_VISIBLE_DEVICES=0
 # ACTION_CHUNK=8
 
 # --- Dual-arm: remove_card (bimanual, 2 wrist cameras: right + left) ---
-MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mot_flare/qwen3vl_2b_tri_mot_pretrain0407_pour_sugar_0411view2_tacdeform_wostate_deltabase_eef_stride2_f1s1_res_flare_[tpf4step8stride4]_resize_lr_0412/checkpoint-49-18850"
-DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/pour_sugar_0411_deltabase_axis_eef_lr_bimanual_stride2_train.json"
+MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mot_flare/qwen3vl_2b_tri_mot_pretrain0407_place_card_0422_traj[50]_view2_tac[force+deform]_wostate_deltabase_eef_stride1_f1s1_res_flare[tpf4step8stride4]_resize_lr_fix_0425/checkpoint-49-34150"
+DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/place_card_0422_deltabase_axis_eef_lr_bimanual_crop_stride1_train.json"
 ACTION_DIM=62
 ACTION_CHUNK=16
 
@@ -27,6 +27,7 @@ python test_qwen3vl_flare_offline.py \
   --cuda 0 \
   --test_json_path ${DATA_JSON} \
   --use_robot_state 0 \
+  --use_tactile_vec 1 \
   --use_tactile_deform 1 \
   --action_dim ${ACTION_DIM} \
   --action_chunk ${ACTION_CHUNK} \

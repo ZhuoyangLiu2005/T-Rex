@@ -8,22 +8,22 @@ export PATH=/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/bin:$PATH
 export HF_HOME=/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/huggingface
 export PYTHONPATH=/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen:$PYTHONPATH
 
-export WANDB_MODE=offline
+export WANDB_MODE=online
 export WANDB_API_KEY=5bdc90c568050775a6d10650e64857fbbc76742e
 export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 
 ORIGIN_MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/Qwen3-VL-2B-Instruct"
 OUTPUT_ROOT_DIR="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp"
-DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/nv_inlab_json/nv_inlab_deltabase_eef_bimanual_crop_stride1_train_traj100_seed42.json"
+DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/remove_card_0413_deltabase_axis_eef_lr_bimanual_crop_stride1_train.json"
 DEFORM_ENCODER_PATH="/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/bi-mot/janus/DeformEncoder/ckpt/sharpa_wave_deform_encoder.pth"
 
 EXPERIMENT_NAME="qwen3vl_mot_tac_aux"
-RUN_NAME="qwen3vl_2b_tri_mot_test_nvinlab_view2_tac[force+deform]_histT8_tflare[tpf4step4stride2]_ctc_frc_flare[tpf4step8stride4]_resize_lr_$(date +%m%d)"
+RUN_NAME="qwen3vl_2b_tri_mot_remove_card_0413_view2_tac[force+deform]_histT8_tflare[tpf4step4stride2]_ctc_frc_flare[tpf4step8stride4]_resize_lr_fixhistory_$(date +%m%d)"
 RESUME_CHECKPOINT="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_egodex_pretrain_flare/qwen3vl_2b_egodex_pretrain_bimanual_62d_stage1_handabs_flare_0407/checkpoint-0-115665"
 
-MASTER_ADDR=${MASTER_ADDR:-10.244.165.78}
+MASTER_ADDR=${MASTER_ADDR:-10.244.254.74}
 MASTER_PORT=${MASTER_PORT:-29500}
-NUM_MACHINES=${NUM_MACHINES:-1}
+NUM_MACHINES=${NUM_MACHINES:-5}
 MACHINE_RANK=${MACHINE_RANK:-0}
 NUM_PROCESSES=$((NUM_MACHINES * 8))
 
@@ -73,7 +73,6 @@ accelerate launch \
     --n_tfl_steps 8 \
     --tactile_flare_stride 2 \
     --tflare_loss_weight 0.5 \
-    --tactile_history_len 8 \
     --n_fingers 10 \
     --contact_loss_weight 0.5 \
     --force_loss_weight 0.3 \
@@ -92,8 +91,9 @@ accelerate launch \
 #   tflare_q  -> future tactile prediction (cosine, frozen-init target encoder)
 #   contact_q -> per-finger contact classification (BCE, thresholded F6 label)
 #   force_q   -> per-finger force regression (MSE, normalized |F_xyz|)
-# Tactile history T=8 (current + 7 past) compressed via TacTemporalPool before
-# entering the action block; same n_fingers tokens regardless of T.
+# CURRENT-FRAME ONLY (no history pool, no F6 history fetch, no deform history,
+# no future-deform tflare target). I/O dropped from (T+S)·n_fingers=160 PNGs
+# per sample to n_fingers=5 PNGs; eliminates the every-num_workers stalls.
 # ──────────────────────────────────────────────────────────────────────────
 
 echo ">>> Training (tactile-aux: tflare + contact + force) finished."

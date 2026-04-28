@@ -1,0 +1,389 @@
+ipex flag is deprecated, will be removed in Accelerate v1.10. From 2.7.0, PyTorch has all needed optimizations for Intel CPU and XPU.
+[2026-04-27 15:47:07,317] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+df: /root/.triton/autotune: No such file or directory
+W0427 15:47:14.114000 5701 site-packages/torch/distributed/run.py:792] 
+W0427 15:47:14.114000 5701 site-packages/torch/distributed/run.py:792] *****************************************
+W0427 15:47:14.114000 5701 site-packages/torch/distributed/run.py:792] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0427 15:47:14.114000 5701 site-packages/torch/distributed/run.py:792] *****************************************
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+[2026-04-27 15:48:10,812] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:48:10,814] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:48:10,816] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:48:10,816] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:48:10,817] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:48:10,817] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:48:10,817] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:48:10,817] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:48:14,892] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:48:14,894] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:48:14,894] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:48:14,894] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:48:14,894] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:48:14,894] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:48:14,894] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:48:14,895] [INFO] [comm.py:652:init_distributed] cdb=None
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0  New MoT expert weights (expected missing): 618
+
+  New MoT expert weights (expected missing): 618  New MoT expert weights (expected missing): 618
+
+  New MoT expert weights (expected missing): 618
+  New MoT expert weights (expected missing): 618
+  New MoT expert weights (expected missing): 618
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+  New MoT expert weights (expected missing): 618
+  New MoT expert weights (expected missing): 618
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+VLA weights initialized.
+Flare: 8 steps x 4 tok/frame = 32 total, layer_index=-1, stride=4
+Total: 4.98B  Trainable: 3.16B (63.4%)
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+Loaded 4509 batch manifests
+EgoDex pretrain (flare): 4489747 episodes, 2580593257 transitions, flare=8 steps x stride 4
+Train/Val split: 4399953 train eps (2528961824 frames), 89794 val eps (51631433 frames)
+[2026-04-27 15:50:21,947] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 256
+[2026-04-27 15:50:21,947] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 256
+[2026-04-27 15:50:21,948] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 256
+[2026-04-27 15:50:21,948] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 256
+[2026-04-27 15:50:21,949] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 256
+[2026-04-27 15:50:21,950] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 256
+[2026-04-27 15:50:21,950] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 256
+[2026-04-27 15:50:21,951] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 256
+[rank75]: Traceback (most recent call last):
+[rank75]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank75]:     train(args)
+[rank75]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1011, in train
+[rank75]:     model, optimizer, val_dataloader = accelerator.prepare(
+[rank75]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 1424, in prepare
+[rank75]:     result = self._prepare_deepspeed(*args)
+[rank75]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 2108, in _prepare_deepspeed
+[rank75]:     engine, optimizer, _, lr_scheduler = ds_initialize(**kwargs)
+[rank75]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/__init__.py", line 193, in initialize
+[rank75]:     engine = DeepSpeedEngine(args=args,
+[rank75]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 269, in __init__
+[rank75]:     self._configure_distributed_model(model)
+[rank75]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1201, in _configure_distributed_model
+[rank75]:     self._broadcast_model()
+[rank75]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1120, in _broadcast_model
+[rank75]:     dist.broadcast(p.data, groups._get_broadcast_src_rank(), group=self.seq_data_parallel_group)
+[rank75]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 117, in log_wrapper
+[rank75]:     return func(*args, **kwargs)
+[rank75]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 224, in broadcast
+[rank75]:     return cdb.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank75]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 745, in _fn
+[rank75]:     return fn(*args, **kwargs)
+[rank75]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py", line 200, in broadcast
+[rank75]:     return torch.distributed.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank75]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+[rank75]:     return func(*args, **kwargs)
+[rank75]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 2726, in broadcast
+[rank75]:     work = group.broadcast([tensor], opts)
+[rank75]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/NCCLUtils.hpp:268, unhandled cuda error (run with NCCL_DEBUG=INFO for details), NCCL version 2.21.5
+[rank75]: ncclUnhandledCudaError: Call to CUDA function failed.
+[rank75]: Last error:
+[rank75]: P2P is disabled between NVLINK connected GPUs 1 and 0. This should not be the case given their connectivity, and is probably due to a hardware issue. If you still want to proceed, you can set NCCL_IGNORE_DISABLED_P2P=1.
+[rank72]: Traceback (most recent call last):
+[rank72]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank72]:     train(args)
+[rank72]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1011, in train
+[rank72]:     model, optimizer, val_dataloader = accelerator.prepare(
+[rank72]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 1424, in prepare
+[rank72]:     result = self._prepare_deepspeed(*args)
+[rank72]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 2108, in _prepare_deepspeed
+[rank72]:     engine, optimizer, _, lr_scheduler = ds_initialize(**kwargs)
+[rank72]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/__init__.py", line 193, in initialize
+[rank72]:     engine = DeepSpeedEngine(args=args,
+[rank72]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 269, in __init__
+[rank72]:     self._configure_distributed_model(model)
+[rank72]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1201, in _configure_distributed_model
+[rank72]:     self._broadcast_model()
+[rank72]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1120, in _broadcast_model
+[rank72]:     dist.broadcast(p.data, groups._get_broadcast_src_rank(), group=self.seq_data_parallel_group)
+[rank72]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 117, in log_wrapper
+[rank72]:     return func(*args, **kwargs)
+[rank72]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 224, in broadcast
+[rank72]:     return cdb.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank72]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 745, in _fn
+[rank72]:     return fn(*args, **kwargs)
+[rank72]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py", line 200, in broadcast
+[rank72]:     return torch.distributed.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank72]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+[rank72]:     return func(*args, **kwargs)
+[rank72]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 2726, in broadcast
+[rank72]:     work = group.broadcast([tensor], opts)
+[rank72]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/NCCLUtils.hpp:268, unhandled cuda error (run with NCCL_DEBUG=INFO for details), NCCL version 2.21.5
+[rank72]: ncclUnhandledCudaError: Call to CUDA function failed.
+[rank72]: Last error:
+[rank72]: P2P is disabled between NVLINK connected GPUs 1 and 0. This should not be the case given their connectivity, and is probably due to a hardware issue. If you still want to proceed, you can set NCCL_IGNORE_DISABLED_P2P=1.
+[rank77]: Traceback (most recent call last):
+[rank77]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank77]:     train(args)
+[rank77]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1011, in train
+[rank77]:     model, optimizer, val_dataloader = accelerator.prepare(
+[rank77]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 1424, in prepare
+[rank77]:     result = self._prepare_deepspeed(*args)
+[rank77]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 2108, in _prepare_deepspeed
+[rank77]:     engine, optimizer, _, lr_scheduler = ds_initialize(**kwargs)
+[rank77]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/__init__.py", line 193, in initialize
+[rank77]:     engine = DeepSpeedEngine(args=args,
+[rank77]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 269, in __init__
+[rank77]:     self._configure_distributed_model(model)
+[rank77]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1201, in _configure_distributed_model
+[rank77]:     self._broadcast_model()
+[rank77]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1120, in _broadcast_model
+[rank77]:     dist.broadcast(p.data, groups._get_broadcast_src_rank(), group=self.seq_data_parallel_group)
+[rank77]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 117, in log_wrapper
+[rank77]:     return func(*args, **kwargs)
+[rank77]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 224, in broadcast
+[rank77]:     return cdb.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank77]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 745, in _fn
+[rank77]:     return fn(*args, **kwargs)
+[rank77]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py", line 200, in broadcast
+[rank77]:     return torch.distributed.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank77]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+[rank77]:     return func(*args, **kwargs)
+[rank77]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 2726, in broadcast
+[rank77]:     work = group.broadcast([tensor], opts)
+[rank77]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/NCCLUtils.hpp:268, unhandled cuda error (run with NCCL_DEBUG=INFO for details), NCCL version 2.21.5
+[rank77]: ncclUnhandledCudaError: Call to CUDA function failed.
+[rank77]: Last error:
+[rank77]: P2P is disabled between NVLINK connected GPUs 1 and 0. This should not be the case given their connectivity, and is probably due to a hardware issue. If you still want to proceed, you can set NCCL_IGNORE_DISABLED_P2P=1.
+[rank73]: Traceback (most recent call last):
+[rank73]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank73]:     train(args)
+[rank73]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1011, in train
+[rank73]:     model, optimizer, val_dataloader = accelerator.prepare(
+[rank73]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 1424, in prepare
+[rank73]:     result = self._prepare_deepspeed(*args)
+[rank73]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 2108, in _prepare_deepspeed
+[rank73]:     engine, optimizer, _, lr_scheduler = ds_initialize(**kwargs)
+[rank73]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/__init__.py", line 193, in initialize
+[rank73]:     engine = DeepSpeedEngine(args=args,
+[rank73]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 269, in __init__
+[rank73]:     self._configure_distributed_model(model)
+[rank73]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1201, in _configure_distributed_model
+[rank73]:     self._broadcast_model()
+[rank73]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1120, in _broadcast_model
+[rank73]:     dist.broadcast(p.data, groups._get_broadcast_src_rank(), group=self.seq_data_parallel_group)
+[rank73]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 117, in log_wrapper
+[rank73]:     return func(*args, **kwargs)
+[rank73]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 224, in broadcast
+[rank73]:     return cdb.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank73]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 745, in _fn
+[rank73]:     return fn(*args, **kwargs)
+[rank73]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py", line 200, in broadcast
+[rank73]:     return torch.distributed.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank73]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+[rank73]:     return func(*args, **kwargs)
+[rank73]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 2726, in broadcast
+[rank73]:     work = group.broadcast([tensor], opts)
+[rank73]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/NCCLUtils.hpp:268, unhandled cuda error (run with NCCL_DEBUG=INFO for details), NCCL version 2.21.5
+[rank73]: ncclUnhandledCudaError: Call to CUDA function failed.
+[rank73]: Last error:
+[rank73]: P2P is disabled between NVLINK connected GPUs 1 and 0. This should not be the case given their connectivity, and is probably due to a hardware issue. If you still want to proceed, you can set NCCL_IGNORE_DISABLED_P2P=1.
+[rank76]: Traceback (most recent call last):
+[rank76]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank76]:     train(args)
+[rank76]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1011, in train
+[rank76]:     model, optimizer, val_dataloader = accelerator.prepare(
+[rank76]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 1424, in prepare
+[rank76]:     result = self._prepare_deepspeed(*args)
+[rank76]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 2108, in _prepare_deepspeed
+[rank76]:     engine, optimizer, _, lr_scheduler = ds_initialize(**kwargs)
+[rank76]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/__init__.py", line 193, in initialize
+[rank76]:     engine = DeepSpeedEngine(args=args,
+[rank76]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 269, in __init__
+[rank76]:     self._configure_distributed_model(model)
+[rank76]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1201, in _configure_distributed_model
+[rank76]:     self._broadcast_model()
+[rank76]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1120, in _broadcast_model
+[rank76]:     dist.broadcast(p.data, groups._get_broadcast_src_rank(), group=self.seq_data_parallel_group)
+[rank76]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 117, in log_wrapper
+[rank76]:     return func(*args, **kwargs)
+[rank76]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 224, in broadcast
+[rank76]:     return cdb.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank76]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 745, in _fn
+[rank76]:     return fn(*args, **kwargs)
+[rank76]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py", line 200, in broadcast
+[rank76]:     return torch.distributed.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank76]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+[rank76]:     return func(*args, **kwargs)
+[rank76]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 2726, in broadcast
+[rank76]:     work = group.broadcast([tensor], opts)
+[rank76]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/NCCLUtils.hpp:268, unhandled cuda error (run with NCCL_DEBUG=INFO for details), NCCL version 2.21.5
+[rank76]: ncclUnhandledCudaError: Call to CUDA function failed.
+[rank76]: Last error:
+[rank76]: P2P is disabled between NVLINK connected GPUs 1 and 0. This should not be the case given their connectivity, and is probably due to a hardware issue. If you still want to proceed, you can set NCCL_IGNORE_DISABLED_P2P=1.
+[rank78]: Traceback (most recent call last):
+[rank78]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank78]:     train(args)
+[rank78]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1011, in train
+[rank78]:     model, optimizer, val_dataloader = accelerator.prepare(
+[rank78]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 1424, in prepare
+[rank78]:     result = self._prepare_deepspeed(*args)
+[rank78]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 2108, in _prepare_deepspeed
+[rank78]:     engine, optimizer, _, lr_scheduler = ds_initialize(**kwargs)
+[rank78]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/__init__.py", line 193, in initialize
+[rank78]:     engine = DeepSpeedEngine(args=args,
+[rank78]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 269, in __init__
+[rank78]:     self._configure_distributed_model(model)
+[rank78]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1201, in _configure_distributed_model
+[rank78]:     self._broadcast_model()
+[rank78]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1120, in _broadcast_model
+[rank78]:     dist.broadcast(p.data, groups._get_broadcast_src_rank(), group=self.seq_data_parallel_group)
+[rank78]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 117, in log_wrapper
+[rank78]:     return func(*args, **kwargs)
+[rank78]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 224, in broadcast
+[rank78]:     return cdb.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank78]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 745, in _fn
+[rank78]:     return fn(*args, **kwargs)
+[rank78]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py", line 200, in broadcast
+[rank78]:     return torch.distributed.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank78]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+[rank78]:     return func(*args, **kwargs)
+[rank78]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 2726, in broadcast
+[rank78]:     work = group.broadcast([tensor], opts)
+[rank78]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/NCCLUtils.hpp:268, unhandled cuda error (run with NCCL_DEBUG=INFO for details), NCCL version 2.21.5
+[rank78]: ncclUnhandledCudaError: Call to CUDA function failed.
+[rank78]: Last error:
+[rank78]: P2P is disabled between NVLINK connected GPUs 1 and 0. This should not be the case given their connectivity, and is probably due to a hardware issue. If you still want to proceed, you can set NCCL_IGNORE_DISABLED_P2P=1.
+[rank79]: Traceback (most recent call last):
+[rank79]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank79]:     train(args)
+[rank79]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1011, in train
+[rank79]:     model, optimizer, val_dataloader = accelerator.prepare(
+[rank79]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 1424, in prepare
+[rank79]:     result = self._prepare_deepspeed(*args)
+[rank79]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 2108, in _prepare_deepspeed
+[rank79]:     engine, optimizer, _, lr_scheduler = ds_initialize(**kwargs)
+[rank79]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/__init__.py", line 193, in initialize
+[rank79]:     engine = DeepSpeedEngine(args=args,
+[rank79]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 269, in __init__
+[rank79]:     self._configure_distributed_model(model)
+[rank79]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1201, in _configure_distributed_model
+[rank79]:     self._broadcast_model()
+[rank79]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1120, in _broadcast_model
+[rank79]:     dist.broadcast(p.data, groups._get_broadcast_src_rank(), group=self.seq_data_parallel_group)
+[rank79]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 117, in log_wrapper
+[rank79]:     return func(*args, **kwargs)
+[rank79]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 224, in broadcast
+[rank79]:     return cdb.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank79]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 745, in _fn
+[rank79]:     return fn(*args, **kwargs)
+[rank79]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py", line 200, in broadcast
+[rank79]:     return torch.distributed.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank79]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+[rank79]:     return func(*args, **kwargs)
+[rank79]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 2726, in broadcast
+[rank79]:     work = group.broadcast([tensor], opts)
+[rank79]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/NCCLUtils.hpp:268, unhandled cuda error (run with NCCL_DEBUG=INFO for details), NCCL version 2.21.5
+[rank79]: ncclUnhandledCudaError: Call to CUDA function failed.
+[rank79]: Last error:
+[rank79]: P2P is disabled between NVLINK connected GPUs 1 and 0. This should not be the case given their connectivity, and is probably due to a hardware issue. If you still want to proceed, you can set NCCL_IGNORE_DISABLED_P2P=1.
+[rank74]: Traceback (most recent call last):
+[rank74]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank74]:     train(args)
+[rank74]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1011, in train
+[rank74]:     model, optimizer, val_dataloader = accelerator.prepare(
+[rank74]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 1424, in prepare
+[rank74]:     result = self._prepare_deepspeed(*args)
+[rank74]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 2108, in _prepare_deepspeed
+[rank74]:     engine, optimizer, _, lr_scheduler = ds_initialize(**kwargs)
+[rank74]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/__init__.py", line 193, in initialize
+[rank74]:     engine = DeepSpeedEngine(args=args,
+[rank74]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 269, in __init__
+[rank74]:     self._configure_distributed_model(model)
+[rank74]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1201, in _configure_distributed_model
+[rank74]:     self._broadcast_model()
+[rank74]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1120, in _broadcast_model
+[rank74]:     dist.broadcast(p.data, groups._get_broadcast_src_rank(), group=self.seq_data_parallel_group)
+[rank74]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 117, in log_wrapper
+[rank74]:     return func(*args, **kwargs)
+[rank74]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 224, in broadcast
+[rank74]:     return cdb.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank74]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 745, in _fn
+[rank74]:     return fn(*args, **kwargs)
+[rank74]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py", line 200, in broadcast
+[rank74]:     return torch.distributed.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank74]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+[rank74]:     return func(*args, **kwargs)
+[rank74]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 2726, in broadcast
+[rank74]:     work = group.broadcast([tensor], opts)
+[rank74]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/NCCLUtils.hpp:268, unhandled cuda error (run with NCCL_DEBUG=INFO for details), NCCL version 2.21.5
+[rank74]: ncclUnhandledCudaError: Call to CUDA function failed.
+[rank74]: Last error:
+[rank74]: P2P is disabled between NVLINK connected GPUs 1 and 0. This should not be the case given their connectivity, and is probably due to a hardware issue. If you still want to proceed, you can set NCCL_IGNORE_DISABLED_P2P=1.
+[rank72]:[W427 15:51:08.866658461 ProcessGroupNCCL.cpp:1496] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+W0427 15:51:09.685000 5701 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 5878 closing signal SIGTERM
+W0427 15:51:09.690000 5701 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 5879 closing signal SIGTERM
+W0427 15:51:09.691000 5701 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 5880 closing signal SIGTERM
+W0427 15:51:09.691000 5701 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 5881 closing signal SIGTERM
+W0427 15:51:09.691000 5701 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 5882 closing signal SIGTERM
+W0427 15:51:09.691000 5701 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 5883 closing signal SIGTERM
+W0427 15:51:09.692000 5701 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 5885 closing signal SIGTERM
+E0427 15:51:10.573000 5701 site-packages/torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 6 (pid: 5884) of binary: /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/bin/python3.10
+Traceback (most recent call last):
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/bin/accelerate", line 6, in <module>
+    sys.exit(main())
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/commands/accelerate_cli.py", line 50, in main
+    args.func(args)
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/commands/launch.py", line 1184, in launch_command
+    deepspeed_launcher(args)
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/commands/launch.py", line 868, in deepspeed_launcher
+    distrib_run.run(args)
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/run.py", line 909, in run
+    elastic_launch(
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+train_qwen3vl_pretrain_egodex_flare.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-04-27_15:51:09
+  host      : a9b1031dabcf4092aa3cf66f0b24bd62.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local
+  rank      : 78 (local_rank: 6)
+  exitcode  : 1 (pid: 5884)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================

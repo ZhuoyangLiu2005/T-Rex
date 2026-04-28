@@ -1,0 +1,350 @@
+ipex flag is deprecated, will be removed in Accelerate v1.10. From 2.7.0, PyTorch has all needed optimizations for Intel CPU and XPU.
+[2026-04-27 15:56:38,426] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+W0427 15:56:42.399000 11270 site-packages/torch/distributed/run.py:792] 
+W0427 15:56:42.399000 11270 site-packages/torch/distributed/run.py:792] *****************************************
+W0427 15:56:42.399000 11270 site-packages/torch/distributed/run.py:792] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0427 15:56:42.399000 11270 site-packages/torch/distributed/run.py:792] *****************************************
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+[2026-04-27 15:57:35,770] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:57:35,770] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:57:35,770] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:57:35,770] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:57:35,770] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:57:35,770] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:57:35,771] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:57:35,773] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:57:41,449] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:57:41,449] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:57:41,449] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:57:41,449] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:57:41,449] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:57:41,449] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:57:41,449] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:57:41,451] [INFO] [comm.py:652:init_distributed] cdb=None
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+  New MoT expert weights (expected missing): 618
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+VLA weights initialized.
+Flare: 8 steps x 4 tok/frame = 32 total, layer_index=-1, stride=4
+Total: 4.98B  Trainable: 3.16B (63.4%)
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0  New MoT expert weights (expected missing): 618
+
+  New MoT expert weights (expected missing): 618
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+  New MoT expert weights (expected missing): 618
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+  New MoT expert weights (expected missing): 618
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+  New MoT expert weights (expected missing): 618
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+  New MoT expert weights (expected missing): 618
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+  New MoT expert weights (expected missing): 618
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+Loaded 4509 batch manifests
+EgoDex pretrain (flare): 4489747 episodes, 2580593257 transitions, flare=8 steps x stride 4
+Train/Val split: 4399953 train eps (2528961824 frames), 89794 val eps (51631433 frames)
+[2026-04-27 15:58:47,597] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 240
+[2026-04-27 15:58:47,597] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 240
+[2026-04-27 15:58:47,597] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 240
+[2026-04-27 15:58:47,598] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 240
+[2026-04-27 15:58:47,598] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 240
+[2026-04-27 15:58:47,598] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 240
+[2026-04-27 15:58:47,598] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 240
+[2026-04-27 15:58:47,598] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 240
+[rank34]:[W427 16:00:01.348534111 TCPStore.cpp:125] [c10d] recvValue failed on SocketImpl(fd=76, addr=[ace541d638554ed79340e13b00bd3845.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local]:35212, remote=[3ebf7983843f4b0a90a0aad43295e7a5.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local]:29500): failed to recv, got 0 bytes
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:671 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7fcdc7b6c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6312878 (0x7fcdb00e5878 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::string, std::allocator<std::string> > const&) + 0x354 (0x7fcdb00e1c84 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::heartbeatMonitor() + 0x383 (0x7fcd75e27c73 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7fcdc7fab5c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7fcdd75d7aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7fcdd7664c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank34]:[W427 16:00:01.354743042 ProcessGroupNCCL.cpp:1680] [PG ID 0 PG GUID 0 Rank 34] Failed to check the "should dump" flag on TCPStore, (maybe TCPStore server has shut down too early), with error: failed to recv, got 0 bytes
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:671 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7fcdc7b6c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6312878 (0x7fcdb00e5878 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::string, std::allocator<std::string> > const&) + 0x354 (0x7fcdb00e1c84 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::heartbeatMonitor() + 0x383 (0x7fcd75e27c73 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7fcdc7fab5c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7fcdd75d7aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7fcdd7664c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank36]:[W427 16:00:01.348559172 TCPStore.cpp:125] [c10d] recvValue failed on SocketImpl(fd=76, addr=[ace541d638554ed79340e13b00bd3845.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local]:35220, remote=[3ebf7983843f4b0a90a0aad43295e7a5.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local]:29500): failed to recv, got 0 bytes
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:671 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7fc03196c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6312878 (0x7fc01a2e5878 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::string, std::allocator<std::string> > const&) + 0x354 (0x7fc01a2e1c84 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::heartbeatMonitor() + 0x383 (0x7fbfe0027c73 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7fc031de85c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7fc0416bdaa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7fc04174ac3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank33]:[W427 16:00:01.349248285 TCPStore.cpp:125] [c10d] recvValue failed on SocketImpl(fd=76, addr=[ace541d638554ed79340e13b00bd3845.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local]:35266, remote=[3ebf7983843f4b0a90a0aad43295e7a5.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local]:29500): failed to recv, got 0 bytes
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:671 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f459d56c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6312878 (0x7f4585ee5878 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::string, std::allocator<std::string> > const&) + 0x354 (0x7f4585ee1c84 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::heartbeatMonitor() + 0x383 (0x7f454bc27c73 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f459dcfe5c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f45ad320aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f45ad3adc3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank36]:[W427 16:00:01.355472319 ProcessGroupNCCL.cpp:1680] [PG ID 0 PG GUID 0 Rank 36] Failed to check the "should dump" flag on TCPStore, (maybe TCPStore server has shut down too early), with error: failed to recv, got 0 bytes
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:671 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7fc03196c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6312878 (0x7fc01a2e5878 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::string, std::allocator<std::string> > const&) + 0x354 (0x7fc01a2e1c84 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::heartbeatMonitor() + 0x383 (0x7fbfe0027c73 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7fc031de85c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7fc0416bdaa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7fc04174ac3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank33]:[W427 16:00:01.355494718 ProcessGroupNCCL.cpp:1680] [PG ID 0 PG GUID 0 Rank 33] Failed to check the "should dump" flag on TCPStore, (maybe TCPStore server has shut down too early), with error: failed to recv, got 0 bytes
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:671 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f459d56c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6312878 (0x7f4585ee5878 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::string, std::allocator<std::string> > const&) + 0x354 (0x7f4585ee1c84 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::heartbeatMonitor() + 0x383 (0x7f454bc27c73 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f459dcfe5c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f45ad320aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f45ad3adc3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank38]:[W427 16:00:01.349247522 TCPStore.cpp:125] [c10d] recvValue failed on SocketImpl(fd=76, addr=[ace541d638554ed79340e13b00bd3845.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local]:35228, remote=[3ebf7983843f4b0a90a0aad43295e7a5.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local]:29500): failed to recv, got 0 bytes
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:671 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f751d56c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6312878 (0x7f7505ee5878 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::string, std::allocator<std::string> > const&) + 0x354 (0x7f7505ee1c84 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::heartbeatMonitor() + 0x383 (0x7f74cbc27c73 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f751dcd15c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f752d2f7aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f752d384c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank39]:[W427 16:00:01.349626196 TCPStore.cpp:125] [c10d] recvValue failed on SocketImpl(fd=76, addr=[ace541d638554ed79340e13b00bd3845.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local]:35224, remote=[3ebf7983843f4b0a90a0aad43295e7a5.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local]:29500): failed to recv, got 0 bytes
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:671 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f138236c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6312878 (0x7f136ace5878 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::string, std::allocator<std::string> > const&) + 0x354 (0x7f136ace1c84 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::heartbeatMonitor() + 0x383 (0x7f1330a27c73 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f1382b205c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f1392144aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f13921d1c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank38]:[W427 16:00:01.355616102 ProcessGroupNCCL.cpp:1680] [PG ID 0 PG GUID 0 Rank 38] Failed to check the "should dump" flag on TCPStore, (maybe TCPStore server has shut down too early), with error: failed to recv, got 0 bytes
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:671 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f751d56c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6312878 (0x7f7505ee5878 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::string, std::allocator<std::string> > const&) + 0x354 (0x7f7505ee1c84 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::heartbeatMonitor() + 0x383 (0x7f74cbc27c73 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f751dcd15c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f752d2f7aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f752d384c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank39]:[W427 16:00:01.355635875 ProcessGroupNCCL.cpp:1680] [PG ID 0 PG GUID 0 Rank 39] Failed to check the "should dump" flag on TCPStore, (maybe TCPStore server has shut down too early), with error: failed to recv, got 0 bytes
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:671 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f138236c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6312878 (0x7f136ace5878 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::string, std::allocator<std::string> > const&) + 0x354 (0x7f136ace1c84 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::heartbeatMonitor() + 0x383 (0x7f1330a27c73 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f1382b205c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f1392144aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f13921d1c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank35]:[W427 16:00:01.350677267 TCPStore.cpp:125] [c10d] recvValue failed on SocketImpl(fd=76, addr=[ace541d638554ed79340e13b00bd3845.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local]:35250, remote=[3ebf7983843f4b0a90a0aad43295e7a5.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local]:29500): failed to recv, got 0 bytes
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:671 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f71ad76c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6312878 (0x7f7195ce5878 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::string, std::allocator<std::string> > const&) + 0x354 (0x7f7195ce1c84 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::heartbeatMonitor() + 0x383 (0x7f715ba27c73 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f71adbdb5c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f71bd201aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f71bd28ec3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank35]:[W427 16:00:01.356076348 ProcessGroupNCCL.cpp:1680] [PG ID 0 PG GUID 0 Rank 35] Failed to check the "should dump" flag on TCPStore, (maybe TCPStore server has shut down too early), with error: failed to recv, got 0 bytes
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:671 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f71ad76c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6312878 (0x7f7195ce5878 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::string, std::allocator<std::string> > const&) + 0x354 (0x7f7195ce1c84 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::heartbeatMonitor() + 0x383 (0x7f715ba27c73 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f71adbdb5c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f71bd201aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f71bd28ec3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank37]:[W427 16:00:01.352032051 TCPStore.cpp:125] [c10d] recvValue failed on SocketImpl(fd=76, addr=[ace541d638554ed79340e13b00bd3845.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local]:35238, remote=[3ebf7983843f4b0a90a0aad43295e7a5.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local]:29500): failed to recv, got 0 bytes
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:671 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7fc839d6c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6312878 (0x7fc8226e5878 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::string, std::allocator<std::string> > const&) + 0x354 (0x7fc8226e1c84 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::heartbeatMonitor() + 0x383 (0x7fc7e8427c73 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7fc83a5705c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7fc849b9daa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7fc849c2ac3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank37]:[W427 16:00:01.356270357 ProcessGroupNCCL.cpp:1680] [PG ID 0 PG GUID 0 Rank 37] Failed to check the "should dump" flag on TCPStore, (maybe TCPStore server has shut down too early), with error: failed to recv, got 0 bytes
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:671 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7fc839d6c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6312878 (0x7fc8226e5878 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::string, std::allocator<std::string> > const&) + 0x354 (0x7fc8226e1c84 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::heartbeatMonitor() + 0x383 (0x7fc7e8427c73 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7fc83a5705c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7fc849b9daa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7fc849c2ac3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank32]:[W427 16:00:01.351847098 TCPStore.cpp:125] [c10d] recvValue failed on SocketImpl(fd=76, addr=[ace541d638554ed79340e13b00bd3845.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local]:35276, remote=[3ebf7983843f4b0a90a0aad43295e7a5.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local]:29500): failed to recv, got 0 bytes
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:671 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7fbb85b6c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6312878 (0x7fbb6e0e5878 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::string, std::allocator<std::string> > const&) + 0x354 (0x7fbb6e0e1c84 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::heartbeatMonitor() + 0x383 (0x7fbb33e27c73 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7fbb8607b5c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7fbb9569faa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7fbb9572cc3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank32]:[W427 16:00:01.356919355 ProcessGroupNCCL.cpp:1680] [PG ID 0 PG GUID 0 Rank 32] Failed to check the "should dump" flag on TCPStore, (maybe TCPStore server has shut down too early), with error: failed to recv, got 0 bytes
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:671 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7fbb85b6c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6312878 (0x7fbb6e0e5878 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::string, std::allocator<std::string> > const&) + 0x354 (0x7fbb6e0e1c84 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::heartbeatMonitor() + 0x383 (0x7fbb33e27c73 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7fbb8607b5c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7fbb9569faa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7fbb9572cc3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank32]: Traceback (most recent call last):
+[rank32]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank32]:     train(args)
+[rank32]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1011, in train
+[rank32]:     model, optimizer, val_dataloader = accelerator.prepare(
+[rank32]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 1424, in prepare
+[rank32]:     result = self._prepare_deepspeed(*args)
+[rank32]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 2108, in _prepare_deepspeed
+[rank32]:     engine, optimizer, _, lr_scheduler = ds_initialize(**kwargs)
+[rank32]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/__init__.py", line 193, in initialize
+[rank32]:     engine = DeepSpeedEngine(args=args,
+[rank32]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 269, in __init__
+[rank32]:     self._configure_distributed_model(model)
+[rank32]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1201, in _configure_distributed_model
+[rank32]:     self._broadcast_model()
+[rank32]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1120, in _broadcast_model
+[rank32]:     dist.broadcast(p.data, groups._get_broadcast_src_rank(), group=self.seq_data_parallel_group)
+[rank32]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 117, in log_wrapper
+[rank32]:     return func(*args, **kwargs)
+[rank32]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 224, in broadcast
+[rank32]:     return cdb.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank32]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 745, in _fn
+[rank32]:     return fn(*args, **kwargs)
+[rank32]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py", line 200, in broadcast
+[rank32]:     return torch.distributed.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank32]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+[rank32]:     return func(*args, **kwargs)
+[rank32]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 2726, in broadcast
+[rank32]:     work = group.broadcast([tensor], opts)
+[rank32]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/NCCLUtils.hpp:268, remote process exited or there was a network error, NCCL version 2.21.5
+[rank32]: ncclRemoteError: A call failed possibly due to a network error or a remote process exiting prematurely.
+[rank32]: Last error:
+[rank32]: socketProgress: Connection closed by remote peer 1108e5e172ab4b13a9cbc92deca42e6c.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local<47886>
+[rank32]:[W427 16:00:06.088661866 ProcessGroupNCCL.cpp:1496] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+[rank33]: Traceback (most recent call last):
+[rank33]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank33]:     train(args)
+[rank33]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1011, in train
+[rank33]:     model, optimizer, val_dataloader = accelerator.prepare(
+[rank33]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 1424, in prepare
+[rank33]:     result = self._prepare_deepspeed(*args)
+[rank33]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 2108, in _prepare_deepspeed
+[rank33]:     engine, optimizer, _, lr_scheduler = ds_initialize(**kwargs)
+[rank33]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/__init__.py", line 193, in initialize
+[rank33]:     engine = DeepSpeedEngine(args=args,
+[rank33]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 269, in __init__
+[rank33]:     self._configure_distributed_model(model)
+[rank33]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1201, in _configure_distributed_model
+[rank33]:     self._broadcast_model()
+[rank33]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1120, in _broadcast_model
+[rank33]:     dist.broadcast(p.data, groups._get_broadcast_src_rank(), group=self.seq_data_parallel_group)
+[rank33]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 117, in log_wrapper
+[rank33]:     return func(*args, **kwargs)
+[rank33]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 224, in broadcast
+[rank33]:     return cdb.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank33]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 745, in _fn
+[rank33]:     return fn(*args, **kwargs)
+[rank33]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py", line 200, in broadcast
+[rank33]:     return torch.distributed.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank33]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+[rank33]:     return func(*args, **kwargs)
+[rank33]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 2726, in broadcast
+[rank33]:     work = group.broadcast([tensor], opts)
+[rank33]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/NCCLUtils.hpp:268, remote process exited or there was a network error, NCCL version 2.21.5
+[rank33]: ncclRemoteError: A call failed possibly due to a network error or a remote process exiting prematurely.
+[rank33]: Last error:
+[rank33]: socketProgress: Connection closed by remote peer ace541d638554ed79340e13b00bd3845.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local<50988>
+W0427 16:00:07.669000 11270 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 11440 closing signal SIGTERM
+W0427 16:00:07.676000 11270 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 11441 closing signal SIGTERM
+W0427 16:00:07.679000 11270 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 11442 closing signal SIGTERM
+W0427 16:00:07.695000 11270 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 11443 closing signal SIGTERM
+W0427 16:00:07.698000 11270 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 11444 closing signal SIGTERM
+W0427 16:00:07.706000 11270 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 11445 closing signal SIGTERM
+W0427 16:00:07.708000 11270 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 11446 closing signal SIGTERM
+E0427 16:00:08.952000 11270 site-packages/torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 0 (pid: 11439) of binary: /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/bin/python3.10
+Traceback (most recent call last):
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/bin/accelerate", line 6, in <module>
+    sys.exit(main())
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/commands/accelerate_cli.py", line 50, in main
+    args.func(args)
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/commands/launch.py", line 1184, in launch_command
+    deepspeed_launcher(args)
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/commands/launch.py", line 868, in deepspeed_launcher
+    distrib_run.run(args)
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/run.py", line 909, in run
+    elastic_launch(
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+train_qwen3vl_pretrain_egodex_flare.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-04-27_16:00:07
+  host      : ace541d638554ed79340e13b00bd3845.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local
+  rank      : 32 (local_rank: 0)
+  exitcode  : 1 (pid: 11439)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================

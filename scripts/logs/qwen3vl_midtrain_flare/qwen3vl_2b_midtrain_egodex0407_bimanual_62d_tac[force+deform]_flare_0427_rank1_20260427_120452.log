@@ -1,0 +1,46 @@
+ipex flag is deprecated, will be removed in Accelerate v1.10. From 2.7.0, PyTorch has all needed optimizations for Intel CPU and XPU.
+[2026-04-27 12:05:30,721] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+W0427 12:05:34.674000 2675 site-packages/torch/distributed/run.py:792] 
+W0427 12:05:34.674000 2675 site-packages/torch/distributed/run.py:792] *****************************************
+W0427 12:05:34.674000 2675 site-packages/torch/distributed/run.py:792] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0427 12:05:34.674000 2675 site-packages/torch/distributed/run.py:792] *****************************************
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+[2026-04-27 12:06:25,711] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 12:06:25,711] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 12:06:25,711] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 12:06:25,711] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 12:06:25,711] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 12:06:25,711] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 12:06:25,711] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 12:06:25,713] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 12:06:30,142] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 12:06:30,144] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 12:06:30,144] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 12:06:30,145] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 12:06:30,145] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 12:06:30,145] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 12:06:30,145] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 12:06:30,145] [INFO] [comm.py:652:init_distributed] cdb=None
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!

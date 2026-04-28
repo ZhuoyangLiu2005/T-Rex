@@ -45,7 +45,7 @@ NV_PRETRAIN_ROOT="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/da
 BKL_PRETRAIN_ROOT="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/midtrain/training_data/berkeley"
 MERGED_DATA_ROOT="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/midtrain/merged"
 
-FROM_VLM_SCRATCH=1
+FROM_VLM_SCRATCH=0
 if [ "${FROM_VLM_SCRATCH}" = "1" ]; then
     RESUME_CHECKPOINT=""
     echo ">>> FROM_VLM_SCRATCH=1 — starting from base Qwen3-VL weights, no resume."
@@ -61,9 +61,9 @@ fi
 
 EXPERIMENT_NAME="qwen3vl_midtrain_flare"
 if [ "${FROM_VLM_SCRATCH}" = "1" ]; then
-    RUN_NAME="qwen3vl_2b_midtrain_vlmscratch_bimanual_62d_tac[force+deform]_flare_$(date +%m%d)"
+    RUN_NAME="qwen3vl_2b_midtrain_vlmscratch_state[wo]_bimanual_62d_tac[force+deform]_flare_$(date +%m%d)"
 else
-    RUN_NAME="qwen3vl_2b_midtrain_bimanual_62d_tac[force+deform]_flare_$(date +%m%d)"
+    RUN_NAME="qwen3vl_2b_midtrain_egodex0407_state[wo]_bimanual_62d_tac[force+deform]_flare_$(date +%m%d)"
 fi
 
 MASTER_ADDR=${MASTER_ADDR:-10.244.254.74}
@@ -147,7 +147,7 @@ accelerate launch \
     --log_dir ${OUTPUT_ROOT_DIR} \
     --experiment_name ${EXPERIMENT_NAME} \
     --run_name ${RUN_NAME} \
-    --use_robot_state 1 \
+    --use_robot_state 0 \
     --use_tactile_vec 1 \
     --use_tactile_deform 1 \
     --deform_encoder_ckpt ${DEFORM_ENCODER_PATH} \

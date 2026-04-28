@@ -1,0 +1,224 @@
+ipex flag is deprecated, will be removed in Accelerate v1.10. From 2.7.0, PyTorch has all needed optimizations for Intel CPU and XPU.
+[2026-04-27 15:47:09,361] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+df: /root/.triton/autotune: No such file or directory
+W0427 15:47:16.039000 5702 site-packages/torch/distributed/run.py:792] 
+W0427 15:47:16.039000 5702 site-packages/torch/distributed/run.py:792] *****************************************
+W0427 15:47:16.039000 5702 site-packages/torch/distributed/run.py:792] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0427 15:47:16.039000 5702 site-packages/torch/distributed/run.py:792] *****************************************
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+[2026-04-27 15:48:08,483] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:48:08,483] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:48:08,483] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:48:08,483] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:48:08,483] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:48:08,483] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:48:08,483] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:48:08,483] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 15:48:12,419] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:48:12,419] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:48:12,419] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:48:12,419] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:48:12,419] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:48:12,419] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:48:12,419] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 15:48:12,420] [INFO] [comm.py:652:init_distributed] cdb=None
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0  New MoT expert weights (expected missing): 618
+
+  New MoT expert weights (expected missing): 618
+  New MoT expert weights (expected missing): 618
+  New MoT expert weights (expected missing): 618
+  New MoT expert weights (expected missing): 618
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+  New MoT expert weights (expected missing): 618
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0  New MoT expert weights (expected missing): 618
+
+  New MoT expert weights (expected missing): 618
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+VLA weights initialized.
+Flare: 8 steps x 4 tok/frame = 32 total, layer_index=-1, stride=4
+Total: 4.98B  Trainable: 3.16B (63.4%)
+Loaded 4509 batch manifests
+EgoDex pretrain (flare): 4489747 episodes, 2580593257 transitions, flare=8 steps x stride 4
+Train/Val split: 4399953 train eps (2528961824 frames), 89794 val eps (51631433 frames)
+[2026-04-27 15:50:27,485] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 256
+[2026-04-27 15:50:27,485] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 256
+[2026-04-27 15:50:27,485] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 256
+[2026-04-27 15:50:27,485] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 256
+[2026-04-27 15:50:27,485] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 256
+[2026-04-27 15:50:27,485] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 256
+[2026-04-27 15:50:27,485] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 256
+[2026-04-27 15:50:27,486] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 256
+[rank208]: Traceback (most recent call last):
+[rank208]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank208]:     train(args)
+[rank208]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1011, in train
+[rank208]:     model, optimizer, val_dataloader = accelerator.prepare(
+[rank208]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 1424, in prepare
+[rank208]:     result = self._prepare_deepspeed(*args)
+[rank208]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 2108, in _prepare_deepspeed
+[rank208]:     engine, optimizer, _, lr_scheduler = ds_initialize(**kwargs)
+[rank208]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/__init__.py", line 193, in initialize
+[rank208]:     engine = DeepSpeedEngine(args=args,
+[rank208]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 269, in __init__
+[rank208]:     self._configure_distributed_model(model)
+[rank208]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1201, in _configure_distributed_model
+[rank208]:     self._broadcast_model()
+[rank208]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1120, in _broadcast_model
+[rank208]:     dist.broadcast(p.data, groups._get_broadcast_src_rank(), group=self.seq_data_parallel_group)
+[rank208]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 117, in log_wrapper
+[rank208]:     return func(*args, **kwargs)
+[rank208]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 224, in broadcast
+[rank208]:     return cdb.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank208]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 745, in _fn
+[rank208]:     return fn(*args, **kwargs)
+[rank208]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py", line 200, in broadcast
+[rank208]:     return torch.distributed.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank208]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+[rank208]:     return func(*args, **kwargs)
+[rank208]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 2726, in broadcast
+[rank208]:     work = group.broadcast([tensor], opts)
+[rank208]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/NCCLUtils.hpp:268, remote process exited or there was a network error, NCCL version 2.21.5
+[rank208]: ncclRemoteError: A call failed possibly due to a network error or a remote process exiting prematurely.
+[rank208]: Last error:
+[rank208]: socketProgress: Connection closed by remote peer c6aedb6cc77c4a56be7d9f41ac94bc0d.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local<58980>
+[rank208]:[W427 15:51:46.899637323 ProcessGroupNCCL.cpp:1496] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+[rank209]: Traceback (most recent call last):
+[rank209]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank209]:     train(args)
+[rank209]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1011, in train
+[rank209]:     model, optimizer, val_dataloader = accelerator.prepare(
+[rank209]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 1424, in prepare
+[rank209]:     result = self._prepare_deepspeed(*args)
+[rank209]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 2108, in _prepare_deepspeed
+[rank209]:     engine, optimizer, _, lr_scheduler = ds_initialize(**kwargs)
+[rank209]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/__init__.py", line 193, in initialize
+[rank209]:     engine = DeepSpeedEngine(args=args,
+[rank209]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 269, in __init__
+[rank209]:     self._configure_distributed_model(model)
+[rank209]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1201, in _configure_distributed_model
+[rank209]:     self._broadcast_model()
+[rank209]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1120, in _broadcast_model
+[rank209]:     dist.broadcast(p.data, groups._get_broadcast_src_rank(), group=self.seq_data_parallel_group)
+[rank209]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 117, in log_wrapper
+[rank209]:     return func(*args, **kwargs)
+[rank209]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 224, in broadcast
+[rank209]:     return cdb.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank209]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 745, in _fn
+[rank209]:     return fn(*args, **kwargs)
+[rank209]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py", line 200, in broadcast
+[rank209]:     return torch.distributed.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank209]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+[rank209]:     return func(*args, **kwargs)
+[rank209]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 2726, in broadcast
+[rank209]:     work = group.broadcast([tensor], opts)
+[rank209]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/NCCLUtils.hpp:268, remote process exited or there was a network error, NCCL version 2.21.5
+[rank209]: ncclRemoteError: A call failed possibly due to a network error or a remote process exiting prematurely.
+[rank209]: Last error:
+[rank209]: socketProgress: Connection closed by remote peer 20f6ec6341da483184e3dfe3a6031b31.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local<37272>
+W0427 15:51:47.688000 5702 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 5880 closing signal SIGTERM
+W0427 15:51:47.694000 5702 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 5881 closing signal SIGTERM
+W0427 15:51:47.696000 5702 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 5882 closing signal SIGTERM
+W0427 15:51:47.699000 5702 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 5883 closing signal SIGTERM
+W0427 15:51:47.703000 5702 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 5884 closing signal SIGTERM
+[rank214]: Traceback (most recent call last):
+[rank214]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank214]:     train(args)
+[rank214]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1011, in train
+[rank214]:     model, optimizer, val_dataloader = accelerator.prepare(
+[rank214]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 1424, in prepare
+[rank214]:     result = self._prepare_deepspeed(*args)
+[rank214]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 2108, in _prepare_deepspeed
+[rank214]:     engine, optimizer, _, lr_scheduler = ds_initialize(**kwargs)
+[rank214]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/__init__.py", line 193, in initialize
+[rank214]:     engine = DeepSpeedEngine(args=args,
+[rank214]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 269, in __init__
+[rank214]:     self._configure_distributed_model(model)
+[rank214]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1201, in _configure_distributed_model
+[rank214]:     self._broadcast_model()
+[rank214]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1120, in _broadcast_model
+[rank214]:     dist.broadcast(p.data, groups._get_broadcast_src_rank(), group=self.seq_data_parallel_group)
+[rank214]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 117, in log_wrapper
+[rank214]:     return func(*args, **kwargs)
+[rank214]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py", line 224, in broadcast
+[rank214]:     return cdb.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank214]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py", line 745, in _fn
+[rank214]:     return fn(*args, **kwargs)
+[rank214]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py", line 200, in broadcast
+[rank214]:     return torch.distributed.broadcast(tensor=tensor, src=src, group=group, async_op=async_op)
+[rank214]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 81, in wrapper
+[rank214]:     return func(*args, **kwargs)
+[rank214]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 2726, in broadcast
+[rank214]:     work = group.broadcast([tensor], opts)
+[rank214]: torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/NCCLUtils.hpp:268, remote process exited or there was a network error, NCCL version 2.21.5
+[rank214]: ncclRemoteError: A call failed possibly due to a network error or a remote process exiting prematurely.
+[rank214]: Last error:
+[rank214]: socketProgress: Connection closed by remote peer 20f6ec6341da483184e3dfe3a6031b31.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local<56472>
+W0427 15:51:47.736000 5702 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 5885 closing signal SIGTERM
+W0427 15:51:47.737000 5702 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 5886 closing signal SIGTERM
+E0427 15:51:49.022000 5702 site-packages/torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 0 (pid: 5879) of binary: /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/bin/python3.10
+Traceback (most recent call last):
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/bin/accelerate", line 6, in <module>
+    sys.exit(main())
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/commands/accelerate_cli.py", line 50, in main
+    args.func(args)
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/commands/launch.py", line 1184, in launch_command
+    deepspeed_launcher(args)
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/commands/launch.py", line 868, in deepspeed_launcher
+    distrib_run.run(args)
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/run.py", line 909, in run
+    elastic_launch(
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+train_qwen3vl_pretrain_egodex_flare.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-04-27_15:51:47
+  host      : 20f6ec6341da483184e3dfe3a6031b31.osmo-20c0494ef6f54b95a1286656122d69b4.osmo-prod.svc.cluster.local
+  rank      : 208 (local_rank: 0)
+  exitcode  : 1 (pid: 5879)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================

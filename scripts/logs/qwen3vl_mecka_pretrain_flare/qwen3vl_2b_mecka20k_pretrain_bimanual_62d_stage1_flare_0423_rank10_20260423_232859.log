@@ -791,3 +791,958 @@ INFO:__main__:Checkpoint 0-130000 saved (with resumable state).
 INFO:__main__:Checkpoint 0-130000 saved (with resumable state).
 INFO:__main__:Checkpoint 0-130000 saved (with resumable state).
 INFO:__main__:Checkpoint 0-130000 saved (with resumable state).
+[2026-04-25 18:37:39,359] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt...
+[2026-04-25 18:37:39,359] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt...
+[2026-04-25 18:37:39,359] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt...
+[2026-04-25 18:37:39,359] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt...
+[2026-04-25 18:37:39,359] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt...
+[2026-04-25 18:37:39,359] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt...
+[2026-04-25 18:37:39,359] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt...
+[2026-04-25 18:37:39,359] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt...
+[2026-04-25 18:37:39,594] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt.
+[2026-04-25 18:37:39,594] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt
+[2026-04-25 18:37:39,594] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 18:37:39,595] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt.
+[2026-04-25 18:37:39,595] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt
+[2026-04-25 18:37:39,595] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 18:37:39,640] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt.
+[2026-04-25 18:37:39,640] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt
+[2026-04-25 18:37:39,640] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 18:37:39,682] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt.
+[2026-04-25 18:37:39,682] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt
+[2026-04-25 18:37:39,682] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 18:37:39,725] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt.
+[2026-04-25 18:37:39,725] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt
+[2026-04-25 18:37:39,725] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 18:37:39,757] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt.
+[2026-04-25 18:37:39,758] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt
+[2026-04-25 18:37:39,758] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 18:37:39,800] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt.
+[2026-04-25 18:37:39,801] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt
+[2026-04-25 18:37:39,801] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 18:37:39,806] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt.
+[2026-04-25 18:37:39,806] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-135000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt
+[2026-04-25 18:37:39,806] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+INFO:__main__:Checkpoint 0-135000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-135000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-135000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-135000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-135000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-135000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-135000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-135000 saved (with resumable state).
+[2026-04-25 21:09:20,356] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt...
+[2026-04-25 21:09:20,356] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt...
+[2026-04-25 21:09:20,356] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt...
+[2026-04-25 21:09:20,356] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt...
+[2026-04-25 21:09:20,357] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt...
+[2026-04-25 21:09:20,357] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt...
+[2026-04-25 21:09:20,357] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt...
+[2026-04-25 21:09:20,357] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt...
+[2026-04-25 21:09:20,572] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt.
+[2026-04-25 21:09:20,573] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt
+[2026-04-25 21:09:20,573] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 21:09:20,585] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt.
+[2026-04-25 21:09:20,585] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt
+[2026-04-25 21:09:20,585] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 21:09:20,670] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt.
+[2026-04-25 21:09:20,670] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt
+[2026-04-25 21:09:20,670] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 21:09:20,679] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt.
+[2026-04-25 21:09:20,679] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt
+[2026-04-25 21:09:20,679] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 21:09:20,684] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt.
+[2026-04-25 21:09:20,684] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt
+[2026-04-25 21:09:20,684] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 21:09:20,751] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt.
+[2026-04-25 21:09:20,751] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt
+[2026-04-25 21:09:20,752] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 21:09:20,754] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt.
+[2026-04-25 21:09:20,754] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt
+[2026-04-25 21:09:20,754] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 21:09:20,785] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt.
+[2026-04-25 21:09:20,786] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-140000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt
+[2026-04-25 21:09:20,786] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+INFO:__main__:Checkpoint 0-140000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-140000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-140000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-140000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-140000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-140000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-140000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-140000 saved (with resumable state).
+[2026-04-25 23:41:49,105] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt...
+[2026-04-25 23:41:49,105] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt...
+[2026-04-25 23:41:49,105] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt...
+[2026-04-25 23:41:49,105] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt...
+[2026-04-25 23:41:49,105] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt...
+[2026-04-25 23:41:49,105] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt...
+[2026-04-25 23:41:49,105] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt...
+[2026-04-25 23:41:49,105] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt...
+[2026-04-25 23:41:49,333] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt.
+[2026-04-25 23:41:49,333] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt.
+[2026-04-25 23:41:49,333] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt
+[2026-04-25 23:41:49,333] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt
+[2026-04-25 23:41:49,333] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 23:41:49,333] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 23:41:49,391] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt.
+[2026-04-25 23:41:49,391] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt
+[2026-04-25 23:41:49,392] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 23:41:49,403] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt.
+[2026-04-25 23:41:49,403] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt
+[2026-04-25 23:41:49,403] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 23:41:49,441] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt.
+[2026-04-25 23:41:49,442] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt
+[2026-04-25 23:41:49,442] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 23:41:49,481] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt.
+[2026-04-25 23:41:49,481] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt
+[2026-04-25 23:41:49,481] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 23:41:49,524] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt.
+[2026-04-25 23:41:49,524] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt
+[2026-04-25 23:41:49,524] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-25 23:41:49,535] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt.
+[2026-04-25 23:41:49,535] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-145000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt
+[2026-04-25 23:41:49,535] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+INFO:__main__:Checkpoint 0-145000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-145000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-145000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-145000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-145000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-145000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-145000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-145000 saved (with resumable state).
+[2026-04-26 02:13:55,129] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt...
+[2026-04-26 02:13:55,129] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt...
+[2026-04-26 02:13:55,130] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt...
+[2026-04-26 02:13:55,130] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt...
+[2026-04-26 02:13:55,130] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt...
+[2026-04-26 02:13:55,130] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt...
+[2026-04-26 02:13:55,130] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt...
+[2026-04-26 02:13:55,130] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt...
+[2026-04-26 02:13:55,378] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt.
+[2026-04-26 02:13:55,378] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt.
+[2026-04-26 02:13:55,378] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt
+[2026-04-26 02:13:55,378] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt
+[2026-04-26 02:13:55,378] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 02:13:55,378] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 02:13:55,459] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt.
+[2026-04-26 02:13:55,459] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt
+[2026-04-26 02:13:55,459] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 02:13:55,514] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt.
+[2026-04-26 02:13:55,514] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt
+[2026-04-26 02:13:55,514] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 02:13:55,525] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt.
+[2026-04-26 02:13:55,525] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt
+[2026-04-26 02:13:55,525] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 02:13:55,550] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt.
+[2026-04-26 02:13:55,551] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt
+[2026-04-26 02:13:55,551] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 02:13:55,562] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt.
+[2026-04-26 02:13:55,562] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt
+[2026-04-26 02:13:55,562] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 02:13:55,567] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt.
+[2026-04-26 02:13:55,567] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-150000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt
+[2026-04-26 02:13:55,567] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+INFO:__main__:Checkpoint 0-150000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-150000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-150000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-150000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-150000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-150000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-150000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-150000 saved (with resumable state).
+[2026-04-26 04:45:43,350] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt...
+[2026-04-26 04:45:43,350] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt...
+[2026-04-26 04:45:43,350] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt...
+[2026-04-26 04:45:43,350] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt...
+[2026-04-26 04:45:43,350] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt...
+[2026-04-26 04:45:43,350] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt...
+[2026-04-26 04:45:43,350] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt...
+[2026-04-26 04:45:43,350] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt...
+[2026-04-26 04:45:43,579] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt.
+[2026-04-26 04:45:43,579] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt.
+[2026-04-26 04:45:43,580] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt
+[2026-04-26 04:45:43,580] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt
+[2026-04-26 04:45:43,580] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 04:45:43,580] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 04:45:43,614] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt.
+[2026-04-26 04:45:43,614] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt
+[2026-04-26 04:45:43,614] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 04:45:43,684] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt.
+[2026-04-26 04:45:43,684] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt
+[2026-04-26 04:45:43,684] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 04:45:43,723] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt.
+[2026-04-26 04:45:43,723] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt
+[2026-04-26 04:45:43,723] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 04:45:43,738] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt.
+[2026-04-26 04:45:43,738] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt
+[2026-04-26 04:45:43,738] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 04:45:43,778] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt.
+[2026-04-26 04:45:43,778] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt
+[2026-04-26 04:45:43,778] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 04:45:43,791] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt.
+[2026-04-26 04:45:43,791] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-155000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt
+[2026-04-26 04:45:43,791] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+INFO:__main__:Checkpoint 0-155000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-155000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-155000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-155000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-155000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-155000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-155000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-155000 saved (with resumable state).
+[2026-04-26 07:16:55,018] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt...
+[2026-04-26 07:16:55,018] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt...
+[2026-04-26 07:16:55,018] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt...
+[2026-04-26 07:16:55,018] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt...
+[2026-04-26 07:16:55,018] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt...
+[2026-04-26 07:16:55,018] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt...
+[2026-04-26 07:16:55,018] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt...
+[2026-04-26 07:16:55,018] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt...
+[2026-04-26 07:16:55,252] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt.
+[2026-04-26 07:16:55,252] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt
+[2026-04-26 07:16:55,252] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 07:16:55,257] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt.
+[2026-04-26 07:16:55,257] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt
+[2026-04-26 07:16:55,257] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 07:16:55,257] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt.
+[2026-04-26 07:16:55,257] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt
+[2026-04-26 07:16:55,258] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 07:16:55,320] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt.
+[2026-04-26 07:16:55,320] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt
+[2026-04-26 07:16:55,320] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 07:16:55,348] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt.
+[2026-04-26 07:16:55,348] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt
+[2026-04-26 07:16:55,348] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 07:16:55,406] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt.
+[2026-04-26 07:16:55,406] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt
+[2026-04-26 07:16:55,406] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 07:16:55,406] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt.
+[2026-04-26 07:16:55,407] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt
+[2026-04-26 07:16:55,407] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 07:16:55,441] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt.
+[2026-04-26 07:16:55,441] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-160000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt
+[2026-04-26 07:16:55,441] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+INFO:__main__:Checkpoint 0-160000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-160000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-160000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-160000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-160000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-160000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-160000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-160000 saved (with resumable state).
+[2026-04-26 09:48:52,504] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt...
+[2026-04-26 09:48:52,504] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt...
+[2026-04-26 09:48:52,504] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt...
+[2026-04-26 09:48:52,505] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt...
+[2026-04-26 09:48:52,505] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt...
+[2026-04-26 09:48:52,505] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt...
+[2026-04-26 09:48:52,504] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt...
+[2026-04-26 09:48:52,505] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt...
+[2026-04-26 09:48:52,767] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt.
+[2026-04-26 09:48:52,767] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt
+[2026-04-26 09:48:52,767] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt.
+[2026-04-26 09:48:52,767] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 09:48:52,767] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt
+[2026-04-26 09:48:52,767] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 09:48:52,768] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt.
+[2026-04-26 09:48:52,768] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt
+[2026-04-26 09:48:52,768] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 09:48:52,819] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt.
+[2026-04-26 09:48:52,819] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt
+[2026-04-26 09:48:52,819] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 09:48:52,843] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt.
+[2026-04-26 09:48:52,843] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt
+[2026-04-26 09:48:52,843] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 09:48:52,888] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt.
+[2026-04-26 09:48:52,888] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt
+[2026-04-26 09:48:52,888] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 09:48:52,914] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt.
+[2026-04-26 09:48:52,914] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt
+[2026-04-26 09:48:52,914] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 09:48:52,922] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt.
+[2026-04-26 09:48:52,923] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-165000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt
+[2026-04-26 09:48:52,923] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+INFO:__main__:Checkpoint 0-165000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-165000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-165000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-165000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-165000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-165000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-165000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-165000 saved (with resumable state).
+[2026-04-26 12:21:37,250] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt...
+[2026-04-26 12:21:37,250] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt...
+[2026-04-26 12:21:37,250] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt...
+[2026-04-26 12:21:37,250] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt...
+[2026-04-26 12:21:37,250] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt...
+[2026-04-26 12:21:37,251] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt...
+[2026-04-26 12:21:37,250] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt...
+[2026-04-26 12:21:37,250] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt...
+[2026-04-26 12:21:37,479] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt.
+[2026-04-26 12:21:37,479] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt.
+[2026-04-26 12:21:37,479] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt
+[2026-04-26 12:21:37,479] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt
+[2026-04-26 12:21:37,479] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 12:21:37,479] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 12:21:37,507] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt.
+[2026-04-26 12:21:37,507] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt
+[2026-04-26 12:21:37,508] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 12:21:37,536] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt.
+[2026-04-26 12:21:37,536] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt
+[2026-04-26 12:21:37,536] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 12:21:37,579] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt.
+[2026-04-26 12:21:37,579] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt
+[2026-04-26 12:21:37,579] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 12:21:37,580] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt.
+[2026-04-26 12:21:37,581] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt
+[2026-04-26 12:21:37,581] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 12:21:37,616] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt.
+[2026-04-26 12:21:37,616] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt
+[2026-04-26 12:21:37,616] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 12:21:37,644] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt.
+[2026-04-26 12:21:37,644] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-170000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt
+[2026-04-26 12:21:37,644] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+INFO:__main__:Checkpoint 0-170000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-170000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-170000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-170000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-170000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-170000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-170000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-170000 saved (with resumable state).
+[2026-04-26 14:53:04,571] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt...
+[2026-04-26 14:53:04,571] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt...
+[2026-04-26 14:53:04,571] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt...
+[2026-04-26 14:53:04,572] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt...
+[2026-04-26 14:53:04,572] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt...
+[2026-04-26 14:53:04,572] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt...
+[2026-04-26 14:53:04,571] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt...
+[2026-04-26 14:53:04,571] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt...
+[2026-04-26 14:53:04,814] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt.
+[2026-04-26 14:53:04,815] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt
+[2026-04-26 14:53:04,815] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 14:53:04,828] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt.
+[2026-04-26 14:53:04,828] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt
+[2026-04-26 14:53:04,828] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 14:53:04,836] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt.
+[2026-04-26 14:53:04,836] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt
+[2026-04-26 14:53:04,836] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 14:53:04,882] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt.
+[2026-04-26 14:53:04,882] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt
+[2026-04-26 14:53:04,882] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 14:53:04,910] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt.
+[2026-04-26 14:53:04,910] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt
+[2026-04-26 14:53:04,910] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 14:53:04,942] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt.
+[2026-04-26 14:53:04,942] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt
+[2026-04-26 14:53:04,942] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 14:53:04,976] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt.
+[2026-04-26 14:53:04,976] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt
+[2026-04-26 14:53:04,976] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 14:53:04,996] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt.
+[2026-04-26 14:53:04,996] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-175000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt
+[2026-04-26 14:53:04,996] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+INFO:__main__:Checkpoint 0-175000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-175000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-175000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-175000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-175000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-175000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-175000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-175000 saved (with resumable state).
+[2026-04-26 17:26:04,499] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt...
+[2026-04-26 17:26:04,499] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt...
+[2026-04-26 17:26:04,499] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt...
+[2026-04-26 17:26:04,500] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt...
+[2026-04-26 17:26:04,499] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt...
+[2026-04-26 17:26:04,499] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt...
+[2026-04-26 17:26:04,500] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt...
+[2026-04-26 17:26:04,500] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt...
+[2026-04-26 17:26:04,729] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt.
+[2026-04-26 17:26:04,729] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt
+[2026-04-26 17:26:04,729] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 17:26:04,739] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt.
+[2026-04-26 17:26:04,739] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt
+[2026-04-26 17:26:04,739] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 17:26:04,759] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt.
+[2026-04-26 17:26:04,759] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt
+[2026-04-26 17:26:04,759] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 17:26:04,793] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt.
+[2026-04-26 17:26:04,793] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt
+[2026-04-26 17:26:04,793] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 17:26:04,827] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt.
+[2026-04-26 17:26:04,827] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt
+[2026-04-26 17:26:04,828] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 17:26:04,875] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt.
+[2026-04-26 17:26:04,875] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt
+[2026-04-26 17:26:04,875] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 17:26:04,883] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt.
+[2026-04-26 17:26:04,883] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt
+[2026-04-26 17:26:04,883] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 17:26:04,943] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt.
+[2026-04-26 17:26:04,943] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-180000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt
+[2026-04-26 17:26:04,943] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+INFO:__main__:Checkpoint 0-180000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-180000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-180000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-180000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-180000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-180000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-180000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-180000 saved (with resumable state).
+[2026-04-26 19:58:09,109] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt...
+[2026-04-26 19:58:09,109] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt...
+[2026-04-26 19:58:09,109] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt...
+[2026-04-26 19:58:09,109] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt...
+[2026-04-26 19:58:09,109] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt...
+[2026-04-26 19:58:09,109] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt...
+[2026-04-26 19:58:09,109] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt...
+[2026-04-26 19:58:09,109] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt...
+[2026-04-26 19:58:09,344] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt.
+[2026-04-26 19:58:09,344] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt
+[2026-04-26 19:58:09,344] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 19:58:09,377] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt.
+[2026-04-26 19:58:09,377] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt
+[2026-04-26 19:58:09,377] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 19:58:09,403] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt.
+[2026-04-26 19:58:09,403] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt
+[2026-04-26 19:58:09,403] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 19:58:09,429] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt.
+[2026-04-26 19:58:09,430] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt
+[2026-04-26 19:58:09,430] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 19:58:09,458] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt.
+[2026-04-26 19:58:09,458] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt
+[2026-04-26 19:58:09,459] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 19:58:09,507] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt.
+[2026-04-26 19:58:09,507] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt
+[2026-04-26 19:58:09,507] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 19:58:09,511] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt.
+[2026-04-26 19:58:09,511] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt
+[2026-04-26 19:58:09,511] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 19:58:09,537] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt.
+[2026-04-26 19:58:09,537] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-185000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt
+[2026-04-26 19:58:09,537] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+INFO:__main__:Checkpoint 0-185000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-185000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-185000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-185000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-185000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-185000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-185000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-185000 saved (with resumable state).
+[2026-04-26 22:29:47,657] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt...
+[2026-04-26 22:29:47,657] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt...
+[2026-04-26 22:29:47,657] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt...
+[2026-04-26 22:29:47,657] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt...
+[2026-04-26 22:29:47,657] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt...
+[2026-04-26 22:29:47,657] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt...
+[2026-04-26 22:29:47,657] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt...
+[2026-04-26 22:29:47,657] [INFO] [torch_checkpoint_engine.py:21:save] [Torch] Saving /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt...
+[2026-04-26 22:29:47,868] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt.
+[2026-04-26 22:29:47,868] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_87_mp_rank_00_optim_states.pt
+[2026-04-26 22:29:47,868] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 22:29:47,879] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt.
+[2026-04-26 22:29:47,879] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_80_mp_rank_00_optim_states.pt
+[2026-04-26 22:29:47,879] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 22:29:47,925] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt.
+[2026-04-26 22:29:47,925] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_82_mp_rank_00_optim_states.pt
+[2026-04-26 22:29:47,925] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 22:29:47,959] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt.
+[2026-04-26 22:29:47,959] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_85_mp_rank_00_optim_states.pt
+[2026-04-26 22:29:47,959] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 22:29:48,020] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt.
+[2026-04-26 22:29:48,020] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_83_mp_rank_00_optim_states.pt
+[2026-04-26 22:29:48,020] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 22:29:48,034] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt.
+[2026-04-26 22:29:48,034] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_86_mp_rank_00_optim_states.pt
+[2026-04-26 22:29:48,034] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 22:29:48,089] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt.
+[2026-04-26 22:29:48,089] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_81_mp_rank_00_optim_states.pt
+[2026-04-26 22:29:48,089] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+[2026-04-26 22:29:48,111] [INFO] [torch_checkpoint_engine.py:23:save] [Torch] Saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt.
+[2026-04-26 22:29:48,111] [INFO] [engine.py:3536:_save_zero_checkpoint] zero checkpoint saved /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/bf16_zero_pp_rank_84_mp_rank_00_optim_states.pt
+[2026-04-26 22:29:48,112] [INFO] [torch_checkpoint_engine.py:33:commit] [Torch] Checkpoint pytorch_model is ready now!
+INFO:__main__:Checkpoint 0-190000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-190000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-190000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-190000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-190000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-190000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-190000 saved (with resumable state).
+INFO:__main__:Checkpoint 0-190000 saved (with resumable state).
+[rank85]:[E426 23:54:52.795061925 ProcessGroupNCCL.cpp:629] [Rank 85] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600021 milliseconds before timing out.
+[rank83]:[E426 23:54:52.803526236 ProcessGroupNCCL.cpp:629] [Rank 83] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600031 milliseconds before timing out.
+[rank87]:[E426 23:54:52.813214159 ProcessGroupNCCL.cpp:629] [Rank 87] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600043 milliseconds before timing out.
+[rank84]:[E426 23:54:52.839527845 ProcessGroupNCCL.cpp:629] [Rank 84] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600069 milliseconds before timing out.
+[rank86]:[E426 23:54:52.841081559 ProcessGroupNCCL.cpp:629] [Rank 86] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600071 milliseconds before timing out.
+[rank82]:[E426 23:54:52.844173652 ProcessGroupNCCL.cpp:629] [Rank 82] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600071 milliseconds before timing out.
+[rank81]:[E426 23:54:52.845012918 ProcessGroupNCCL.cpp:629] [Rank 81] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600063 milliseconds before timing out.
+[rank80]:[E426 23:54:52.856408662 ProcessGroupNCCL.cpp:629] [Rank 80] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600084 milliseconds before timing out.
+[rank84]:[E426 23:54:52.890347909 ProcessGroupNCCL.cpp:2168] [PG ID 1 PG GUID 1 Rank 84]  failure detected by watchdog at work sequence id: 1576161 PG status: last enqueued work: 1576161, last completed work: 1576160
+[rank82]:[E426 23:54:52.890370270 ProcessGroupNCCL.cpp:2168] [PG ID 1 PG GUID 1 Rank 82]  failure detected by watchdog at work sequence id: 1576161 PG status: last enqueued work: 1576161, last completed work: 1576160
+[rank85]:[E426 23:54:52.890377980 ProcessGroupNCCL.cpp:2168] [PG ID 1 PG GUID 1 Rank 85]  failure detected by watchdog at work sequence id: 1576161 PG status: last enqueued work: 1576161, last completed work: 1576160
+[rank80]:[E426 23:54:52.890390644 ProcessGroupNCCL.cpp:2168] [PG ID 1 PG GUID 1 Rank 80]  failure detected by watchdog at work sequence id: 1576161 PG status: last enqueued work: 1576161, last completed work: 1576160
+[rank87]:[E426 23:54:52.890389482 ProcessGroupNCCL.cpp:2168] [PG ID 1 PG GUID 1 Rank 87]  failure detected by watchdog at work sequence id: 1576161 PG status: last enqueued work: 1576161, last completed work: 1576160
+[rank83]:[E426 23:54:52.890404324 ProcessGroupNCCL.cpp:2168] [PG ID 1 PG GUID 1 Rank 83]  failure detected by watchdog at work sequence id: 1576161 PG status: last enqueued work: 1576161, last completed work: 1576160
+[rank86]:[E426 23:54:52.890398493 ProcessGroupNCCL.cpp:2168] [PG ID 1 PG GUID 1 Rank 86]  failure detected by watchdog at work sequence id: 1576161 PG status: last enqueued work: 1576161, last completed work: 1576160
+[rank81]:[E426 23:54:52.890422009 ProcessGroupNCCL.cpp:2168] [PG ID 1 PG GUID 1 Rank 81]  failure detected by watchdog at work sequence id: 1576161 PG status: last enqueued work: 1576161, last completed work: 1576160
+[rank81]:[E426 23:54:52.902953045 ProcessGroupNCCL.cpp:664] Stack trace of the failed collective: 
+#0 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:2806
+#1 wrapper from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:81
+#2 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py:152
+#3 _fn from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py:745
+#4 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py:496
+#5 log_wrapper from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py:117
+#6 allreduce_bucket from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1502
+#7 allreduce_and_copy_with_multiple_ranks from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1012
+#8 allreduce_and_scatter from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1039
+#9 average_tensor from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1131
+#10 reduce_ipg_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1369
+#11 reduce_independent_p_g_buckets_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:938
+#12 reduce_ready_partitions_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1418
+#13 reduce_partition_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:909
+
+[rank80]:[E426 23:54:52.902975395 ProcessGroupNCCL.cpp:664] Stack trace of the failed collective: 
+#0 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:2806
+#1 wrapper from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:81
+#2 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py:152
+#3 _fn from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py:745
+#4 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py:496
+#5 log_wrapper from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py:117
+#6 allreduce_bucket from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1502
+#7 allreduce_and_copy_with_multiple_ranks from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1012
+#8 allreduce_and_scatter from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1039
+#9 average_tensor from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1131
+#10 reduce_ipg_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1369
+#11 reduce_independent_p_g_buckets_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:938
+#12 reduce_ready_partitions_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1418
+#13 reduce_partition_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:909
+
+[rank86]:[E426 23:54:52.902985563 ProcessGroupNCCL.cpp:664] Stack trace of the failed collective: 
+#0 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:2806
+#1 wrapper from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:81
+#2 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py:152
+#3 _fn from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py:745
+#4 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py:496
+#5 log_wrapper from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py:117
+#6 allreduce_bucket from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1502
+#7 allreduce_and_copy_with_multiple_ranks from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1012
+#8 allreduce_and_scatter from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1039
+#9 average_tensor from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1131
+#10 reduce_ipg_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1369
+#11 reduce_independent_p_g_buckets_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:938
+#12 reduce_ready_partitions_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1418
+#13 reduce_partition_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:909
+
+[rank85]:[E426 23:54:52.903003579 ProcessGroupNCCL.cpp:664] Stack trace of the failed collective: 
+#0 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:2806
+#1 wrapper from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:81
+#2 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py:152
+#3 _fn from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py:745
+#4 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py:496
+#5 log_wrapper from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py:117
+#6 allreduce_bucket from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1502
+#7 allreduce_and_copy_with_multiple_ranks from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1012
+#8 allreduce_and_scatter from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1039
+#9 average_tensor from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1131
+#10 reduce_ipg_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1369
+#11 reduce_independent_p_g_buckets_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:938
+#12 reduce_ready_partitions_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1418
+#13 reduce_partition_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:909
+
+[rank87]:[E426 23:54:52.903010314 ProcessGroupNCCL.cpp:664] Stack trace of the failed collective: 
+#0 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:2806
+#1 wrapper from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:81
+#2 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py:152
+#3 _fn from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py:745
+#4 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py:496
+#5 log_wrapper from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py:117
+#6 allreduce_bucket from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1502
+#7 allreduce_and_copy_with_multiple_ranks from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1012
+#8 allreduce_and_scatter from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1039
+#9 average_tensor from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1131
+#10 reduce_ipg_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1369
+#11 reduce_independent_p_g_buckets_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:938
+#12 reduce_ready_partitions_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1418
+#13 reduce_partition_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:909
+
+[rank84]:[E426 23:54:52.903024272 ProcessGroupNCCL.cpp:664] Stack trace of the failed collective: 
+#0 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:2806
+#1 wrapper from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:81
+#2 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py:152
+#3 _fn from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py:745
+#4 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py:496
+#5 log_wrapper from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py:117
+#6 allreduce_bucket from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1502
+#7 allreduce_and_copy_with_multiple_ranks from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1012
+#8 allreduce_and_scatter from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1039
+#9 average_tensor from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1131
+#10 reduce_ipg_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1369
+#11 reduce_independent_p_g_buckets_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:938
+#12 reduce_ready_partitions_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1418
+#13 reduce_partition_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:909
+
+[rank82]:[E426 23:54:52.903045604 ProcessGroupNCCL.cpp:664] Stack trace of the failed collective: 
+#0 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:2806
+#1 wrapper from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:81
+#2 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py:152
+#3 _fn from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py:745
+#4 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py:496
+#5 log_wrapper from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py:117
+#6 allreduce_bucket from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1502
+#7 allreduce_and_copy_with_multiple_ranks from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1012
+#8 allreduce_and_scatter from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1039
+#9 average_tensor from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1131
+#10 reduce_ipg_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1369
+#11 reduce_independent_p_g_buckets_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:938
+#12 reduce_ready_partitions_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1418
+#13 reduce_partition_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:909
+
+[rank83]:[E426 23:54:52.903043170 ProcessGroupNCCL.cpp:664] Stack trace of the failed collective: 
+#0 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py:2806
+#1 wrapper from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:81
+#2 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/torch.py:152
+#3 _fn from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/_dynamo/eval_frame.py:745
+#4 all_reduce from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py:496
+#5 log_wrapper from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/comm/comm.py:117
+#6 allreduce_bucket from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1502
+#7 allreduce_and_copy_with_multiple_ranks from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1012
+#8 allreduce_and_scatter from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1039
+#9 average_tensor from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1131
+#10 reduce_ipg_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1369
+#11 reduce_independent_p_g_buckets_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:938
+#12 reduce_ready_partitions_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:1418
+#13 reduce_partition_and_remove_grads from /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py:909
+
+[rank85]:[E426 23:54:53.401979129 ProcessGroupNCCL.cpp:1753] [PG ID 0 PG GUID 0(default_pg) Rank 85] Received a dump signal due to a collective timeout from this local rank and we will try our best to dump the debug info. Last enqueued NCCL work: 428182, last completed NCCL work: 428182.This is most likely caused by incorrect usages of collectives, e.g., wrong sizes used across ranks, the order of collectives is not same for all ranks or the scheduled collective, for some reason, didn't run. Additionally, this can be caused by GIL deadlock or other reasons such as network errors or bugs in the communications library (e.g. NCCL), etc. 
+[rank87]:[E426 23:54:53.402021835 ProcessGroupNCCL.cpp:1753] [PG ID 0 PG GUID 0(default_pg) Rank 87] Received a dump signal due to a collective timeout from this local rank and we will try our best to dump the debug info. Last enqueued NCCL work: 428182, last completed NCCL work: 428182.This is most likely caused by incorrect usages of collectives, e.g., wrong sizes used across ranks, the order of collectives is not same for all ranks or the scheduled collective, for some reason, didn't run. Additionally, this can be caused by GIL deadlock or other reasons such as network errors or bugs in the communications library (e.g. NCCL), etc. 
+[rank81]:[E426 23:54:53.402126786 ProcessGroupNCCL.cpp:1753] [PG ID 0 PG GUID 0(default_pg) Rank 81] Received a dump signal due to a collective timeout from this local rank and we will try our best to dump the debug info. Last enqueued NCCL work: 428182, last completed NCCL work: 428182.This is most likely caused by incorrect usages of collectives, e.g., wrong sizes used across ranks, the order of collectives is not same for all ranks or the scheduled collective, for some reason, didn't run. Additionally, this can be caused by GIL deadlock or other reasons such as network errors or bugs in the communications library (e.g. NCCL), etc. 
+[rank85]:[E426 23:54:53.402164878 ProcessGroupNCCL.cpp:1554] [PG ID 0 PG GUID 0(default_pg) Rank 85] ProcessGroupNCCL preparing to dump debug info. Include stack trace: 1
+[rank81]:[E426 23:54:53.402271392 ProcessGroupNCCL.cpp:1554] [PG ID 0 PG GUID 0(default_pg) Rank 81] ProcessGroupNCCL preparing to dump debug info. Include stack trace: 1
+[rank87]:[E426 23:54:53.402318325 ProcessGroupNCCL.cpp:1554] [PG ID 0 PG GUID 0(default_pg) Rank 87] ProcessGroupNCCL preparing to dump debug info. Include stack trace: 1
+[rank86]:[E426 23:54:53.402735887 ProcessGroupNCCL.cpp:1753] [PG ID 0 PG GUID 0(default_pg) Rank 86] Received a dump signal due to a collective timeout from this local rank and we will try our best to dump the debug info. Last enqueued NCCL work: 428182, last completed NCCL work: 428182.This is most likely caused by incorrect usages of collectives, e.g., wrong sizes used across ranks, the order of collectives is not same for all ranks or the scheduled collective, for some reason, didn't run. Additionally, this can be caused by GIL deadlock or other reasons such as network errors or bugs in the communications library (e.g. NCCL), etc. 
+[rank86]:[E426 23:54:53.402996877 ProcessGroupNCCL.cpp:1554] [PG ID 0 PG GUID 0(default_pg) Rank 86] ProcessGroupNCCL preparing to dump debug info. Include stack trace: 1
+[rank84]:[E426 23:54:53.406546716 ProcessGroupNCCL.cpp:1753] [PG ID 0 PG GUID 0(default_pg) Rank 84] Received a dump signal due to a collective timeout from this local rank and we will try our best to dump the debug info. Last enqueued NCCL work: 428182, last completed NCCL work: 428182.This is most likely caused by incorrect usages of collectives, e.g., wrong sizes used across ranks, the order of collectives is not same for all ranks or the scheduled collective, for some reason, didn't run. Additionally, this can be caused by GIL deadlock or other reasons such as network errors or bugs in the communications library (e.g. NCCL), etc. 
+[rank84]:[E426 23:54:53.406679347 ProcessGroupNCCL.cpp:1554] [PG ID 0 PG GUID 0(default_pg) Rank 84] ProcessGroupNCCL preparing to dump debug info. Include stack trace: 1
+[rank83]:[E426 23:54:53.426119974 ProcessGroupNCCL.cpp:1753] [PG ID 0 PG GUID 0(default_pg) Rank 83] Received a dump signal due to a collective timeout from this local rank and we will try our best to dump the debug info. Last enqueued NCCL work: 428182, last completed NCCL work: 428182.This is most likely caused by incorrect usages of collectives, e.g., wrong sizes used across ranks, the order of collectives is not same for all ranks or the scheduled collective, for some reason, didn't run. Additionally, this can be caused by GIL deadlock or other reasons such as network errors or bugs in the communications library (e.g. NCCL), etc. 
+[rank82]:[E426 23:54:53.426355599 ProcessGroupNCCL.cpp:1753] [PG ID 0 PG GUID 0(default_pg) Rank 82] Received a dump signal due to a collective timeout from this local rank and we will try our best to dump the debug info. Last enqueued NCCL work: 428182, last completed NCCL work: 428182.This is most likely caused by incorrect usages of collectives, e.g., wrong sizes used across ranks, the order of collectives is not same for all ranks or the scheduled collective, for some reason, didn't run. Additionally, this can be caused by GIL deadlock or other reasons such as network errors or bugs in the communications library (e.g. NCCL), etc. 
+[rank83]:[E426 23:54:53.426490432 ProcessGroupNCCL.cpp:1554] [PG ID 0 PG GUID 0(default_pg) Rank 83] ProcessGroupNCCL preparing to dump debug info. Include stack trace: 1
+[rank82]:[E426 23:54:53.426620933 ProcessGroupNCCL.cpp:1554] [PG ID 0 PG GUID 0(default_pg) Rank 82] ProcessGroupNCCL preparing to dump debug info. Include stack trace: 1
+[rank80]:[E426 23:54:53.764435294 ProcessGroupNCCL.cpp:1753] [PG ID 0 PG GUID 0(default_pg) Rank 80] Received a dump signal due to a collective timeout from this local rank and we will try our best to dump the debug info. Last enqueued NCCL work: 428182, last completed NCCL work: 428182.This is most likely caused by incorrect usages of collectives, e.g., wrong sizes used across ranks, the order of collectives is not same for all ranks or the scheduled collective, for some reason, didn't run. Additionally, this can be caused by GIL deadlock or other reasons such as network errors or bugs in the communications library (e.g. NCCL), etc. 
+[rank80]:[E426 23:54:53.764810249 ProcessGroupNCCL.cpp:1554] [PG ID 0 PG GUID 0(default_pg) Rank 80] ProcessGroupNCCL preparing to dump debug info. Include stack trace: 1
+[rank84]:[W426 23:56:52.905452732 ProcessGroupNCCL.cpp:2066] [PG ID 1 PG GUID 1 Rank 84] timed out after waiting for 120000ms flight recorder dumps to finish.
+[rank86]:[W426 23:56:52.905481352 ProcessGroupNCCL.cpp:2066] [PG ID 1 PG GUID 1 Rank 86] timed out after waiting for 120000ms flight recorder dumps to finish.
+[rank82]:[W426 23:56:52.905484612 ProcessGroupNCCL.cpp:2066] [PG ID 1 PG GUID 1 Rank 82] timed out after waiting for 120000ms flight recorder dumps to finish.
+[rank81]:[W426 23:56:52.905475232 ProcessGroupNCCL.cpp:2066] [PG ID 1 PG GUID 1 Rank 81] timed out after waiting for 120000ms flight recorder dumps to finish.
+[rank80]:[W426 23:56:52.905475019 ProcessGroupNCCL.cpp:2066] [PG ID 1 PG GUID 1 Rank 80] timed out after waiting for 120000ms flight recorder dumps to finish.
+[rank87]:[W426 23:56:52.905499365 ProcessGroupNCCL.cpp:2066] [PG ID 1 PG GUID 1 Rank 87] timed out after waiting for 120000ms flight recorder dumps to finish.
+[rank85]:[W426 23:56:52.905550252 ProcessGroupNCCL.cpp:2066] [PG ID 1 PG GUID 1 Rank 85] timed out after waiting for 120000ms flight recorder dumps to finish.
+[rank83]:[W426 23:56:52.905555009 ProcessGroupNCCL.cpp:2066] [PG ID 1 PG GUID 1 Rank 83] timed out after waiting for 120000ms flight recorder dumps to finish.
+[rank84]:[E426 23:56:55.997673758 ProcessGroupNCCL.cpp:681] [Rank 84] Some NCCL operations have failed or timed out. Due to the asynchronous nature of CUDA kernels, subsequent GPU operations might run on corrupted/incomplete data.
+[rank84]:[E426 23:56:55.997699622 ProcessGroupNCCL.cpp:695] [Rank 84] To avoid data inconsistency, we are taking the entire process down.
+[rank82]:[E426 23:56:55.031578230 ProcessGroupNCCL.cpp:681] [Rank 82] Some NCCL operations have failed or timed out. Due to the asynchronous nature of CUDA kernels, subsequent GPU operations might run on corrupted/incomplete data.
+[rank82]:[E426 23:56:55.031609789 ProcessGroupNCCL.cpp:695] [Rank 82] To avoid data inconsistency, we are taking the entire process down.
+[rank81]:[E426 23:56:55.100618935 ProcessGroupNCCL.cpp:681] [Rank 81] Some NCCL operations have failed or timed out. Due to the asynchronous nature of CUDA kernels, subsequent GPU operations might run on corrupted/incomplete data.
+[rank81]:[E426 23:56:55.100643286 ProcessGroupNCCL.cpp:695] [Rank 81] To avoid data inconsistency, we are taking the entire process down.
+[rank84]:[E426 23:56:55.101829539 ProcessGroupNCCL.cpp:1895] [PG ID 1 PG GUID 1 Rank 84] Process group watchdog thread terminated with exception: [Rank 84] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600069 milliseconds before timing out.
+Exception raised from checkTimeout at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:632 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f6fb036c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x2b4 (0x7f6f5ea29c74 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x890 (0x7f6f5ea2b7d0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x7f6f5ea2c6ed in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f6fb0ac75c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f6fc00e9aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f6fc0176c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank82]:[E426 23:56:55.101857746 ProcessGroupNCCL.cpp:1895] [PG ID 1 PG GUID 1 Rank 82] Process group watchdog thread terminated with exception: [Rank 82] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600071 milliseconds before timing out.
+Exception raised from checkTimeout at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:632 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7fe05636c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x2b4 (0x7fe004629c74 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x890 (0x7fe00462b7d0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x7fe00462c6ed in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7fe0568055c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7fe065e2faa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7fe065ebcc3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+terminate called after throwing an instance of 'c10::DistBackendError'
+terminate called after throwing an instance of 'c10::DistBackendError'
+[rank81]:[E426 23:56:55.102578787 ProcessGroupNCCL.cpp:1895] [PG ID 1 PG GUID 1 Rank 81] Process group watchdog thread terminated with exception: [Rank 81] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600063 milliseconds before timing out.
+Exception raised from checkTimeout at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:632 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f275bd6c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x2b4 (0x7f270a429c74 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x890 (0x7f270a42b7d0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x7f270a42c6ed in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f275c5565c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f276bb77aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f276bc04c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+terminate called after throwing an instance of 'c10::DistBackendError'
+  what():  [PG ID 1 PG GUID 1 Rank 84] Process group watchdog thread terminated with exception: [Rank 84] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600069 milliseconds before timing out.
+Exception raised from checkTimeout at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:632 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f6fb036c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x2b4 (0x7f6f5ea29c74 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x890 (0x7f6f5ea2b7d0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x7f6f5ea2c6ed in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f6fb0ac75c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f6fc00e9aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f6fc0176c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+Exception raised from ncclCommWatchdog at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:1901 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f6fb036c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0xe5c6fc (0x7f6f5e6876fc in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: <unknown function> + 0x145c0 (0x7f6fb0ac75c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #3: <unknown function> + 0x9caa4 (0x7f6fc00e9aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #4: <unknown function> + 0x129c3c (0x7f6fc0176c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+  what():  [PG ID 1 PG GUID 1 Rank 81] Process group watchdog thread terminated with exception: [Rank 81] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600063 milliseconds before timing out.
+Exception raised from checkTimeout at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:632 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f275bd6c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x2b4 (0x7f270a429c74 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x890 (0x7f270a42b7d0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x7f270a42c6ed in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f275c5565c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f276bb77aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f276bc04c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+Exception raised from ncclCommWatchdog at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:1901 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f275bd6c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0xe5c6fc (0x7f270a0876fc in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: <unknown function> + 0x145c0 (0x7f275c5565c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #3: <unknown function> + 0x9caa4 (0x7f276bb77aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #4: <unknown function> + 0x129c3c (0x7f276bc04c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+  what():  [PG ID 1 PG GUID 1 Rank 82] Process group watchdog thread terminated with exception: [Rank 82] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600071 milliseconds before timing out.
+Exception raised from checkTimeout at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:632 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7fe05636c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x2b4 (0x7fe004629c74 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x890 (0x7fe00462b7d0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x7fe00462c6ed in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7fe0568055c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7fe065e2faa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7fe065ebcc3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+Exception raised from ncclCommWatchdog at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:1901 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7fe05636c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0xe5c6fc (0x7fe0042876fc in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: <unknown function> + 0x145c0 (0x7fe0568055c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #3: <unknown function> + 0x9caa4 (0x7fe065e2faa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #4: <unknown function> + 0x129c3c (0x7fe065ebcc3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank87]:[E426 23:56:55.139896251 ProcessGroupNCCL.cpp:681] [Rank 87] Some NCCL operations have failed or timed out. Due to the asynchronous nature of CUDA kernels, subsequent GPU operations might run on corrupted/incomplete data.
+[rank87]:[E426 23:56:55.139911848 ProcessGroupNCCL.cpp:695] [Rank 87] To avoid data inconsistency, we are taking the entire process down.
+[rank87]:[E426 23:56:55.141711569 ProcessGroupNCCL.cpp:1895] [PG ID 1 PG GUID 1 Rank 87] Process group watchdog thread terminated with exception: [Rank 87] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600043 milliseconds before timing out.
+Exception raised from checkTimeout at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:632 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f6f9076c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x2b4 (0x7f6f3ea29c74 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x890 (0x7f6f3ea2b7d0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x7f6f3ea2c6ed in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f6f90c055c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f6fa0228aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f6fa02b5c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+terminate called after throwing an instance of 'c10::DistBackendError'
+  what():  [PG ID 1 PG GUID 1 Rank 87] Process group watchdog thread terminated with exception: [Rank 87] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600043 milliseconds before timing out.
+Exception raised from checkTimeout at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:632 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f6f9076c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x2b4 (0x7f6f3ea29c74 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x890 (0x7f6f3ea2b7d0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x7f6f3ea2c6ed in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f6f90c055c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f6fa0228aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f6fa02b5c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+Exception raised from ncclCommWatchdog at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:1901 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f6f9076c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0xe5c6fc (0x7f6f3e6876fc in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: <unknown function> + 0x145c0 (0x7f6f90c055c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #3: <unknown function> + 0x9caa4 (0x7f6fa0228aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #4: <unknown function> + 0x129c3c (0x7f6fa02b5c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank85]:[E426 23:56:55.175863126 ProcessGroupNCCL.cpp:681] [Rank 85] Some NCCL operations have failed or timed out. Due to the asynchronous nature of CUDA kernels, subsequent GPU operations might run on corrupted/incomplete data.
+[rank85]:[E426 23:56:55.175878662 ProcessGroupNCCL.cpp:695] [Rank 85] To avoid data inconsistency, we are taking the entire process down.
+[rank83]:[E426 23:56:55.176255284 ProcessGroupNCCL.cpp:681] [Rank 83] Some NCCL operations have failed or timed out. Due to the asynchronous nature of CUDA kernels, subsequent GPU operations might run on corrupted/incomplete data.
+[rank83]:[E426 23:56:55.176273121 ProcessGroupNCCL.cpp:695] [Rank 83] To avoid data inconsistency, we are taking the entire process down.
+[rank85]:[E426 23:56:55.177865903 ProcessGroupNCCL.cpp:1895] [PG ID 1 PG GUID 1 Rank 85] Process group watchdog thread terminated with exception: [Rank 85] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600021 milliseconds before timing out.
+Exception raised from checkTimeout at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:632 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f4576b6c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x2b4 (0x7f4524e29c74 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x890 (0x7f4524e2b7d0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x7f4524e2c6ed in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f45770355c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f4586658aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f45866e5c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+terminate called after throwing an instance of 'c10::DistBackendError'
+[rank86]:[E426 23:56:55.178260671 ProcessGroupNCCL.cpp:681] [Rank 86] Some NCCL operations have failed or timed out. Due to the asynchronous nature of CUDA kernels, subsequent GPU operations might run on corrupted/incomplete data.
+[rank86]:[E426 23:56:55.178277483 ProcessGroupNCCL.cpp:695] [Rank 86] To avoid data inconsistency, we are taking the entire process down.
+[rank83]:[E426 23:56:55.178279031 ProcessGroupNCCL.cpp:1895] [PG ID 1 PG GUID 1 Rank 83] Process group watchdog thread terminated with exception: [Rank 83] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600031 milliseconds before timing out.
+Exception raised from checkTimeout at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:632 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f54a376c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x2b4 (0x7f5451e29c74 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x890 (0x7f5451e2b7d0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x7f5451e2c6ed in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f54a3ef05c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f54b3512aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f54b359fc3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+terminate called after throwing an instance of 'c10::DistBackendError'
+  what():  [PG ID 1 PG GUID 1 Rank 85] Process group watchdog thread terminated with exception: [Rank 85] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600021 milliseconds before timing out.
+Exception raised from checkTimeout at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:632 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f4576b6c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x2b4 (0x7f4524e29c74 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x890 (0x7f4524e2b7d0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x7f4524e2c6ed in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f45770355c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f4586658aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f45866e5c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+Exception raised from ncclCommWatchdog at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:1901 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f4576b6c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0xe5c6fc (0x7f4524a876fc in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: <unknown function> + 0x145c0 (0x7f45770355c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #3: <unknown function> + 0x9caa4 (0x7f4586658aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #4: <unknown function> + 0x129c3c (0x7f45866e5c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+  what():  [PG ID 1 PG GUID 1 Rank 83] Process group watchdog thread terminated with exception: [Rank 83] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600031 milliseconds before timing out.
+Exception raised from checkTimeout at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:632 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f54a376c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x2b4 (0x7f5451e29c74 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x890 (0x7f5451e2b7d0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x7f5451e2c6ed in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f54a3ef05c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f54b3512aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f54b359fc3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+Exception raised from ncclCommWatchdog at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:1901 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f54a376c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0xe5c6fc (0x7f5451a876fc in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: <unknown function> + 0x145c0 (0x7f54a3ef05c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #3: <unknown function> + 0x9caa4 (0x7f54b3512aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #4: <unknown function> + 0x129c3c (0x7f54b359fc3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank86]:[E426 23:56:55.180257477 ProcessGroupNCCL.cpp:1895] [PG ID 1 PG GUID 1 Rank 86] Process group watchdog thread terminated with exception: [Rank 86] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600071 milliseconds before timing out.
+Exception raised from checkTimeout at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:632 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7fb4e616c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x2b4 (0x7fb494829c74 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x890 (0x7fb49482b7d0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x7fb49482c6ed in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7fb4e65ee5c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7fb4f5ed2aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7fb4f5f5fc3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+terminate called after throwing an instance of 'c10::DistBackendError'
+  what():  [PG ID 1 PG GUID 1 Rank 86] Process group watchdog thread terminated with exception: [Rank 86] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600071 milliseconds before timing out.
+Exception raised from checkTimeout at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:632 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7fb4e616c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x2b4 (0x7fb494829c74 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x890 (0x7fb49482b7d0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x7fb49482c6ed in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7fb4e65ee5c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7fb4f5ed2aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7fb4f5f5fc3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+Exception raised from ncclCommWatchdog at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:1901 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7fb4e616c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0xe5c6fc (0x7fb4944876fc in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: <unknown function> + 0x145c0 (0x7fb4e65ee5c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #3: <unknown function> + 0x9caa4 (0x7fb4f5ed2aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #4: <unknown function> + 0x129c3c (0x7fb4f5f5fc3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank80]:[E426 23:56:55.184197797 ProcessGroupNCCL.cpp:681] [Rank 80] Some NCCL operations have failed or timed out. Due to the asynchronous nature of CUDA kernels, subsequent GPU operations might run on corrupted/incomplete data.
+[rank80]:[E426 23:56:55.184216123 ProcessGroupNCCL.cpp:695] [Rank 80] To avoid data inconsistency, we are taking the entire process down.
+[rank80]:[E426 23:56:55.186196337 ProcessGroupNCCL.cpp:1895] [PG ID 1 PG GUID 1 Rank 80] Process group watchdog thread terminated with exception: [Rank 80] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600084 milliseconds before timing out.
+Exception raised from checkTimeout at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:632 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f723416c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x2b4 (0x7f71e2829c74 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x890 (0x7f71e282b7d0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x7f71e282c6ed in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f72348f75c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f7243f18aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f7243fa5c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+terminate called after throwing an instance of 'c10::DistBackendError'
+  what():  [PG ID 1 PG GUID 1 Rank 80] Process group watchdog thread terminated with exception: [Rank 80] Watchdog caught collective operation timeout: WorkNCCL(SeqNum=1576161, OpType=ALLREDUCE, NumelIn=499298366, NumelOut=499298366, Timeout(ms)=600000) ran for 600084 milliseconds before timing out.
+Exception raised from checkTimeout at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:632 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f723416c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: c10d::ProcessGroupNCCL::WorkNCCL::checkTimeout(std::optional<std::chrono::duration<long, std::ratio<1l, 1000l> > >) + 0x2b4 (0x7f71e2829c74 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: c10d::ProcessGroupNCCL::watchdogHandler() + 0x890 (0x7f71e282b7d0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #3: c10d::ProcessGroupNCCL::ncclCommWatchdog() + 0x14d (0x7f71e282c6ed in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0x145c0 (0x7f72348f75c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #5: <unknown function> + 0x9caa4 (0x7f7243f18aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c3c (0x7f7243fa5c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+Exception raised from ncclCommWatchdog at /pytorch/torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:1901 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::string) + 0x96 (0x7f723416c1b6 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0xe5c6fc (0x7f71e24876fc in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so)
+frame #2: <unknown function> + 0x145c0 (0x7f72348f75c0 in /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/lib/libtorch.so)
+frame #3: <unknown function> + 0x9caa4 (0x7f7243f18aa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #4: <unknown function> + 0x129c3c (0x7f7243fa5c3c in /lib/x86_64-linux-gnu/libc.so.6)
+
+W0426 23:56:55.964000 311367 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 311541 closing signal SIGTERM
+E0426 23:56:55.981000 311367 site-packages/torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: -6) local_rank: 1 (pid: 311542) of binary: /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/bin/python3.10
+Traceback (most recent call last):
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/bin/accelerate", line 6, in <module>
+    sys.exit(main())
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/commands/accelerate_cli.py", line 50, in main
+    args.func(args)
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/commands/launch.py", line 1184, in launch_command
+    deepspeed_launcher(args)
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/commands/launch.py", line 868, in deepspeed_launcher
+    distrib_run.run(args)
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/run.py", line 909, in run
+    elastic_launch(
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+train_qwen3vl_pretrain_egodex_flare.py FAILED
+------------------------------------------------------------
+Failures:
+[1]:
+  time      : 2026-04-26_23:56:55
+  host      : 976ced8e76de425486f89df038d13329.osmo-e974f16f153547eaae8fce0f1a51af89.osmo-prod.svc.cluster.local
+  rank      : 82 (local_rank: 2)
+  exitcode  : -6 (pid: 311543)
+  error_file: <N/A>
+  traceback : Signal 6 (SIGABRT) received by PID 311543
+[2]:
+  time      : 2026-04-26_23:56:55
+  host      : 976ced8e76de425486f89df038d13329.osmo-e974f16f153547eaae8fce0f1a51af89.osmo-prod.svc.cluster.local
+  rank      : 84 (local_rank: 4)
+  exitcode  : -6 (pid: 311545)
+  error_file: <N/A>
+  traceback : Signal 6 (SIGABRT) received by PID 311545
+[3]:
+  time      : 2026-04-26_23:56:55
+  host      : 976ced8e76de425486f89df038d13329.osmo-e974f16f153547eaae8fce0f1a51af89.osmo-prod.svc.cluster.local
+  rank      : 85 (local_rank: 5)
+  exitcode  : -6 (pid: 311546)
+  error_file: <N/A>
+  traceback : Signal 6 (SIGABRT) received by PID 311546
+[4]:
+  time      : 2026-04-26_23:56:55
+  host      : 976ced8e76de425486f89df038d13329.osmo-e974f16f153547eaae8fce0f1a51af89.osmo-prod.svc.cluster.local
+  rank      : 86 (local_rank: 6)
+  exitcode  : -6 (pid: 311547)
+  error_file: <N/A>
+  traceback : Signal 6 (SIGABRT) received by PID 311547
+[5]:
+  time      : 2026-04-26_23:56:55
+  host      : 976ced8e76de425486f89df038d13329.osmo-e974f16f153547eaae8fce0f1a51af89.osmo-prod.svc.cluster.local
+  rank      : 87 (local_rank: 7)
+  exitcode  : -6 (pid: 311548)
+  error_file: <N/A>
+  traceback : Signal 6 (SIGABRT) received by PID 311548
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-04-26_23:56:55
+  host      : 976ced8e76de425486f89df038d13329.osmo-e974f16f153547eaae8fce0f1a51af89.osmo-prod.svc.cluster.local
+  rank      : 81 (local_rank: 1)
+  exitcode  : -6 (pid: 311542)
+  error_file: <N/A>
+  traceback : Signal 6 (SIGABRT) received by PID 311542
+============================================================

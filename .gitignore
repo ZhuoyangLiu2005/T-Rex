@@ -10,3 +10,5 @@ vis_scripts
 rollouts
 test_results
 vis*
+scripts/logs
+scripts/test_output*

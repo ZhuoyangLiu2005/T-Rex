@@ -144,6 +144,10 @@ class EpisodeGroupedSampler(_DistributedSampler):
         self._orig_starts = np.zeros(self._num_episodes, dtype=np.int64)
         if self._num_episodes > 1:
             self._orig_starts[1:] = self._cum_frames[:-1]
+        # Number of leading indices to drop from this rank's chunk on the
+        # next __iter__ call (used for resume). Zero-cost: dropped indices
+        # never reach the workers, so no data is loaded for them.
+        self.start_index = 0
 
     def __iter__(self):
         g = torch.Generator()
@@ -204,6 +208,8 @@ class EpisodeGroupedSampler(_DistributedSampler):
                 indices = np.concatenate([indices] + wrap_parts)
 
         indices = indices[:chunk]
+        if self.start_index > 0:
+            indices = indices[self.start_index:]
         return iter(indices.tolist())
 
 
@@ -567,7 +573,7 @@ class EgoDexPretrainFlareDataset(Dataset):
 
 
 def save_checkpoint(model, processor, accelerator, args, epoch, global_step, dataset,
-                    save_full_state=True):
+                    save_full_state=True, lr_scheduler=None):
     """Save a checkpoint.
 
     Always writes `model.pt` + metadata (compatible with downstream eval).
@@ -639,6 +645,14 @@ def save_checkpoint(model, processor, accelerator, args, epoch, global_step, dat
     # Collective: save optimizer / scheduler / RNG for exact resume.
     if save_full_state:
         accelerator.save_state(state_dir)
+        # Accelerate's DeepSpeed path does NOT write `scheduler.bin` when the
+        # LR scheduler was prepared separately from the model+optimizer (as
+        # we do here, since num_training_steps depends on the prepared
+        # world_size). Save it ourselves so resume can restore the cosine
+        # curve position.
+        if lr_scheduler is not None and accelerator.is_main_process:
+            torch.save(lr_scheduler.state_dict(),
+                       os.path.join(state_dir, "scheduler.bin"))
 
     accelerator.wait_for_everyone()
     logger.info(f"Checkpoint {epoch}-{global_step} saved"
@@ -1029,6 +1043,7 @@ def train(args):
     # may mean "weights-only init from some other run", not "resume step 125000".
     resume_global_step = 0
     used_full_state = False
+    scheduler_restored = False
     if args.resume_checkpoint:
         if resume_state_dir is not None:
             accelerator.print(f"Loading full resumable state from {resume_state_dir}")
@@ -1060,17 +1075,37 @@ def train(args):
                 accelerator.print(
                     f"Full resume: no training_state.json; global_step from dir name={resume_global_step}")
 
+            # Restore LR scheduler from our explicit scheduler.bin (Accelerate
+            # + DeepSpeed does not save it when prepared separately).
+            sched_path = os.path.join(resume_state_dir, "scheduler.bin")
+            if os.path.isfile(sched_path):
+                sched_sd = torch.load(sched_path, map_location="cpu",
+                                      weights_only=False)
+                lr_scheduler.load_state_dict(sched_sd)
+                scheduler_restored = True
+                accelerator.print(
+                    f"Restored LR scheduler from scheduler.bin: "
+                    f"lr={lr_scheduler.get_last_lr()[0]:.3e}")
+            else:
+                accelerator.print(
+                    "scheduler.bin not found in state/ (legacy ckpt). "
+                    "Will fast-forward the LR scheduler instead.")
+
         if args.resume_step > 0:
             resume_global_step = args.resume_step
             accelerator.print(f"--resume_step override: global_step={resume_global_step}")
 
-        # Weights-only resume: fast-forward the LR scheduler to match step.
-        # Optimizer momentum is NOT restored (starts fresh AdamW); the model
-        # typically recovers in a few hundred steps.
-        if resume_global_step > 0 and not used_full_state:
+        # Fast-forward fallback: covers two cases —
+        #   (a) weights-only resume (no state/), or
+        #   (b) full resume from a legacy ckpt that has state/ but no
+        #       scheduler.bin (e.g. all 0423 checkpoints).
+        if resume_global_step > 0 and not scheduler_restored:
+            note = ("optimizer momentum NOT restored"
+                    if not used_full_state
+                    else "optimizer state IS restored, only the LR curve is approximated")
             accelerator.print(
                 f"[approximate resume] Fast-forwarding LR scheduler by "
-                f"{resume_global_step} steps (optimizer momentum NOT restored).")
+                f"{resume_global_step} steps ({note}).")
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")  # suppress "step before optimizer step" warnings
                 for _ in range(resume_global_step):
@@ -1098,26 +1133,34 @@ def train(args):
         accelerator.print(
             f"Resuming at epoch={start_epoch}, step_in_epoch={step_in_epoch_offset}, "
             f"global_step={global_step}. "
-            f"{'Will fast-forward data iterator.' if args.resume_skip_data else 'Data iterator restarts from beginning of epoch (some overlap).'}")
+            f"{'Will skip already-seen batches at the sampler (no data load).' if args.resume_skip_data else 'Data iterator restarts from beginning of epoch (some overlap).'}")
 
     for epoch in range(start_epoch, args.n_epochs):
         sampler.set_epoch(epoch)
 
-        from tqdm import tqdm
-        it = (tqdm(dataloader, total=steps_per_epoch, desc=f"Epoch {epoch}")
-              if accelerator.is_main_process else dataloader)
-
-        # Data-skip for resume: fast-forward through the already-consumed portion
-        # of this epoch so we re-enter at the same (episode, frame) point as the
-        # interrupted run. Only applies to the first epoch post-resume.
+        # Data-skip for resume: drop the already-consumed portion of this
+        # epoch at the *sampler* level so workers never load those samples.
+        # Previously we iterated and `continue`d, which still ran image
+        # loading + collate for every skipped batch — slow enough that GPUs
+        # stayed at 0% and the NCCL watchdog could kill the job. Setting
+        # sampler.start_index just slices the index list before workers ever
+        # see it, so skipping ~100k batches is effectively instantaneous.
         skip_n = (step_in_epoch_offset
                   if (args.resume_skip_data and epoch == start_epoch) else 0)
+        sampler.start_index = skip_n * args.train_bsz_per_gpu
+        epoch_total = max(0, steps_per_epoch - skip_n)
         if skip_n > 0:
-            accelerator.print(f"Fast-forwarding dataloader by {skip_n} batches...")
+            accelerator.print(
+                f"Skipping first {skip_n} batches via sampler offset "
+                f"(no data loaded). Epoch will run {epoch_total} steps.")
 
-        for batch_idx, batch in enumerate(it):
-            if batch_idx < skip_n:
-                continue
+        from tqdm import tqdm
+        desc = (f"Epoch {epoch} (resumed +{skip_n})"
+                if skip_n > 0 else f"Epoch {epoch}")
+        it = (tqdm(dataloader, total=epoch_total, desc=desc)
+              if accelerator.is_main_process else dataloader)
+
+        for batch in it:
             # Move batch to device (since dataloader is not prepared by accelerate)
             batch = {k: v.to(device) if torch.is_tensor(v) else v
                      for k, v in batch.items()}
@@ -1312,7 +1355,8 @@ def train(args):
                 accelerator.wait_for_everyone()
                 save_checkpoint(model, processor, accelerator, args,
                                 epoch, global_step + 1, dataset,
-                                save_full_state=bool(args.save_full_state))
+                                save_full_state=bool(args.save_full_state),
+                                lr_scheduler=lr_scheduler)
 
             global_step += 1
 
@@ -1320,7 +1364,8 @@ def train(args):
             accelerator.wait_for_everyone()
             save_checkpoint(model, processor, accelerator, args,
                             epoch, global_step, dataset,
-                            save_full_state=bool(args.save_full_state))
+                            save_full_state=bool(args.save_full_state),
+                            lr_scheduler=lr_scheduler)
 
     accelerator.print("Training finished.")
 

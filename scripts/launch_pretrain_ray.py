@@ -41,7 +41,7 @@ PY_SCRIPTS = {
     "mecka_flare":  "train_qwen3vl_pretrain_egodex_flare.py",
     "midtrain":     "train_qwen3vl_midtrain_flare.py",
 }
-MASTER_PORT = 29501
+MASTER_PORT = 29500
 
 
 def kill_stale_processes(ips, py_script):

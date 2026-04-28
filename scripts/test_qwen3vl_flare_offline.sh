@@ -10,16 +10,16 @@ export PYTHONPATH=/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen:$PYTH
 export CUDA_VISIBLE_DEVICES=0
 
 # --- Single-arm: flip_book_page (right hand only, 1 wrist camera) ---
-# MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mot_flare/stage2_future_v1/checkpoint-199-70400"
-# DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/flip_book_page_0405_deltabase_axis_eef_newclip_right_stride2_train.json"
-# ACTION_DIM=31
-# ACTION_CHUNK=8
-
-# --- Dual-arm: remove_card (bimanual, 2 wrist cameras: right + left) ---
-MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mot_flare/qwen3vl_2b_tri_mot_pretrain0407_place_card_0422_traj[50]_view2_tac[force+deform]_wostate_deltabase_eef_stride1_f1s1_res_flare[tpf4step8stride4]_resize_lr_fix_0425/checkpoint-49-34150"
-DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/place_card_0422_deltabase_axis_eef_lr_bimanual_crop_stride1_train.json"
-ACTION_DIM=62
+MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mot_flare/qwen3vl_2b_mot[3]_pretrain[none]_midtrain[bkl+nv_e8]_task[pick_egg_0411]_traj[100]_view[3]_tac[force+deform]_state[wo]_stride[1]_flare[tpf4step8stride4]_0427/checkpoint-49-13050"
+DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/pick_egg_0411_deltabase_axis_eef_right_crop_stride1_train.json"
+ACTION_DIM=31
 ACTION_CHUNK=16
+
+# # --- Dual-arm: remove_card (bimanual, 2 wrist cameras: right + left) ---
+# MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_midtrain_flare/qwen3vl_2b_midtrain_vlmscratch_bimanual_62d_tac[force+deform]_flare_0425/checkpoint-7-47392"
+# DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/open_lock_0424+0425_deltabase_axis_eef_lr_bimanual_crop_stride1_train.json"
+# ACTION_DIM=62
+# ACTION_CHUNK=16
 
 python test_qwen3vl_flare_offline.py \
   --checkpoint_path ${MODEL_PATH} \
@@ -32,7 +32,7 @@ python test_qwen3vl_flare_offline.py \
   --action_dim ${ACTION_DIM} \
   --action_chunk ${ACTION_CHUNK} \
   --save_dir ./test_output_flare \
-  --num_test_samples 300 \
+  --num_test_samples 200 \
   --port 5678 \
   --n_flare_tokens_per_frame 4 \
   --n_flare_steps 8 \

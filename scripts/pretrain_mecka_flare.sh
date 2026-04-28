@@ -58,9 +58,14 @@ ORIGIN_MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/c
 #    optimizer momentum starts fresh.
 #  - Full resume (state/ present): set to the ckpt dir; RESUME_STEP=0
 #    (the saved training_state.json is authoritative).
-RESUME_CHECKPOINT="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-50000"
+RESUME_CHECKPOINT="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000"
 RESUME_STEP=0               # 0 = use training_state.json (this ckpt has state/, full resume)
-RESUME_SKIP_DATA=0          # 1 = fast-forward dataloader past already-seen batches
+# Skip past already-seen batches in the resumed epoch. Implemented at the
+# *sampler* level (sampler.start_index): skipped indices never reach
+# workers, so this is effectively free — no I/O, no GPU idle, no NCCL
+# watchdog risk. (Old per-batch `continue` skip was the cause of the slow
+# tqdm + 0% GPU you were seeing.)
+RESUME_SKIP_DATA=1
 if [ -n "${RESUME_CHECKPOINT}" ] && [ ! -e "${RESUME_CHECKPOINT}" ]; then
     echo "ERROR: RESUME_CHECKPOINT does not exist: ${RESUME_CHECKPOINT}" >&2
     exit 1
@@ -223,6 +228,8 @@ accelerate launch \
     --resume_step ${RESUME_STEP} \
     --resume_skip_data ${RESUME_SKIP_DATA} \
     --save_full_state 1 \
+    --max_ckpts 0 \
     2>&1 | tee -a "${LOCAL_LOG_FILE}"
 
 echo ">>> Mecka pretraining (with flare) finished. Log: ${LOCAL_LOG_FILE}"
+

@@ -1,0 +1,256 @@
+ipex flag is deprecated, will be removed in Accelerate v1.10. From 2.7.0, PyTorch has all needed optimizations for Intel CPU and XPU.
+[2026-04-27 18:20:48,493] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+df: /root/.triton/autotune: No such file or directory
+W0427 18:20:55.345000 6135 site-packages/torch/distributed/run.py:792] 
+W0427 18:20:55.345000 6135 site-packages/torch/distributed/run.py:792] *****************************************
+W0427 18:20:55.345000 6135 site-packages/torch/distributed/run.py:792] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0427 18:20:55.345000 6135 site-packages/torch/distributed/run.py:792] *****************************************
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+torch.compile is not available in Python 3.10, using identity decorator instead
+[2026-04-27 18:21:47,783] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 18:21:47,785] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 18:21:47,785] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 18:21:47,785] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 18:21:47,785] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 18:21:47,786] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 18:21:47,786] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 18:21:47,788] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-04-27 18:21:51,661] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 18:21:51,662] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 18:21:51,663] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 18:21:51,664] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 18:21:51,664] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 18:21:51,664] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 18:21:51,664] [INFO] [comm.py:652:init_distributed] cdb=None
+[2026-04-27 18:21:51,664] [INFO] [comm.py:652:init_distributed] cdb=None
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+`torch_dtype` is deprecated! Use `dtype` instead!
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+  New MoT expert weights (expected missing): 618
+  New MoT expert weights (expected missing): 618
+  New MoT expert weights (expected missing): 618
+  New MoT expert weights (expected missing): 618
+  New MoT expert weights (expected missing): 618
+  New MoT expert weights (expected missing): 618
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+  New MoT expert weights (expected missing): 618
+[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
+  New MoT expert weights (expected missing): 618
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.[Qwen3VLVLAModel] Freed base model language_model to save memory.
+
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+VLA weights initialized.
+Flare: 8 steps x 4 tok/frame = 32 total, layer_index=-1, stride=4
+Total: 4.98B  Trainable: 3.16B (63.4%)
+[Qwen3VLVLAModel] Freed base model language_model to save memory.
+Loaded 4509 batch manifests
+EgoDex pretrain (flare): 4489747 episodes, 2580593257 transitions, flare=8 steps x stride 4
+Train/Val split: 4399953 train eps (2528961824 frames), 89794 val eps (51631433 frames)
+[2026-04-27 18:24:01,503] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 240
+[2026-04-27 18:24:01,503] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 240
+[2026-04-27 18:24:01,503] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 240
+[2026-04-27 18:24:01,503] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 240
+[2026-04-27 18:24:01,503] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 240
+[2026-04-27 18:24:01,503] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 240
+[2026-04-27 18:24:01,504] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 240
+[2026-04-27 18:24:01,504] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 240
+[2026-04-27 18:24:49,673] [INFO] [torch_checkpoint_engine.py:27:load] [Torch] Loading checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt...
+[2026-04-27 18:24:49,673] [INFO] [torch_checkpoint_engine.py:27:load] [Torch] Loading checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt...
+[2026-04-27 18:24:49,674] [INFO] [torch_checkpoint_engine.py:27:load] [Torch] Loading checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt...
+Dataset: 2528961824 training samples, world_size=240
+Estimated 658583 steps/epoch (samples_per_rank=10537340), 658583 total training steps, warmup=19757
+Loading full resumable state from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state
+[2026-04-27 18:24:49,705] [INFO] [torch_checkpoint_engine.py:27:load] [Torch] Loading checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt...
+[2026-04-27 18:24:49,726] [INFO] [torch_checkpoint_engine.py:27:load] [Torch] Loading checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt...
+[2026-04-27 18:24:49,755] [INFO] [torch_checkpoint_engine.py:27:load] [Torch] Loading checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt...
+[2026-04-27 18:24:49,760] [INFO] [torch_checkpoint_engine.py:27:load] [Torch] Loading checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt...
+[2026-04-27 18:24:50,108] [INFO] [torch_checkpoint_engine.py:27:load] [Torch] Loading checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt...
+[2026-04-27 18:25:42,742] [INFO] [torch_checkpoint_engine.py:29:load] [Torch] Loaded checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt.
+[2026-04-27 18:25:42,742] [INFO] [torch_checkpoint_engine.py:29:load] [Torch] Loaded checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt.
+[2026-04-27 18:25:42,743] [INFO] [torch_checkpoint_engine.py:29:load] [Torch] Loaded checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt.
+[2026-04-27 18:25:42,743] [INFO] [torch_checkpoint_engine.py:29:load] [Torch] Loaded checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt.
+[2026-04-27 18:25:42,743] [INFO] [torch_checkpoint_engine.py:29:load] [Torch] Loaded checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt.
+[2026-04-27 18:25:42,743] [INFO] [torch_checkpoint_engine.py:29:load] [Torch] Loaded checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt.
+[2026-04-27 18:25:42,743] [INFO] [torch_checkpoint_engine.py:29:load] [Torch] Loaded checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt.
+[2026-04-27 18:25:42,746] [INFO] [torch_checkpoint_engine.py:29:load] [Torch] Loaded checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt.
+[2026-04-27 18:25:42,800] [INFO] [torch_checkpoint_engine.py:27:load] [Torch] Loading checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt...
+[2026-04-27 18:25:42,803] [INFO] [torch_checkpoint_engine.py:27:load] [Torch] Loading checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt...
+[2026-04-27 18:25:42,803] [INFO] [torch_checkpoint_engine.py:27:load] [Torch] Loading checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt...
+[2026-04-27 18:25:42,804] [INFO] [torch_checkpoint_engine.py:27:load] [Torch] Loading checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt...
+[2026-04-27 18:25:42,806] [INFO] [torch_checkpoint_engine.py:27:load] [Torch] Loading checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt...
+[2026-04-27 18:25:42,806] [INFO] [torch_checkpoint_engine.py:27:load] [Torch] Loading checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt...
+[2026-04-27 18:25:42,807] [INFO] [torch_checkpoint_engine.py:27:load] [Torch] Loading checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt...
+[2026-04-27 18:25:42,823] [INFO] [torch_checkpoint_engine.py:27:load] [Torch] Loading checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt...
+[2026-04-27 18:25:47,787] [INFO] [torch_checkpoint_engine.py:29:load] [Torch] Loaded checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt.
+[2026-04-27 18:25:47,803] [INFO] [torch_checkpoint_engine.py:29:load] [Torch] Loaded checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt.
+[2026-04-27 18:25:47,816] [INFO] [torch_checkpoint_engine.py:29:load] [Torch] Loaded checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt.
+[2026-04-27 18:25:47,839] [INFO] [torch_checkpoint_engine.py:29:load] [Torch] Loaded checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt.
+[2026-04-27 18:25:47,839] [INFO] [torch_checkpoint_engine.py:29:load] [Torch] Loaded checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt.
+[2026-04-27 18:25:47,839] [INFO] [torch_checkpoint_engine.py:29:load] [Torch] Loaded checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt.
+[2026-04-27 18:25:48,023] [INFO] [torch_checkpoint_engine.py:29:load] [Torch] Loaded checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt.
+[2026-04-27 18:25:48,024] [INFO] [torch_checkpoint_engine.py:29:load] [Torch] Loaded checkpoint from /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0423/checkpoint-0-190000/state/pytorch_model/mp_rank_00_model_states.pt.
+[rank100]: Traceback (most recent call last):
+[rank100]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank100]:     train(args)
+[rank100]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1061, in train
+[rank100]:     accelerator.load_state(resume_state_dir)
+[rank100]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 3509, in load_state
+[rank100]:     model.load_checkpoint(input_dir, ckpt_id, **load_model_func_kwargs)
+[rank100]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 2826, in load_checkpoint
+[rank100]:     success = self._load_zero_checkpoint(load_dir, tag, load_optimizer_states=load_optimizer_states)
+[rank100]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 3005, in _load_zero_checkpoint
+[rank100]:     raise ZeRORuntimeException("The checkpoint being loaded used a DP " \
+[rank100]: deepspeed.runtime.zero.utils.ZeRORuntimeException: The checkpoint being loaded used a DP world size of 256 but the current world size is 240. Automatic adjustment of ZeRO's optimizer state partitioning with a new world size is not currently supported.
+[rank96]: Traceback (most recent call last):
+[rank96]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank96]:     train(args)
+[rank96]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1061, in train
+[rank96]:     accelerator.load_state(resume_state_dir)
+[rank96]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 3509, in load_state
+[rank96]:     model.load_checkpoint(input_dir, ckpt_id, **load_model_func_kwargs)
+[rank96]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 2826, in load_checkpoint
+[rank96]:     success = self._load_zero_checkpoint(load_dir, tag, load_optimizer_states=load_optimizer_states)
+[rank96]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 3005, in _load_zero_checkpoint
+[rank96]:     raise ZeRORuntimeException("The checkpoint being loaded used a DP " \
+[rank96]: deepspeed.runtime.zero.utils.ZeRORuntimeException: The checkpoint being loaded used a DP world size of 256 but the current world size is 240. Automatic adjustment of ZeRO's optimizer state partitioning with a new world size is not currently supported.
+[rank103]: Traceback (most recent call last):
+[rank103]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank103]:     train(args)
+[rank103]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1061, in train
+[rank103]:     accelerator.load_state(resume_state_dir)
+[rank103]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 3509, in load_state
+[rank103]:     model.load_checkpoint(input_dir, ckpt_id, **load_model_func_kwargs)
+[rank103]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 2826, in load_checkpoint
+[rank103]:     success = self._load_zero_checkpoint(load_dir, tag, load_optimizer_states=load_optimizer_states)
+[rank103]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 3005, in _load_zero_checkpoint
+[rank103]:     raise ZeRORuntimeException("The checkpoint being loaded used a DP " \
+[rank103]: deepspeed.runtime.zero.utils.ZeRORuntimeException: The checkpoint being loaded used a DP world size of 256 but the current world size is 240. Automatic adjustment of ZeRO's optimizer state partitioning with a new world size is not currently supported.
+[rank102]: Traceback (most recent call last):
+[rank102]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank102]:     train(args)
+[rank102]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1061, in train
+[rank102]:     accelerator.load_state(resume_state_dir)
+[rank102]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 3509, in load_state
+[rank102]:     model.load_checkpoint(input_dir, ckpt_id, **load_model_func_kwargs)
+[rank102]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 2826, in load_checkpoint
+[rank102]:     success = self._load_zero_checkpoint(load_dir, tag, load_optimizer_states=load_optimizer_states)
+[rank102]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 3005, in _load_zero_checkpoint
+[rank102]:     raise ZeRORuntimeException("The checkpoint being loaded used a DP " \
+[rank102]: deepspeed.runtime.zero.utils.ZeRORuntimeException: The checkpoint being loaded used a DP world size of 256 but the current world size is 240. Automatic adjustment of ZeRO's optimizer state partitioning with a new world size is not currently supported.
+[rank98]: Traceback (most recent call last):
+[rank98]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank98]:     train(args)
+[rank98]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1061, in train
+[rank98]:     accelerator.load_state(resume_state_dir)
+[rank98]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 3509, in load_state
+[rank98]:     model.load_checkpoint(input_dir, ckpt_id, **load_model_func_kwargs)
+[rank98]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 2826, in load_checkpoint
+[rank98]:     success = self._load_zero_checkpoint(load_dir, tag, load_optimizer_states=load_optimizer_states)
+[rank98]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 3005, in _load_zero_checkpoint
+[rank98]:     raise ZeRORuntimeException("The checkpoint being loaded used a DP " \
+[rank98]: deepspeed.runtime.zero.utils.ZeRORuntimeException: The checkpoint being loaded used a DP world size of 256 but the current world size is 240. Automatic adjustment of ZeRO's optimizer state partitioning with a new world size is not currently supported.
+[rank99]: Traceback (most recent call last):
+[rank99]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank99]:     train(args)
+[rank99]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1061, in train
+[rank99]:     accelerator.load_state(resume_state_dir)
+[rank99]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 3509, in load_state
+[rank99]:     model.load_checkpoint(input_dir, ckpt_id, **load_model_func_kwargs)
+[rank99]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 2826, in load_checkpoint
+[rank99]:     success = self._load_zero_checkpoint(load_dir, tag, load_optimizer_states=load_optimizer_states)
+[rank99]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 3005, in _load_zero_checkpoint
+[rank99]:     raise ZeRORuntimeException("The checkpoint being loaded used a DP " \
+[rank99]: deepspeed.runtime.zero.utils.ZeRORuntimeException: The checkpoint being loaded used a DP world size of 256 but the current world size is 240. Automatic adjustment of ZeRO's optimizer state partitioning with a new world size is not currently supported.
+[rank101]: Traceback (most recent call last):
+[rank101]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank101]:     train(args)
+[rank101]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1061, in train
+[rank101]:     accelerator.load_state(resume_state_dir)
+[rank101]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 3509, in load_state
+[rank101]:     model.load_checkpoint(input_dir, ckpt_id, **load_model_func_kwargs)
+[rank101]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 2826, in load_checkpoint
+[rank101]:     success = self._load_zero_checkpoint(load_dir, tag, load_optimizer_states=load_optimizer_states)
+[rank101]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 3005, in _load_zero_checkpoint
+[rank101]:     raise ZeRORuntimeException("The checkpoint being loaded used a DP " \
+[rank101]: deepspeed.runtime.zero.utils.ZeRORuntimeException: The checkpoint being loaded used a DP world size of 256 but the current world size is 240. Automatic adjustment of ZeRO's optimizer state partitioning with a new world size is not currently supported.
+[rank97]: Traceback (most recent call last):
+[rank97]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1445, in <module>
+[rank97]:     train(args)
+[rank97]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts/train_qwen3vl_pretrain_egodex_flare.py", line 1061, in train
+[rank97]:     accelerator.load_state(resume_state_dir)
+[rank97]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/accelerator.py", line 3509, in load_state
+[rank97]:     model.load_checkpoint(input_dir, ckpt_id, **load_model_func_kwargs)
+[rank97]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 2826, in load_checkpoint
+[rank97]:     success = self._load_zero_checkpoint(load_dir, tag, load_optimizer_states=load_optimizer_states)
+[rank97]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 3005, in _load_zero_checkpoint
+[rank97]:     raise ZeRORuntimeException("The checkpoint being loaded used a DP " \
+[rank97]: deepspeed.runtime.zero.utils.ZeRORuntimeException: The checkpoint being loaded used a DP world size of 256 but the current world size is 240. Automatic adjustment of ZeRO's optimizer state partitioning with a new world size is not currently supported.
+[rank96]:[W427 18:25:50.484629667 ProcessGroupNCCL.cpp:1496] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+W0427 18:25:52.329000 6135 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 6311 closing signal SIGTERM
+W0427 18:25:52.333000 6135 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 6312 closing signal SIGTERM
+W0427 18:25:52.335000 6135 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 6313 closing signal SIGTERM
+W0427 18:25:52.335000 6135 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 6314 closing signal SIGTERM
+W0427 18:25:52.335000 6135 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 6315 closing signal SIGTERM
+W0427 18:25:52.336000 6135 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 6316 closing signal SIGTERM
+W0427 18:25:52.336000 6135 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 6317 closing signal SIGTERM
+E0427 18:25:54.121000 6135 site-packages/torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 7 (pid: 6318) of binary: /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/bin/python3.10
+Traceback (most recent call last):
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/bin/accelerate", line 6, in <module>
+    sys.exit(main())
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/commands/accelerate_cli.py", line 50, in main
+    args.func(args)
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/commands/launch.py", line 1184, in launch_command
+    deepspeed_launcher(args)
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/commands/launch.py", line 868, in deepspeed_launcher
+    distrib_run.run(args)
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/run.py", line 909, in run
+    elastic_launch(
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+train_qwen3vl_pretrain_egodex_flare.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-04-27_18:25:52
+  host      : 4eddb74289b740ebaa653080b9d2aedc.osmo-d9450077b4454cd2b72b5e56c7f19b30.osmo-prod.svc.cluster.local
+  rank      : 103 (local_rank: 7)
+  exitcode  : 1 (pid: 6318)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================

@@ -956,7 +956,8 @@ def train(args):
         missing, unexpected = model.load_state_dict(filtered_sd, strict=False)
         accelerator.print(f"Resumed: missing={len(missing)}, unexpected={len(unexpected)}")
 
-    if not freeze_tactile:
+    resumed_tactile = bool(args.resume_checkpoint) and args.resume_source == "midtrain"
+    if not freeze_tactile and not resumed_tactile:
         for name, param in model.named_parameters():
             if "_tactile" in name:
                 if param.ndim >= 2:
@@ -966,6 +967,9 @@ def train(args):
         nn.init.zeros_(model.final_layer_tactile.mlp.fc2.weight)
         if model.final_layer_tactile.mlp.fc2.bias is not None:
             nn.init.zeros_(model.final_layer_tactile.mlp.fc2.bias)
+        accelerator.print("Tactile expert re-initialized (resume_source=pretrain or no resume).")
+    elif resumed_tactile:
+        accelerator.print("Tactile expert weights kept from resumed midtrain checkpoint.")
 
     for name, param in model.named_parameters():
         if name.startswith("visual") or name.startswith("deform_encoder"):
@@ -1397,6 +1401,10 @@ if __name__ == "__main__":
     parser.add_argument("--tactile_intermediate_size", type=int, default=0)
     parser.add_argument("--training_stage", type=int, default=2, choices=[1, 2])
     parser.add_argument("--resume_checkpoint", type=str, default="")
+    parser.add_argument("--resume_source", type=str, default="pretrain",
+                        choices=["pretrain", "midtrain"],
+                        help="'pretrain': resumed ckpt did not train tactile (re-init); "
+                             "'midtrain': resumed ckpt already trained tactile (keep).")
     parser.add_argument("--tactile_loss_weight", type=float, default=1.0)
     parser.add_argument("--image_size", type=int, nargs=2, default=None, metavar=("W", "H"))
 

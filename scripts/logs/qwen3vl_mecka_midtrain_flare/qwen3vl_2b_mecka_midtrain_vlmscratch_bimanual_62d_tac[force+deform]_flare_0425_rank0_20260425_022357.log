@@ -1,293 +1,0 @@
-ipex flag is deprecated, will be removed in Accelerate v1.10. From 2.7.0, PyTorch has all needed optimizations for Intel CPU and XPU.
-[2026-04-25 02:25:11,161] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
-df: /root/.triton/autotune: No such file or directory
-W0425 02:25:17.787000 1513 site-packages/torch/distributed/run.py:792] 
-W0425 02:25:17.787000 1513 site-packages/torch/distributed/run.py:792] *****************************************
-W0425 02:25:17.787000 1513 site-packages/torch/distributed/run.py:792] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
-W0425 02:25:17.787000 1513 site-packages/torch/distributed/run.py:792] *****************************************
-Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
-Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
-Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
-Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
-Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
-Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
-Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
-Current Python version 3.10 is below the recommended 3.11 version. It is recommended to upgrade to Python 3.11 or higher for the best experience.
-torch.compile is not available in Python 3.10, using identity decorator instead
-torch.compile is not available in Python 3.10, using identity decorator instead
-torch.compile is not available in Python 3.10, using identity decorator instead
-torch.compile is not available in Python 3.10, using identity decorator instead
-torch.compile is not available in Python 3.10, using identity decorator instead
-torch.compile is not available in Python 3.10, using identity decorator instead
-torch.compile is not available in Python 3.10, using identity decorator instead
-torch.compile is not available in Python 3.10, using identity decorator instead
-[2026-04-25 02:26:12,132] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
-[2026-04-25 02:26:12,132] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
-[2026-04-25 02:26:12,132] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
-[2026-04-25 02:26:12,132] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
-[2026-04-25 02:26:12,132] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
-[2026-04-25 02:26:12,132] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
-[2026-04-25 02:26:12,132] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
-[2026-04-25 02:26:12,132] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
-[2026-04-25 02:26:15,765] [INFO] [comm.py:652:init_distributed] cdb=None
-[2026-04-25 02:26:15,765] [INFO] [comm.py:652:init_distributed] cdb=None
-[2026-04-25 02:26:15,765] [INFO] [comm.py:652:init_distributed] cdb=None
-[2026-04-25 02:26:15,765] [INFO] [comm.py:652:init_distributed] cdb=None
-[2026-04-25 02:26:15,765] [INFO] [comm.py:652:init_distributed] cdb=None
-[2026-04-25 02:26:15,765] [INFO] [comm.py:652:init_distributed] cdb=None
-[2026-04-25 02:26:15,765] [INFO] [comm.py:652:init_distributed] cdb=None
-[2026-04-25 02:26:15,765] [INFO] [comm.py:683:init_distributed] Initializing TorchBackend in DeepSpeed with backend nccl
-[2026-04-25 02:26:15,766] [INFO] [comm.py:652:init_distributed] cdb=None
-wandb: Using wandb-core as the SDK backend. Please refer to https://wandb.me/wandb-core for more information.
-wandb: Currently logged in as: liumail2023 (liumail2023-peking-university). Use `wandb login --relogin` to force relogin
-`torch_dtype` is deprecated! Use `dtype` instead!
-`torch_dtype` is deprecated! Use `dtype` instead!
-`torch_dtype` is deprecated! Use `dtype` instead!
-`torch_dtype` is deprecated! Use `dtype` instead!
-`torch_dtype` is deprecated! Use `dtype` instead!
-`torch_dtype` is deprecated! Use `dtype` instead!
-`torch_dtype` is deprecated! Use `dtype` instead!
-wandb: Tracking run with wandb version 0.18.3
-wandb: Run data is saved locally in /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_midtrain_flare/wandb/run-20260425_022617-9iekbdn5
-wandb: Run `wandb offline` to turn off syncing.
-wandb: Syncing run qwen3vl_2b_mecka_midtrain_vlmscratch_bimanual_62d_tac[force+deform]_flare_0425
-wandb: ⭐️ View project at https://wandb.ai/liumail2023-peking-university/qwen3vl_mecka_midtrain_flare
-wandb: 🚀 View run at https://wandb.ai/liumail2023-peking-university/qwen3vl_mecka_midtrain_flare/runs/9iekbdn5
-`torch_dtype` is deprecated! Use `dtype` instead!
-[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
-
-[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
-
-
-  New MoT expert weights (expected missing): 618
-  New MoT expert weights (expected missing): 618
-  New MoT expert weights (expected missing): 618
-  New MoT expert weights (expected missing): 618
-  New MoT expert weights (expected missing): 618
-
-[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
-  New MoT expert weights (expected missing): 618
-  New MoT expert weights (expected missing): 618
-[Qwen3VLVLAModel] Text model loaded – missing: 618, unexpected: 0
-  New MoT expert weights (expected missing): 618
-[Qwen3VLVLAModel] Freed base model language_model to save memory.
-Loading DeformEncoder weights from /mnt/amlfs-01/home/dniu/Project/dex-mot/mot/bi-mot/janus/DeformEncoder/ckpt/sharpa_wave_deform_encoder.pth ...
-[Qwen3VLVLAModel] Freed base model language_model to save memory.
-[Qwen3VLVLAModel] Freed base model language_model to save memory.
-Loading DeformEncoder weights from /mnt/amlfs-01/home/dniu/Project/dex-mot/mot/bi-mot/janus/DeformEncoder/ckpt/sharpa_wave_deform_encoder.pth ...
-[Qwen3VLVLAModel] Freed base model language_model to save memory.
-Loading DeformEncoder weights from /mnt/amlfs-01/home/dniu/Project/dex-mot/mot/bi-mot/janus/DeformEncoder/ckpt/sharpa_wave_deform_encoder.pth ...
-Loading DeformEncoder weights from /mnt/amlfs-01/home/dniu/Project/dex-mot/mot/bi-mot/janus/DeformEncoder/ckpt/sharpa_wave_deform_encoder.pth ...
-[Qwen3VLVLAModel] Freed base model language_model to save memory.
-Loading DeformEncoder weights from /mnt/amlfs-01/home/dniu/Project/dex-mot/mot/bi-mot/janus/DeformEncoder/ckpt/sharpa_wave_deform_encoder.pth ...
-[Qwen3VLVLAModel] Freed base model language_model to save memory.
-Loading DeformEncoder weights from /mnt/amlfs-01/home/dniu/Project/dex-mot/mot/bi-mot/janus/DeformEncoder/ckpt/sharpa_wave_deform_encoder.pth ...
-[Qwen3VLVLAModel] Freed base model language_model to save memory.
-Loading DeformEncoder weights from /mnt/amlfs-01/home/dniu/Project/dex-mot/mot/bi-mot/janus/DeformEncoder/ckpt/sharpa_wave_deform_encoder.pth ...
-[Qwen3VLVLAModel] Freed base model language_model to save memory.
-Loading DeformEncoder weights from /mnt/amlfs-01/home/dniu/Project/dex-mot/mot/bi-mot/janus/DeformEncoder/ckpt/sharpa_wave_deform_encoder.pth ...
-DeformEncoder weights loaded.
-DeformEncoder weights loaded.DeformEncoder weights loaded.
-
-DeformEncoder weights loaded.DeformEncoder weights loaded.
-DeformEncoder weights loaded.
-
-DeformEncoder weights loaded.
-DeformEncoder weights loaded.
-Flare alignment: 8 steps × 4 tok/frame = 32 total tokens, layer_index=-1
-Action expert initialized from latent expert.
-Model: 4254.7M total, 3844.5M trainable
-[Midtrain] Loaded 31 batch manifests
-[Midtrain] 6035 episodes, 6186279 transitions, flare=8×4
-[Midtrain] Train/Val split: 5915 train eps (6066714 frames), 120 val eps (119565 frames)
-[2026-04-25 02:27:29,243] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 64
-[2026-04-25 02:27:29,243] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 64
-[2026-04-25 02:27:29,243] [INFO] [logging.py:128:log_dist] [Rank 0] DeepSpeed info: version=0.15.4, git-hash=unknown, git-branch=unknown
-[2026-04-25 02:27:29,243] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 64
-[2026-04-25 02:27:29,244] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 64
-[2026-04-25 02:27:29,244] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 64
-[2026-04-25 02:27:29,244] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 64
-[2026-04-25 02:27:29,424] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 64
-[2026-04-25 02:27:29,939] [INFO] [config.py:733:__init__] Config mesh_device None world_size = 64
-[2026-04-25 02:28:04,322] [INFO] [logging.py:128:log_dist] [Rank 0] DeepSpeed Flops Profiler Enabled: False
-[2026-04-25 02:28:04,325] [INFO] [logging.py:128:log_dist] [Rank 0] Using client Optimizer as basic optimizer
-[2026-04-25 02:28:04,325] [INFO] [logging.py:128:log_dist] [Rank 0] Removing param_group that has no 'params' in the basic Optimizer
-[2026-04-25 02:28:04,396] [INFO] [logging.py:128:log_dist] [Rank 0] DeepSpeed Basic Optimizer = AdamW
-[2026-04-25 02:28:04,396] [INFO] [utils.py:59:is_zero_supported_optimizer] Checking ZeRO support for optimizer=AdamW type=<class 'torch.optim.adamw.AdamW'>
-[2026-04-25 02:28:04,396] [INFO] [logging.py:128:log_dist] [Rank 0] Creating torch.bfloat16 ZeRO stage 2 optimizer
-[2026-04-25 02:28:04,396] [INFO] [stage_1_and_2.py:149:__init__] Reduce bucket size 500000000
-[2026-04-25 02:28:04,396] [INFO] [stage_1_and_2.py:150:__init__] Allgather bucket size 500000000
-[2026-04-25 02:28:04,396] [INFO] [stage_1_and_2.py:151:__init__] CPU Offload: False
-[2026-04-25 02:28:04,396] [INFO] [stage_1_and_2.py:152:__init__] Round robin gradient partitioning: False
-[2026-04-25 02:28:12,132] [INFO] [utils.py:781:see_memory_usage] Before initializing optimizer states
-[2026-04-25 02:28:12,133] [INFO] [utils.py:782:see_memory_usage] MA 8.15 GB         Max_MA 8.15 GB         CA 8.73 GB         Max_CA 9 GB 
-[2026-04-25 02:28:12,133] [INFO] [utils.py:789:see_memory_usage] CPU Virtual Memory:  used = 193.74 GB, percent = 10.4%
-[2026-04-25 02:28:12,472] [INFO] [utils.py:781:see_memory_usage] After initializing optimizer states
-[2026-04-25 02:28:12,473] [INFO] [utils.py:782:see_memory_usage] MA 8.15 GB         Max_MA 8.38 GB         CA 8.96 GB         Max_CA 9 GB 
-[2026-04-25 02:28:12,474] [INFO] [utils.py:789:see_memory_usage] CPU Virtual Memory:  used = 197.08 GB, percent = 10.5%
-[2026-04-25 02:28:12,474] [INFO] [stage_1_and_2.py:544:__init__] optimizer state initialized
-[2026-04-25 02:28:12,818] [INFO] [utils.py:781:see_memory_usage] After initializing ZeRO optimizer
-[2026-04-25 02:28:12,819] [INFO] [utils.py:782:see_memory_usage] MA 8.15 GB         Max_MA 8.15 GB         CA 8.96 GB         Max_CA 9 GB 
-[2026-04-25 02:28:12,819] [INFO] [utils.py:789:see_memory_usage] CPU Virtual Memory:  used = 201.99 GB, percent = 10.8%
-[2026-04-25 02:28:12,821] [INFO] [logging.py:128:log_dist] [Rank 0] DeepSpeed Final Optimizer = DeepSpeedZeroOptimizer
-[2026-04-25 02:28:12,822] [INFO] [logging.py:128:log_dist] [Rank 0] DeepSpeed using configured LR scheduler = None
-[2026-04-25 02:28:12,822] [INFO] [logging.py:128:log_dist] [Rank 0] DeepSpeed LR Scheduler = None
-[2026-04-25 02:28:12,822] [INFO] [logging.py:128:log_dist] [Rank 0] step=0, skipped=0, lr=[0.0, 0.0], mom=[(0.9, 0.999), (0.9, 0.999)]
-[2026-04-25 02:28:12,825] [INFO] [config.py:999:print] DeepSpeedEngine configuration:
-[2026-04-25 02:28:12,826] [INFO] [config.py:1003:print]   activation_checkpointing_config  {
-    "partition_activations": false, 
-    "contiguous_memory_optimization": false, 
-    "cpu_checkpointing": false, 
-    "number_checkpoints": null, 
-    "synchronize_checkpoint_boundary": false, 
-    "profile": false
-}
-[2026-04-25 02:28:12,826] [INFO] [config.py:1003:print]   aio_config ................... {'block_size': 1048576, 'queue_depth': 8, 'thread_count': 1, 'single_submit': False, 'overlap_events': True, 'use_gds': False}
-[2026-04-25 02:28:12,826] [INFO] [config.py:1003:print]   amp_enabled .................. False
-[2026-04-25 02:28:12,826] [INFO] [config.py:1003:print]   amp_params ................... False
-[2026-04-25 02:28:12,826] [INFO] [config.py:1003:print]   autotuning_config ............ {
-    "enabled": false, 
-    "start_step": null, 
-    "end_step": null, 
-    "metric_path": null, 
-    "arg_mappings": null, 
-    "metric": "throughput", 
-    "model_info": null, 
-    "results_dir": "autotuning_results", 
-    "exps_dir": "autotuning_exps", 
-    "overwrite": true, 
-    "fast": true, 
-    "start_profile_step": 3, 
-    "end_profile_step": 5, 
-    "tuner_type": "gridsearch", 
-    "tuner_early_stopping": 5, 
-    "tuner_num_trials": 50, 
-    "model_info_path": null, 
-    "mp_size": 1, 
-    "max_train_batch_size": null, 
-    "min_train_batch_size": 1, 
-    "max_train_micro_batch_size_per_gpu": 1.024000e+03, 
-    "min_train_micro_batch_size_per_gpu": 1, 
-    "num_tuning_micro_batch_sizes": 3
-}
-[2026-04-25 02:28:12,826] [INFO] [config.py:1003:print]   bfloat16_enabled ............. True
-[2026-04-25 02:28:12,826] [INFO] [config.py:1003:print]   bfloat16_immediate_grad_update  False
-[2026-04-25 02:28:12,826] [INFO] [config.py:1003:print]   checkpoint_parallel_write_pipeline  False
-[2026-04-25 02:28:12,826] [INFO] [config.py:1003:print]   checkpoint_tag_validation_enabled  True
-[2026-04-25 02:28:12,827] [INFO] [config.py:1003:print]   checkpoint_tag_validation_fail  False
-[2026-04-25 02:28:12,827] [INFO] [config.py:1003:print]   comms_config ................. <deepspeed.comm.config.DeepSpeedCommsConfig object at 0x7f441936b730>
-[2026-04-25 02:28:12,827] [INFO] [config.py:1003:print]   communication_data_type ...... None
-[2026-04-25 02:28:12,827] [INFO] [config.py:1003:print]   compression_config ........... {'weight_quantization': {'shared_parameters': {'enabled': False, 'quantizer_kernel': False, 'schedule_offset': 0, 'quantize_groups': 1, 'quantize_verbose': False, 'quantization_type': 'symmetric', 'quantize_weight_in_forward': False, 'rounding': 'nearest', 'fp16_mixed_quantize': False, 'quantize_change_ratio': 0.001}, 'different_groups': {}}, 'activation_quantization': {'shared_parameters': {'enabled': False, 'quantization_type': 'symmetric', 'range_calibration': 'dynamic', 'schedule_offset': 1000}, 'different_groups': {}}, 'sparse_pruning': {'shared_parameters': {'enabled': False, 'method': 'l1', 'schedule_offset': 1000}, 'different_groups': {}}, 'row_pruning': {'shared_parameters': {'enabled': False, 'method': 'l1', 'schedule_offset': 1000}, 'different_groups': {}}, 'head_pruning': {'shared_parameters': {'enabled': False, 'method': 'topk', 'schedule_offset': 1000}, 'different_groups': {}}, 'channel_pruning': {'shared_parameters': {'enabled': False, 'method': 'l1', 'schedule_offset': 1000}, 'different_groups': {}}, 'layer_reduction': {'enabled': False}}
-[2026-04-25 02:28:12,827] [INFO] [config.py:1003:print]   curriculum_enabled_legacy .... False
-[2026-04-25 02:28:12,827] [INFO] [config.py:1003:print]   curriculum_params_legacy ..... False
-[2026-04-25 02:28:12,827] [INFO] [config.py:1003:print]   data_efficiency_config ....... {'enabled': False, 'seed': 1234, 'data_sampling': {'enabled': False, 'num_epochs': 1000, 'num_workers': 0, 'curriculum_learning': {'enabled': False}}, 'data_routing': {'enabled': False, 'random_ltd': {'enabled': False, 'layer_token_lr_schedule': {'enabled': False}}}}
-[2026-04-25 02:28:12,827] [INFO] [config.py:1003:print]   data_efficiency_enabled ...... False
-[2026-04-25 02:28:12,827] [INFO] [config.py:1003:print]   dataloader_drop_last ......... False
-[2026-04-25 02:28:12,827] [INFO] [config.py:1003:print]   disable_allgather ............ False
-[2026-04-25 02:28:12,827] [INFO] [config.py:1003:print]   dump_state ................... False
-[2026-04-25 02:28:12,827] [INFO] [config.py:1003:print]   dynamic_loss_scale_args ...... None
-[2026-04-25 02:28:12,827] [INFO] [config.py:1003:print]   eigenvalue_enabled ........... False
-[2026-04-25 02:28:12,827] [INFO] [config.py:1003:print]   eigenvalue_gas_boundary_resolution  1
-[2026-04-25 02:28:12,827] [INFO] [config.py:1003:print]   eigenvalue_layer_name ........ bert.encoder.layer
-[2026-04-25 02:28:12,827] [INFO] [config.py:1003:print]   eigenvalue_layer_num ......... 0
-[2026-04-25 02:28:12,827] [INFO] [config.py:1003:print]   eigenvalue_max_iter .......... 100
-[2026-04-25 02:28:12,827] [INFO] [config.py:1003:print]   eigenvalue_stability ......... 1e-06
-[2026-04-25 02:28:12,827] [INFO] [config.py:1003:print]   eigenvalue_tol ............... 0.01
-[2026-04-25 02:28:12,828] [INFO] [config.py:1003:print]   eigenvalue_verbose ........... False
-[2026-04-25 02:28:12,828] [INFO] [config.py:1003:print]   elasticity_enabled ........... False
-[2026-04-25 02:28:12,828] [INFO] [config.py:1003:print]   flops_profiler_config ........ {
-    "enabled": false, 
-    "recompute_fwd_factor": 0.0, 
-    "profile_step": 1, 
-    "module_depth": -1, 
-    "top_modules": 1, 
-    "detailed": true, 
-    "output_file": null
-}
-[2026-04-25 02:28:12,828] [INFO] [config.py:1003:print]   fp16_auto_cast ............... None
-[2026-04-25 02:28:12,828] [INFO] [config.py:1003:print]   fp16_enabled ................. False
-[2026-04-25 02:28:12,828] [INFO] [config.py:1003:print]   fp16_master_weights_and_gradients  False
-[2026-04-25 02:28:12,828] [INFO] [config.py:1003:print]   global_rank .................. 0
-[2026-04-25 02:28:12,828] [INFO] [config.py:1003:print]   grad_accum_dtype ............. None
-[2026-04-25 02:28:12,828] [INFO] [config.py:1003:print]   gradient_accumulation_steps .. 1
-[2026-04-25 02:28:12,828] [INFO] [config.py:1003:print]   gradient_clipping ............ 1.0
-[2026-04-25 02:28:12,828] [INFO] [config.py:1003:print]   gradient_predivide_factor .... 1.0
-[2026-04-25 02:28:12,828] [INFO] [config.py:1003:print]   graph_harvesting ............. False
-[2026-04-25 02:28:12,828] [INFO] [config.py:1003:print]   hybrid_engine ................ enabled=False max_out_tokens=512 inference_tp_size=1 release_inference_cache=False pin_parameters=True tp_gather_partition_size=8
-[2026-04-25 02:28:12,828] [INFO] [config.py:1003:print]   initial_dynamic_scale ........ 1
-[2026-04-25 02:28:12,828] [INFO] [config.py:1003:print]   load_universal_checkpoint .... False
-[2026-04-25 02:28:12,828] [INFO] [config.py:1003:print]   loss_scale ................... 1.0
-[2026-04-25 02:28:12,828] [INFO] [config.py:1003:print]   memory_breakdown ............. False
-[2026-04-25 02:28:12,828] [INFO] [config.py:1003:print]   mics_hierarchial_params_gather  False
-[2026-04-25 02:28:12,828] [INFO] [config.py:1003:print]   mics_shard_size .............. -1
-[2026-04-25 02:28:12,829] [INFO] [config.py:1003:print]   monitor_config ............... tensorboard=TensorBoardConfig(enabled=False, output_path='', job_name='DeepSpeedJobName') comet=CometConfig(enabled=False, samples_log_interval=100, project=None, workspace=None, api_key=None, experiment_name=None, experiment_key=None, online=None, mode=None) wandb=WandbConfig(enabled=False, group=None, team=None, project='deepspeed') csv_monitor=CSVConfig(enabled=False, output_path='', job_name='DeepSpeedJobName')
-[2026-04-25 02:28:12,829] [INFO] [config.py:1003:print]   nebula_config ................ {
-    "enabled": false, 
-    "persistent_storage_path": null, 
-    "persistent_time_interval": 100, 
-    "num_of_version_in_retention": 2, 
-    "enable_nebula_load": true, 
-    "load_path": null
-}
-[2026-04-25 02:28:12,829] [INFO] [config.py:1003:print]   optimizer_legacy_fusion ...... False
-[2026-04-25 02:28:12,829] [INFO] [config.py:1003:print]   optimizer_name ............... None
-[2026-04-25 02:28:12,829] [INFO] [config.py:1003:print]   optimizer_params ............. None
-[2026-04-25 02:28:12,829] [INFO] [config.py:1003:print]   pipeline ..................... {'stages': 'auto', 'partition': 'best', 'seed_layers': False, 'activation_checkpoint_interval': 0, 'pipe_partitioned': True, 'grad_partitioned': True}
-[2026-04-25 02:28:12,829] [INFO] [config.py:1003:print]   pld_enabled .................. False
-[2026-04-25 02:28:12,829] [INFO] [config.py:1003:print]   pld_params ................... False
-[2026-04-25 02:28:12,829] [INFO] [config.py:1003:print]   prescale_gradients ........... False
-[2026-04-25 02:28:12,829] [INFO] [config.py:1003:print]   scheduler_name ............... None
-[2026-04-25 02:28:12,829] [INFO] [config.py:1003:print]   scheduler_params ............. None
-[2026-04-25 02:28:12,829] [INFO] [config.py:1003:print]   seq_parallel_communication_data_type  torch.float32
-[2026-04-25 02:28:12,829] [INFO] [config.py:1003:print]   sparse_attention ............. None
-[2026-04-25 02:28:12,829] [INFO] [config.py:1003:print]   sparse_gradients_enabled ..... False
-[2026-04-25 02:28:12,829] [INFO] [config.py:1003:print]   steps_per_print .............. inf
-[2026-04-25 02:28:12,829] [INFO] [config.py:1003:print]   timers_config ................ enabled=True synchronized=True
-[2026-04-25 02:28:12,829] [INFO] [config.py:1003:print]   train_batch_size ............. 1024
-[2026-04-25 02:28:12,829] [INFO] [config.py:1003:print]   train_micro_batch_size_per_gpu  16
-[2026-04-25 02:28:12,830] [INFO] [config.py:1003:print]   use_data_before_expert_parallel_  False
-[2026-04-25 02:28:12,830] [INFO] [config.py:1003:print]   use_node_local_storage ....... False
-[2026-04-25 02:28:12,830] [INFO] [config.py:1003:print]   wall_clock_breakdown ......... False
-[2026-04-25 02:28:12,830] [INFO] [config.py:1003:print]   weight_quantization_config ... None
-[2026-04-25 02:28:12,830] [INFO] [config.py:1003:print]   world_size ................... 64
-[2026-04-25 02:28:12,830] [INFO] [config.py:1003:print]   zero_allow_untested_optimizer  True
-[2026-04-25 02:28:12,830] [INFO] [config.py:1003:print]   zero_config .................. stage=2 contiguous_gradients=True reduce_scatter=True reduce_bucket_size=500000000 use_multi_rank_bucket_allreduce=True allgather_partitions=True allgather_bucket_size=500000000 overlap_comm=False load_from_fp32_weights=True elastic_checkpoint=False offload_param=DeepSpeedZeroOffloadParamConfig(device='none', nvme_path=None, buffer_count=5, buffer_size=100000000, max_in_cpu=1000000000, pin_memory=False) offload_optimizer=DeepSpeedZeroOffloadOptimizerConfig(device='none', nvme_path=None, buffer_count=4, pin_memory=False, pipeline_read=False, pipeline_write=False, fast_init=False, ratio=1.0) sub_group_size=1000000000 cpu_offload_param=None cpu_offload_use_pin_memory=None cpu_offload=None prefetch_bucket_size=50000000 param_persistence_threshold=100000 model_persistence_threshold=9223372036854775807 max_live_parameters=1000000000 max_reuse_distance=1000000000 gather_16bit_weights_on_model_save=False use_all_reduce_for_fetch_params=False stage3_gather_fp16_weights_on_model_save=False ignore_unused_parameters=True legacy_stage1=False round_robin_gradients=False zero_hpz_partition_size=1 zero_quantized_weights=False zero_quantized_nontrainable_weights=False zero_quantized_gradients=False mics_shard_size=-1 mics_hierarchical_params_gather=False memory_efficient_linear=True pipeline_loading_checkpoint=False override_module_apply=True
-[2026-04-25 02:28:12,830] [INFO] [config.py:1003:print]   zero_enabled ................. True
-[2026-04-25 02:28:12,830] [INFO] [config.py:1003:print]   zero_force_ds_cpu_optimizer .. True
-[2026-04-25 02:28:12,830] [INFO] [config.py:1003:print]   zero_optimization_stage ...... 2
-[2026-04-25 02:28:12,830] [INFO] [config.py:989:print_user_config]   json = {
-    "train_batch_size": 1.024000e+03, 
-    "train_micro_batch_size_per_gpu": 16, 
-    "gradient_accumulation_steps": 1, 
-    "zero_optimization": {
-        "stage": 2, 
-        "offload_optimizer": {
-            "device": "none", 
-            "nvme_path": null
-        }, 
-        "offload_param": {
-            "device": "none", 
-            "nvme_path": null
-        }, 
-        "stage3_gather_16bit_weights_on_model_save": false
-    }, 
-    "gradient_clipping": 1.0, 
-    "steps_per_print": inf, 
-    "bf16": {
-        "enabled": true
-    }, 
-    "fp16": {
-        "enabled": false
-    }, 
-    "zero_allow_untested_optimizer": true
-}
-  0%|          | 0/93 [00:00<?, ?it/s]  0%|          | 0/93 [00:56<?, ?it/s, act=1.319214, epoch=0, fut=0.995422, loss=3.138184, lr=2.00e-05, step=0, tac=1.319214]  1%|          | 1/93 [00:56<1:26:45, 56.58s/it, act=1.319214, epoch=0, fut=0.995422, loss=3.138184, lr=2.00e-05, step=0, tac=1.319214]  1%|          | 1/93 [00:57<1:26:45, 56.58s/it, act=1.306763, epoch=0, fut=0.996277, loss=3.113281, lr=4.00e-05, step=1, tac=1.306763]  2%|▏         | 2/93 [00:57<36:36, 24.13s/it, act=1.306763, epoch=0, fut=0.996277, loss=3.113281, lr=4.00e-05, step=1, tac=1.306763]    2%|▏         | 2/93 [00:59<36:36, 24.13s/it, act=1.292480, epoch=0, fut=0.964600, loss=3.069336, lr=6.00e-05, step=2, tac=1.292480]  3%|▎         | 3/93 [00:59<20:31, 13.68s/it, act=1.292480, epoch=0, fut=0.964600, loss=3.069336, lr=6.00e-05, step=2, tac=1.292480]  3%|▎         | 3/93 [01:00<20:31, 13.68s/it, act=1.220825, epoch=0, fut=0.896179, loss=2.893555, lr=8.00e-05, step=3, tac=1.220825]  4%|▍         | 4/93 [01:00<13:08,  8.85s/it, act=1.220825, epoch=0, fut=0.896179, loss=2.893555, lr=8.00e-05, step=3, tac=1.220825]  4%|▍         | 4/93 [01:02<13:08,  8.85s/it, act=1.148193, epoch=0, fut=0.776123, loss=2.686768, lr=1.00e-04, step=4, tac=1.148193]  5%|▌         | 5/93 [01:02<09:05,  6.20s/it, act=1.148193, epoch=0, fut=0.776123, loss=2.686768, lr=1.00e-04, step=4, tac=1.148193]  5%|▌         | 5/93 [01:04<09:05,  6.20s/it, act=1.124878, epoch=0, fut=0.618408, loss=2.561523, lr=1.00e-04, step=5, tac=1.124878]  6%|▋         | 6/93 [01:04<06:49,  4.71s/it, act=1.124878, epoch=0, fut=0.618408, loss=2.561523, lr=1.00e-04, step=5, tac=1.124878]  6%|▋         | 6/93 [01:05<06:49,  4.71s/it, act=1.263672, epoch=0, fut=0.531921, loss=2.793701, lr=1.00e-04, step=6, tac=1.263672]  8%|▊         | 7/93 [01:05<05:18,  3.70s/it, act=1.263672, epoch=0, fut=0.531921, loss=2.793701, lr=1.00e-04, step=6, tac=1.263672]  8%|▊         | 7/93 [01:07<05:18,  3.70s/it, act=1.201050, epoch=0, fut=0.420776, loss=2.612061, lr=9.99e-05, step=7, tac=1.201050]  9%|▊         | 8/93 [01:07<04:20,  3.07s/it, act=1.201050, epoch=0, fut=0.420776, loss=2.612061, lr=9.99e-05, step=7, tac=1.201050]  9%|▊         | 8/93 [01:09<04:20,  3.07s/it, act=1.141357, epoch=0, fut=0.344330, loss=2.454834, lr=9.99e-05, step=8, tac=1.141357] 10%|▉         | 9/93 [01:09<03:45,  2.68s/it, act=1.141357, epoch=0, fut=0.344330, loss=2.454834, lr=9.99e-05, step=8, tac=1.141357] 10%|▉         | 9/93 [01:30<03:45,  2.68s/it, act=1.179932, epoch=0, fut=0.284485, loss=2.501465, lr=9.98e-05, step=9, tac=1.179932] 11%|█         | 10/93 [01:30<11:41,  8.45s/it, act=1.179932, epoch=0, fut=0.284485, loss=2.501465, lr=9.98e-05, step=9, tac=1.179932] 11%|█         | 10/93 [01:32<11:41,  8.45s/it, act=1.161621, epoch=0, fut=0.238968, loss=2.444336, lr=9.97e-05, step=10, tac=1.161621] 12%|█▏        | 11/93 [01:32<09:00,  6.59s/it, act=1.161621, epoch=0, fut=0.238968, loss=2.444336, lr=9.97e-05, step=10, tac=1.161621] 12%|█▏        | 11/93 [01:39<09:00,  6.59s/it, act=1.130127, epoch=0, fut=0.202164, loss=2.360352, lr=9.96e-05, step=11, tac=1.130127] 13%|█▎        | 12/93 [01:39<08:53,  6.58s/it, act=1.130127, epoch=0, fut=0.202164, loss=2.360352, lr=9.96e-05, step=11, tac=1.130127] 13%|█▎        | 12/93 [01:40<08:53,  6.58s/it, act=1.109863, epoch=0, fut=0.169174, loss=2.302979, lr=9.95e-05, step=12, tac=1.109863] 14%|█▍        | 13/93 [01:40<06:39,  4.99s/it, act=1.109863, epoch=0, fut=0.169174, loss=2.302979, lr=9.95e-05, step=12, tac=1.109863] 14%|█▍        | 13/93 [01:50<06:39,  4.99s/it, act=1.129883, epoch=0, fut=0.141998, loss=2.329834, lr=9.94e-05, step=13, tac=1.129883] 15%|█▌        | 14/93 [01:50<08:36,  6.53s/it, act=1.129883, epoch=0, fut=0.141998, loss=2.329834, lr=9.94e-05, step=13, tac=1.129883] 15%|█▌        | 14/93 [01:52<08:36,  6.53s/it, act=1.121704, epoch=0, fut=0.121132, loss=2.305908, lr=9.92e-05, step=14, tac=1.121704] 16%|█▌        | 15/93 [01:52<06:35,  5.07s/it, act=1.121704, epoch=0, fut=0.121132, loss=2.305908, lr=9.92e-05, step=14, tac=1.121704] 16%|█▌        | 15/93 [01:54<06:35,  5.07s/it, act=1.120239, epoch=0, fut=0.104637, loss=2.291748, lr=9.91e-05, step=15, tac=1.120239] 17%|█▋        | 16/93 [01:54<05:11,  4.04s/it, act=1.120239, epoch=0, fut=0.104637, loss=2.291748, lr=9.91e-05, step=15, tac=1.120239] 17%|█▋        | 16/93 [01:55<05:11,  4.04s/it, act=1.129272, epoch=0, fut=0.091225, loss=2.304932, lr=9.89e-05, step=16, tac=1.129272] 18%|█▊        | 17/93 [01:55<04:13,  3.34s/it, act=1.129272, epoch=0, fut=0.091225, loss=2.304932, lr=9.89e-05, step=16, tac=1.129272] 18%|█▊        | 17/93 [02:06<04:13,  3.34s/it, act=1.119141, epoch=0, fut=0.081383, loss=2.279541, lr=9.87e-05, step=17, tac=1.119141] 19%|█▉        | 18/93 [02:06<06:42,  5.36s/it, act=1.119141, epoch=0, fut=0.081383, loss=2.279541, lr=9.87e-05, step=17, tac=1.119141] 19%|█▉        | 18/93 [02:07<06:42,  5.36s/it, act=1.139404, epoch=0, fut=0.075745, loss=2.315430, lr=9.85e-05, step=18, tac=1.139404] 20%|██        | 19/93 [02:07<05:17,  4.29s/it, act=1.139404, epoch=0, fut=0.075745, loss=2.315430, lr=9.85e-05, step=18, tac=1.139404] 20%|██        | 19/93 [02:09<05:17,  4.29s/it, act=1.132568, epoch=0, fut=0.070396, loss=2.298828, lr=9.83e-05, step=19, tac=1.132568] 22%|██▏       | 20/93 [02:09<04:21,  3.59s/it, act=1.132568, epoch=0, fut=0.070396, loss=2.298828, lr=9.83e-05, step=19, tac=1.132568] 22%|██▏       | 20/93 [02:11<04:21,  3.59s/it, act=1.157593, epoch=0, fut=0.066528, loss=2.347412, lr=9.81e-05, step=20, tac=1.157593] 23%|██▎       | 21/93 [02:11<03:33,  2.96s/it, act=1.157593, epoch=0, fut=0.066528, loss=2.347412, lr=9.81e-05, step=20, tac=1.157593] 23%|██▎       | 21/93 [02:25<03:33,  2.96s/it, act=1.111572, epoch=0, fut=0.067959, loss=2.255615, lr=9.78e-05, step=21, tac=1.111572] 24%|██▎       | 22/93 [02:25<07:30,  6.34s/it, act=1.111572, epoch=0, fut=0.067959, loss=2.255615, lr=9.78e-05, step=21, tac=1.111572] 24%|██▎       | 22/93 [02:28<07:30,  6.34s/it, act=1.114746, epoch=0, fut=0.067532, loss=2.262695, lr=9.76e-05, step=22, tac=1.114746] 25%|██▍       | 23/93 [02:28<06:19,  5.42s/it, act=1.114746, epoch=0, fut=0.067532, loss=2.262695, lr=9.76e-05, step=22, tac=1.114746] 25%|██▍       | 23/93 [02:30<06:19,  5.42s/it, act=1.119751, epoch=0, fut=0.066669, loss=2.271973, lr=9.73e-05, step=23, tac=1.119751] 26%|██▌       | 24/93 [02:30<04:48,  4.18s/it, act=1.119751, epoch=0, fut=0.066669, loss=2.271973, lr=9.73e-05, step=23, tac=1.119751] 26%|██▌       | 24/93 [02:31<04:48,  4.18s/it, act=1.117065, epoch=0, fut=0.064648, loss=2.265869, lr=9.70e-05, step=24, tac=1.117065] 27%|██▋       | 25/93 [02:31<03:53,  3.43s/it, act=1.117065, epoch=0, fut=0.064648, loss=2.265869, lr=9.70e-05, step=24, tac=1.117065] 27%|██▋       | 25/93 [02:33<03:53,  3.43s/it, act=1.120117, epoch=0, fut=0.063850, loss=2.272461, lr=9.67e-05, step=25, tac=1.120117] 28%|██▊       | 26/93 [02:33<03:11,  2.85s/it, act=1.120117, epoch=0, fut=0.063850, loss=2.272461, lr=9.67e-05, step=25, tac=1.120117] 28%|██▊       | 26/93 [02:34<03:11,  2.85s/it, act=1.118042, epoch=0, fut=0.059399, loss=2.267578, lr=9.64e-05, step=26, tac=1.118164] 29%|██▉       | 27/93 [02:34<02:43,  2.48s/it, act=1.118042, epoch=0, fut=0.059399, loss=2.267578, lr=9.64e-05, step=26, tac=1.118164] 29%|██▉       | 27/93 [02:36<02:43,  2.48s/it, act=1.106079, epoch=0, fut=0.061378, loss=2.243896, lr=9.60e-05, step=27, tac=1.106079] 30%|███       | 28/93 [02:36<02:31,  2.33s/it, act=1.106079, epoch=0, fut=0.061378, loss=2.243896, lr=9.60e-05, step=27, tac=1.106079] 30%|███       | 28/93 [02:40<02:31,  2.33s/it, act=1.121338, epoch=0, fut=0.060768, loss=2.274170, lr=9.57e-05, step=28, tac=1.121338] 31%|███       | 29/93 [02:40<03:01,  2.84s/it, act=1.121338, epoch=0, fut=0.060768, loss=2.274170, lr=9.57e-05, step=28, tac=1.121338] 31%|███       | 29/93 [02:54<03:01,  2.84s/it, act=1.096924, epoch=0, fut=0.059612, loss=2.225342, lr=9.53e-05, step=29, tac=1.096924] 32%|███▏      | 30/93 [02:54<06:21,  6.05s/it, act=1.096924, epoch=0, fut=0.059612, loss=2.225342, lr=9.53e-05, step=29, tac=1.096924] 32%|███▏      | 30/93 [02:58<06:21,  6.05s/it, act=1.117432, epoch=0, fut=0.059082, loss=2.266113, lr=9.49e-05, step=30, tac=1.117432] 33%|███▎      | 31/93 [02:58<05:45,  5.57s/it, act=1.117432, epoch=0, fut=0.059082, loss=2.266113, lr=9.49e-05, step=30, tac=1.117432] 33%|███▎      | 31/93 [03:07<05:45,  5.57s/it, act=1.100098, epoch=0, fut=0.059441, loss=2.231445, lr=9.46e-05, step=31, tac=1.100098] 34%|███▍      | 32/93 [03:07<06:27,  6.36s/it, act=1.100098, epoch=0, fut=0.059441, loss=2.231445, lr=9.46e-05, step=31, tac=1.100098] 34%|███▍      | 32/93 [03:08<06:27,  6.36s/it, act=1.113892, epoch=0, fut=0.057930, loss=2.258789, lr=9.41e-05, step=32, tac=1.113892] 35%|███▌      | 33/93 [03:08<04:59,  4.99s/it, act=1.113892, epoch=0, fut=0.057930, loss=2.258789, lr=9.41e-05, step=32, tac=1.113892] 35%|███▌      | 33/93 [03:10<04:59,  4.99s/it, act=1.119263, epoch=0, fut=0.058090, loss=2.269531, lr=9.37e-05, step=33, tac=1.119263] 37%|███▋      | 34/93 [03:10<03:54,  3.97s/it, act=1.119263, epoch=0, fut=0.058090, loss=2.269531, lr=9.37e-05, step=33, tac=1.119263] 37%|███▋      | 34/93 [03:12<03:54,  3.97s/it, act=1.099121, epoch=0, fut=0.057663, loss=2.229248, lr=9.33e-05, step=34, tac=1.099121] 38%|███▊      | 35/93 [03:12<03:09,  3.28s/it, act=1.099121, epoch=0, fut=0.057663, loss=2.229248, lr=9.33e-05, step=34, tac=1.099121] 38%|███▊      | 35/93 [03:16<03:09,  3.28s/it, act=1.106812, epoch=0, fut=0.057365, loss=2.244141, lr=9.29e-05, step=35, tac=1.106812] 39%|███▊      | 36/93 [03:16<03:30,  3.70s/it, act=1.106812, epoch=0, fut=0.057365, loss=2.244141, lr=9.29e-05, step=35, tac=1.106812] 39%|███▊      | 36/93 [03:18<03:30,  3.70s/it, act=1.111938, epoch=0, fut=0.058601, loss=2.255127, lr=9.24e-05, step=36, tac=1.111938] 40%|███▉      | 37/93 [03:18<02:53,  3.10s/it, act=1.111938, epoch=0, fut=0.058601, loss=2.255127, lr=9.24e-05, step=36, tac=1.111938] 40%|███▉      | 37/93 [03:20<02:53,  3.10s/it, act=1.110229, epoch=0, fut=0.057976, loss=2.251465, lr=9.19e-05, step=37, tac=1.110229] 41%|████      | 38/93 [03:20<02:28,  2.70s/it, act=1.110229, epoch=0, fut=0.057976, loss=2.251465, lr=9.19e-05, step=37, tac=1.110229] 41%|████      | 38/93 [03:29<02:28,  2.70s/it, act=1.109497, epoch=0, fut=0.057724, loss=2.249512, lr=9.15e-05, step=38, tac=1.109497] 42%|████▏     | 39/93 [03:29<04:10,  4.64s/it, act=1.109497, epoch=0, fut=0.057724, loss=2.249512, lr=9.15e-05, step=38, tac=1.109497] 42%|████▏     | 39/93 [03:37<04:10,  4.64s/it, act=1.124268, epoch=0, fut=0.057339, loss=2.279297, lr=9.10e-05, step=39, tac=1.124268] 43%|████▎     | 40/93 [03:37<05:06,  5.78s/it, act=1.124268, epoch=0, fut=0.057339, loss=2.279297, lr=9.10e-05, step=39, tac=1.124268] 43%|████▎     | 40/93 [03:42<05:06,  5.78s/it, act=1.103638, epoch=0, fut=0.055790, loss=2.237549, lr=9.05e-05, step=40, tac=1.103638] 44%|████▍     | 41/93 [03:42<04:41,  5.41s/it, act=1.103638, epoch=0, fut=0.055790, loss=2.237549, lr=9.05e-05, step=40, tac=1.103638] 44%|████▍     | 41/93 [03:43<04:41,  5.41s/it, act=1.118042, epoch=0, fut=0.054424, loss=2.265625, lr=8.99e-05, step=41, tac=1.118042] 45%|████▌     | 42/93 [03:43<03:36,  4.25s/it, act=1.118042, epoch=0, fut=0.054424, loss=2.265625, lr=8.99e-05, step=41, tac=1.118042] 45%|████▌     | 42/93 [03:45<03:36,  4.25s/it, act=1.107544, epoch=0, fut=0.056152, loss=2.244873, lr=8.94e-05, step=42, tac=1.107544] 46%|████▌     | 43/93 [03:45<02:52,  3.45s/it, act=1.107544, epoch=0, fut=0.056152, loss=2.244873, lr=8.94e-05, step=42, tac=1.107544] 46%|████▌     | 43/93 [03:57<02:52,  3.45s/it, act=1.119995, epoch=0, fut=0.055149, loss=2.270752, lr=8.89e-05, step=43, tac=1.119995] 47%|████▋     | 44/93 [03:57<04:57,  6.07s/it, act=1.119995, epoch=0, fut=0.055149, loss=2.270752, lr=8.89e-05, step=43, tac=1.119995] 47%|████▋     | 44/93 [03:59<04:57,  6.07s/it, act=1.096680, epoch=0, fut=0.054836, loss=2.223877, lr=8.83e-05, step=44, tac=1.096680] 48%|████▊     | 45/93 [03:59<03:42,  4.64s/it, act=1.096680, epoch=0, fut=0.054836, loss=2.223877, lr=8.83e-05, step=44, tac=1.096680] 48%|████▊     | 45/93 [04:00<03:42,  4.64s/it, act=1.092773, epoch=0, fut=0.057705, loss=2.216309, lr=8.77e-05, step=45, tac=1.092773] 49%|████▉     | 46/93 [04:00<02:52,  3.67s/it, act=1.092773, epoch=0, fut=0.057705, loss=2.216309, lr=8.77e-05, step=45, tac=1.092773] 49%|████▉     | 46/93 [04:02<02:52,  3.67s/it, act=1.094238, epoch=0, fut=0.055187, loss=2.218994, lr=8.72e-05, step=46, tac=1.094238] 51%|█████     | 47/93 [04:02<02:21,  3.08s/it, act=1.094238, epoch=0, fut=0.055187, loss=2.218994, lr=8.72e-05, step=46, tac=1.094238] 51%|█████     | 47/93 [04:03<02:21,  3.08s/it, act=1.058777, epoch=0, fut=0.054207, loss=2.146606, lr=8.66e-05, step=47, tac=1.058777] 52%|█████▏    | 48/93 [04:03<02:00,  2.69s/it, act=1.058777, epoch=0, fut=0.054207, loss=2.146606, lr=8.66e-05, step=47, tac=1.058777] 52%|█████▏    | 48/93 [04:07<02:00,  2.69s/it, act=1.090210, epoch=0, fut=0.055901, loss=2.211182, lr=8.60e-05, step=48, tac=1.090210] 53%|█████▎    | 49/93 [04:07<02:13,  3.03s/it, act=1.090210, epoch=0, fut=0.055901, loss=2.211182, lr=8.60e-05, step=48, tac=1.090210] 53%|█████▎    | 49/93 [04:13<02:13,  3.03s/it, act=1.083984, epoch=0, fut=0.056854, loss=2.197998, lr=8.54e-05, step=49, tac=1.083984] 54%|█████▍    | 50/93 [04:13<02:47,  3.89s/it, act=1.083984, epoch=0, fut=0.056854, loss=2.197998, lr=8.54e-05, step=49, tac=1.083984] 54%|█████▍    | 50/93 [04:20<02:47,  3.89s/it, act=1.086304, epoch=0, fut=0.057457, loss=2.203613, lr=8.47e-05, step=50, tac=1.086304] 55%|█████▍    | 51/93 [04:20<03:21,  4.80s/it, act=1.086304, epoch=0, fut=0.057457, loss=2.203613, lr=8.47e-05, step=50, tac=1.086304] 55%|█████▍    | 51/93 [04:21<03:21,  4.80s/it, act=1.110107, epoch=0, fut=0.054531, loss=2.249756, lr=8.41e-05, step=51, tac=1.110107] 56%|█████▌    | 52/93 [04:21<02:35,  3.79s/it, act=1.110107, epoch=0, fut=0.054531, loss=2.249756, lr=8.41e-05, step=51, tac=1.110107] 56%|█████▌    | 52/93 [04:33<02:35,  3.79s/it, act=1.072632, epoch=0, fut=0.056271, loss=2.176025, lr=8.35e-05, step=52, tac=1.072632] 57%|█████▋    | 53/93 [04:33<04:08,  6.22s/it, act=1.072632, epoch=0, fut=0.056271, loss=2.176025, lr=8.35e-05, step=52, tac=1.072632] 57%|█████▋    | 53/93 [04:35<04:08,  6.22s/it, act=1.103027, epoch=0, fut=0.056046, loss=2.236084, lr=8.28e-05, step=53, tac=1.103027] 58%|█████▊    | 54/93 [04:35<03:05,  4.77s/it, act=1.103027, epoch=0, fut=0.056046, loss=2.236084, lr=8.28e-05, step=53, tac=1.103027] 58%|█████▊    | 54/93 [04:36<03:05,  4.77s/it, act=1.100098, epoch=0, fut=0.053982, loss=2.229004, lr=8.21e-05, step=54, tac=1.100098] 59%|█████▉    | 55/93 [04:36<02:25,  3.83s/it, act=1.100098, epoch=0, fut=0.053982, loss=2.229004, lr=8.21e-05, step=54, tac=1.100098] 59%|█████▉    | 55/93 [04:40<02:25,  3.83s/it, act=1.084229, epoch=0, fut=0.056423, loss=2.199463, lr=8.15e-05, step=55, tac=1.084229] 60%|██████    | 56/93 [04:40<02:16,  3.68s/it, act=1.084229, epoch=0, fut=0.056423, loss=2.199463, lr=8.15e-05, step=55, tac=1.084229] 60%|██████    | 56/93 [04:56<02:16,  3.68s/it, act=1.076660, epoch=0, fut=0.056080, loss=2.183594, lr=8.08e-05, step=56, tac=1.076660] 61%|██████▏   | 57/93 [04:56<04:22,  7.30s/it, act=1.076660, epoch=0, fut=0.056080, loss=2.183594, lr=8.08e-05, step=56, tac=1.076660] 61%|██████▏   | 57/93 [04:57<04:22,  7.30s/it, act=1.088623, epoch=0, fut=0.055565, loss=2.207764, lr=8.01e-05, step=57, tac=1.088623] 62%|██████▏   | 58/93 [04:57<03:14,  5.55s/it, act=1.088623, epoch=0, fut=0.055565, loss=2.207764, lr=8.01e-05, step=57, tac=1.088623] 62%|██████▏   | 58/93 [04:58<03:14,  5.55s/it, act=1.091919, epoch=0, fut=0.054443, loss=2.214355, lr=7.94e-05, step=58, tac=1.092041] 63%|██████▎   | 59/93 [04:58<02:27,  4.34s/it, act=1.091919, epoch=0, fut=0.054443, loss=2.214355, lr=7.94e-05, step=58, tac=1.092041] 63%|██████▎   | 59/93 [05:00<02:27,  4.34s/it, act=1.075928, epoch=0, fut=0.053440, loss=2.181152, lr=7.87e-05, step=59, tac=1.075928] 65%|██████▍   | 60/93 [05:00<01:58,  3.60s/it, act=1.075928, epoch=0, fut=0.053440, loss=2.181152, lr=7.87e-05, step=59, tac=1.075928] 65%|██████▍   | 60/93 [05:02<01:58,  3.60s/it, act=1.064514, epoch=0, fut=0.052780, loss=2.157227, lr=7.80e-05, step=60, tac=1.064514] 66%|██████▌   | 61/93 [05:02<01:39,  3.12s/it, act=1.064514, epoch=0, fut=0.052780, loss=2.157227, lr=7.80e-05, step=60, tac=1.064514] 66%|██████▌   | 61/93 [05:04<01:39,  3.12s/it, act=1.081665, epoch=0, fut=0.051689, loss=2.191162, lr=7.72e-05, step=61, tac=1.081665] 67%|██████▋   | 62/93 [05:04<01:23,  2.70s/it, act=1.081665, epoch=0, fut=0.051689, loss=2.191162, lr=7.72e-05, step=61, tac=1.081665] 67%|██████▋   | 62/93 [05:06<01:23,  2.70s/it, act=1.054260, epoch=0, fut=0.052547, loss=2.136475, lr=7.65e-05, step=62, tac=1.054260] 68%|██████▊   | 63/93 [05:06<01:13,  2.44s/it, act=1.054260, epoch=0, fut=0.052547, loss=2.136475, lr=7.65e-05, step=62, tac=1.054260] 68%|██████▊   | 63/93 [05:08<01:13,  2.44s/it, act=1.084839, epoch=0, fut=0.052582, loss=2.197266, lr=7.58e-05, step=63, tac=1.084839] 69%|██████▉   | 64/93 [05:08<01:06,  2.29s/it, act=1.084839, epoch=0, fut=0.052582, loss=2.197266, lr=7.58e-05, step=63, tac=1.084839] 69%|██████▉   | 64/93 [05:14<01:06,  2.29s/it, act=1.069885, epoch=0, fut=0.052536, loss=2.167480, lr=7.50e-05, step=64, tac=1.069885] 70%|██████▉   | 65/93 [05:14<01:39,  3.56s/it, act=1.069885, epoch=0, fut=0.052536, loss=2.167480, lr=7.50e-05, step=64, tac=1.069885] 70%|██████▉   | 65/93 [05:29<01:39,  3.56s/it, act=1.119629, epoch=0, fut=0.052868, loss=2.267578, lr=7.42e-05, step=65, tac=1.119629] 71%|███████   | 66/93 [05:29<03:06,  6.90s/it, act=1.119629, epoch=0, fut=0.052868, loss=2.267578, lr=7.42e-05, step=65, tac=1.119629] 71%|███████   | 66/93 [05:31<03:06,  6.90s/it, act=1.109131, epoch=0, fut=0.051754, loss=2.245361, lr=7.35e-05, step=66, tac=1.109131] 72%|███████▏  | 67/93 [05:31<02:17,  5.27s/it, act=1.109131, epoch=0, fut=0.051754, loss=2.245361, lr=7.35e-05, step=66, tac=1.109131] 72%|███████▏  | 67/93 [05:32<02:17,  5.27s/it, act=1.097778, epoch=0, fut=0.050453, loss=2.221924, lr=7.27e-05, step=67, tac=1.097778] 73%|███████▎  | 68/93 [05:32<01:44,  4.20s/it, act=1.097778, epoch=0, fut=0.050453, loss=2.221924, lr=7.27e-05, step=67, tac=1.097778] 73%|███████▎  | 68/93 [05:34<01:44,  4.20s/it, act=1.100830, epoch=0, fut=0.052067, loss=2.229004, lr=7.19e-05, step=68, tac=1.100830] 74%|███████▍  | 69/93 [05:34<01:21,  3.40s/it, act=1.100830, epoch=0, fut=0.052067, loss=2.229004, lr=7.19e-05, step=68, tac=1.100830] 74%|███████▍  | 69/93 [05:43<01:21,  3.40s/it, act=1.079834, epoch=0, fut=0.050659, loss=2.185547, lr=7.11e-05, step=69, tac=1.079834] 75%|███████▌  | 70/93 [05:43<01:56,  5.07s/it, act=1.079834, epoch=0, fut=0.050659, loss=2.185547, lr=7.11e-05, step=69, tac=1.079834] 75%|███████▌  | 70/93 [05:44<01:56,  5.07s/it, act=1.058472, epoch=0, fut=0.049400, loss=2.140991, lr=7.03e-05, step=70, tac=1.058472] 76%|███████▋  | 71/93 [05:44<01:28,  4.01s/it, act=1.058472, epoch=0, fut=0.049400, loss=2.140991, lr=7.03e-05, step=70, tac=1.058472] 76%|███████▋  | 71/93 [05:46<01:28,  4.01s/it, act=1.086182, epoch=0, fut=0.050194, loss=2.197021, lr=6.95e-05, step=71, tac=1.086182] 77%|███████▋  | 72/93 [05:46<01:08,  3.26s/it, act=1.086182, epoch=0, fut=0.050194, loss=2.197021, lr=6.95e-05, step=71, tac=1.086182] 77%|███████▋  | 72/93 [05:48<01:08,  3.26s/it, act=1.054871, epoch=0, fut=0.050686, loss=2.134644, lr=6.87e-05, step=72, tac=1.054871] 78%|███████▊  | 73/93 [05:48<00:59,  2.98s/it, act=1.054871, epoch=0, fut=0.050686, loss=2.134644, lr=6.87e-05, step=72, tac=1.054871] 78%|███████▊  | 73/93 [05:57<00:59,  2.98s/it, act=1.065918, epoch=0, fut=0.048512, loss=2.156250, lr=6.79e-05, step=73, tac=1.065918] 80%|███████▉  | 74/93 [05:57<01:32,  4.89s/it, act=1.065918, epoch=0, fut=0.048512, loss=2.156250, lr=6.79e-05, step=73, tac=1.065918] 80%|███████▉  | 74/93 [06:04<01:32,  4.89s/it, act=1.059509, epoch=0, fut=0.048653, loss=2.143799, lr=6.71e-05, step=74, tac=1.059509] 81%|████████  | 75/93 [06:04<01:36,  5.38s/it, act=1.059509, epoch=0, fut=0.048653, loss=2.143799, lr=6.71e-05, step=74, tac=1.059509] 81%|████████  | 75/93 [06:08<01:36,  5.38s/it, act=1.081909, epoch=0, fut=0.048378, loss=2.187744, lr=6.63e-05, step=75, tac=1.081909] 82%|████████▏ | 76/93 [06:08<01:25,  5.06s/it, act=1.081909, epoch=0, fut=0.048378, loss=2.187744, lr=6.63e-05, step=75, tac=1.081909] 82%|████████▏ | 76/93 [06:10<01:25,  5.06s/it, act=1.078979, epoch=0, fut=0.049122, loss=2.183350, lr=6.55e-05, step=76, tac=1.078979] 83%|████████▎ | 77/93 [06:10<01:03,  3.95s/it, act=1.078979, epoch=0, fut=0.049122, loss=2.183350, lr=6.55e-05, step=76, tac=1.078979] 83%|████████▎ | 77/93 [06:19<01:03,  3.95s/it, act=1.068604, epoch=0, fut=0.048111, loss=2.161133, lr=6.46e-05, step=77, tac=1.068604] 84%|████████▍ | 78/93 [06:19<01:23,  5.56s/it, act=1.068604, epoch=0, fut=0.048111, loss=2.161133, lr=6.46e-05, step=77, tac=1.068604] 84%|████████▍ | 78/93 [06:22<01:23,  5.56s/it, act=1.055298, epoch=0, fut=0.048626, loss=2.134521, lr=6.38e-05, step=78, tac=1.055298] 85%|████████▍ | 79/93 [06:22<01:05,  4.68s/it, act=1.055298, epoch=0, fut=0.048626, loss=2.134521, lr=6.38e-05, step=78, tac=1.055298] 85%|████████▍ | 79/93 [06:23<01:05,  4.68s/it, act=1.064880, epoch=0, fut=0.045818, loss=2.149902, lr=6.29e-05, step=79, tac=1.064880] 86%|████████▌ | 80/93 [06:23<00:48,  3.72s/it, act=1.064880, epoch=0, fut=0.045818, loss=2.149902, lr=6.29e-05, step=79, tac=1.064880] 86%|████████▌ | 80/93 [06:25<00:48,  3.72s/it, act=1.060730, epoch=0, fut=0.046703, loss=2.143555, lr=6.21e-05, step=80, tac=1.060730] 87%|████████▋ | 81/93 [06:25<00:36,  3.08s/it, act=1.060730, epoch=0, fut=0.046703, loss=2.143555, lr=6.21e-05, step=80, tac=1.060730] 87%|████████▋ | 81/93 [06:28<00:36,  3.08s/it, act=1.055847, epoch=0, fut=0.045170, loss=2.133545, lr=6.12e-05, step=81, tac=1.055847] 88%|████████▊ | 82/93 [06:28<00:33,  3.02s/it, act=1.055847, epoch=0, fut=0.045170, loss=2.133545, lr=6.12e-05, step=81, tac=1.055847] 88%|████████▊ | 82/93 [06:42<00:33,  3.02s/it, act=1.078369, epoch=0, fut=0.045540, loss=2.178955, lr=6.04e-05, step=82, tac=1.078369] 89%|████████▉ | 83/93 [06:42<01:04,  6.43s/it, act=1.078369, epoch=0, fut=0.045540, loss=2.178955, lr=6.04e-05, step=82, tac=1.078369] 89%|████████▉ | 83/93 [06:43<01:04,  6.43s/it, act=1.055908, epoch=0, fut=0.045719, loss=2.133423, lr=5.95e-05, step=83, tac=1.055908] 90%|█████████ | 84/93 [06:43<00:44,  4.97s/it, act=1.055908, epoch=0, fut=0.045719, loss=2.133423, lr=5.95e-05, step=83, tac=1.055908] 90%|█████████ | 84/93 [06:45<00:44,  4.97s/it, act=1.073425, epoch=0, fut=0.046543, loss=2.169922, lr=5.87e-05, step=84, tac=1.073425] 91%|█████████▏| 85/93 [06:45<00:31,  3.95s/it, act=1.073425, epoch=0, fut=0.046543, loss=2.169922, lr=5.87e-05, step=84, tac=1.073425] 91%|█████████▏| 85/93 [06:46<00:31,  3.95s/it, act=1.066406, epoch=0, fut=0.044189, loss=2.153687, lr=5.78e-05, step=85, tac=1.066406] 92%|█████████▏| 86/93 [06:46<00:21,  3.14s/it, act=1.066406, epoch=0, fut=0.044189, loss=2.153687, lr=5.78e-05, step=85, tac=1.066406] 92%|█████████▏| 86/93 [06:51<00:21,  3.14s/it, act=1.070190, epoch=0, fut=0.044924, loss=2.161865, lr=5.70e-05, step=86, tac=1.070190] 94%|█████████▎| 87/93 [06:51<00:21,  3.51s/it, act=1.070190, epoch=0, fut=0.044924, loss=2.161865, lr=5.70e-05, step=86, tac=1.070190] 94%|█████████▎| 87/93 [06:52<00:21,  3.51s/it, act=1.082886, epoch=0, fut=0.043247, loss=2.185547, lr=5.61e-05, step=87, tac=1.082886] 95%|█████████▍| 88/93 [06:52<00:14,  2.89s/it, act=1.082886, epoch=0, fut=0.043247, loss=2.185547, lr=5.61e-05, step=87, tac=1.082886] 95%|█████████▍| 88/93 [06:53<00:14,  2.89s/it, act=1.051697, epoch=0, fut=0.044504, loss=2.123901, lr=5.52e-05, step=88, tac=1.051697] 96%|█████████▌| 89/93 [06:53<00:09,  2.44s/it, act=1.051697, epoch=0, fut=0.044504, loss=2.123901, lr=5.52e-05, step=88, tac=1.051697] 96%|█████████▌| 89/93 [06:55<00:09,  2.44s/it, act=1.069214, epoch=0, fut=0.042900, loss=2.157959, lr=5.44e-05, step=89, tac=1.069214] 97%|█████████▋| 90/93 [06:55<00:06,  2.13s/it, act=1.069214, epoch=0, fut=0.042900, loss=2.157959, lr=5.44e-05, step=89, tac=1.069214] 97%|█████████▋| 90/93 [06:56<00:06,  2.13s/it, act=1.058228, epoch=0, fut=0.043228, loss=2.136475, lr=5.35e-05, step=90, tac=1.058228] 98%|█████████▊| 91/93 [06:56<00:03,  1.88s/it, act=1.058228, epoch=0, fut=0.043228, loss=2.136475, lr=5.35e-05, step=90, tac=1.058228] 98%|█████████▊| 91/93 [07:00<00:03,  1.88s/it, act=1.073303, epoch=0, fut=0.042383, loss=2.166016, lr=5.26e-05, step=91, tac=1.073303] 99%|█████████▉| 92/93 [07:00<00:02,  2.54s/it, act=1.073303, epoch=0, fut=0.042383, loss=2.166016, lr=5.26e-05, step=91, tac=1.073303] 99%|█████████▉| 92/93 [07:04<00:02,  2.54s/it, act=1.076294, epoch=0, fut=0.040485, loss=2.170166, lr=5.17e-05, step=92, tac=1.076294]100%|██████████| 93/93 [07:04<00:00,  2.87s/it, act=1.076294, epoch=0, fut=0.040485, loss=2.170166, lr=5.17e-05, step=92, tac=1.076294]100%|██████████| 93/93 [07:04<00:00,  4.56s/it, act=1.076294, epoch=0, fut=0.040485, loss=2.170166, lr=5.17e-05, step=92, tac=1.076294]
-INFO:__main__:Checkpoint 0-93 saved.
-INFO:__main__:Checkpoint 0-93 saved.
-INFO:__main__:Checkpoint 0-93 saved.
-INFO:__main__:Checkpoint 0-93 saved.
-INFO:__main__:Checkpoint 0-93 saved.
-INFO:__main__:Checkpoint 0-93 saved.
-INFO:__main__:Checkpoint 0-93 saved.
-INFO:__main__:Checkpoint 0-93 saved.
-  0%|          | 0/93 [00:00<?, ?it/s]  0%|          | 0/93 [00:46<?, ?it/s, act=1.076294, epoch=1, fut=0.041187, loss=2.170166, lr=5.09e-05, step=93, tac=1.076294]  1%|          | 1/93 [00:46<1:12:03, 47.00s/it, act=1.076294, epoch=1, fut=0.041187, loss=2.170166, lr=5.09e-05, step=93, tac=1.076294]  1%|          | 1/93 [00:48<1:12:03, 47.00s/it, act=1.045105, epoch=1, fut=0.044003, loss=2.110352, lr=5.00e-05, step=94, tac=1.045105]  2%|▏         | 2/93 [00:48<30:29, 20.10s/it, act=1.045105, epoch=1, fut=0.044003, loss=2.110352, lr=5.00e-05, step=94, tac=1.045105]    2%|▏         | 2/93 [00:49<30:29, 20.10s/it, act=1.050537, epoch=1, fut=0.041615, loss=2.120239, lr=4.91e-05, step=95, tac=1.050537]  3%|▎         | 3/93 [00:49<17:18, 11.54s/it, act=1.050537, epoch=1, fut=0.041615, loss=2.120239, lr=4.91e-05, step=95, tac=1.050537]  3%|▎         | 3/93 [00:55<17:18, 11.54s/it, act=1.047974, epoch=1, fut=0.041418, loss=2.115479, lr=4.83e-05, step=96, tac=1.047974]  4%|▍         | 4/93 [00:55<13:49,  9.32s/it, act=1.047974, epoch=1, fut=0.041418, loss=2.115479, lr=4.83e-05, step=96, tac=1.047974]  4%|▍         | 4/93 [00:57<13:49,  9.32s/it, act=1.063416, epoch=1, fut=0.041080, loss=2.145020, lr=4.74e-05, step=97, tac=1.063416]  5%|▌         | 5/93 [00:57<09:30,  6.49s/it, act=1.063416, epoch=1, fut=0.041080, loss=2.145020, lr=4.74e-05, step=97, tac=1.063416]  5%|▌         | 5/93 [00:58<09:30,  6.49s/it, act=1.058838, epoch=1, fut=0.041903, loss=2.137207, lr=4.65e-05, step=98, tac=1.058838]  6%|▋         | 6/93 [00:58<07:03,  4.87s/it, act=1.058838, epoch=1, fut=0.041903, loss=2.137207, lr=4.65e-05, step=98, tac=1.058838]  6%|▋         | 6/93 [01:00<07:03,  4.87s/it, act=1.067810, epoch=1, fut=0.041094, loss=2.153809, lr=4.56e-05, step=99, tac=1.067810]  8%|▊         | 7/93 [01:00<05:26,  3.80s/it, act=1.067810, epoch=1, fut=0.041094, loss=2.153809, lr=4.56e-05, step=99, tac=1.067810]  8%|▊         | 7/93 [01:04<05:26,  3.80s/it, act=1.072327, epoch=1, fut=0.041067, loss=2.163574, lr=4.48e-05, step=100, tac=1.072327]  9%|▊         | 8/93 [01:04<05:20,  3.77s/it, act=1.072327, epoch=1, fut=0.041067, loss=2.163574, lr=4.48e-05, step=100, tac=1.072327]  9%|▊         | 8/93 [01:05<05:20,  3.77s/it, act=1.059509, epoch=1, fut=0.040012, loss=2.136719, lr=4.39e-05, step=101, tac=1.059509] 10%|▉         | 9/93 [01:05<04:22,  3.12s/it, act=1.059509, epoch=1, fut=0.040012, loss=2.136719, lr=4.39e-05, step=101, tac=1.059509] 10%|▉         | 9/93 [01:20<04:22,  3.12s/it, act=1.057983, epoch=1, fut=0.040369, loss=2.134033, lr=4.30e-05, step=102, tac=1.057983] 11%|█         | 10/93 [01:20<09:28,  6.85s/it, act=1.057983, epoch=1, fut=0.040369, loss=2.134033, lr=4.30e-05, step=102, tac=1.057983] 11%|█         | 10/93 [01:22<09:28,  6.85s/it, act=1.052185, epoch=1, fut=0.040731, loss=2.122192, lr=4.22e-05, step=103, tac=1.052185] 12%|█▏        | 11/93 [01:22<07:19,  5.36s/it, act=1.052185, epoch=1, fut=0.040731, loss=2.122192, lr=4.22e-05, step=103, tac=1.052185] 12%|█▏        | 11/93 [01:24<07:19,  5.36s/it, act=1.053467, epoch=1, fut=0.039419, loss=2.124634, lr=4.13e-05, step=104, tac=1.053467] 13%|█▎        | 12/93 [01:24<05:51,  4.34s/it, act=1.053467, epoch=1, fut=0.039419, loss=2.124634, lr=4.13e-05, step=104, tac=1.053467] 13%|█▎        | 12/93 [01:28<05:51,  4.34s/it, act=1.067749, epoch=1, fut=0.040007, loss=2.154419, lr=4.05e-05, step=105, tac=1.067749] 14%|█▍        | 13/93 [01:28<05:24,  4.06s/it, act=1.067749, epoch=1, fut=0.040007, loss=2.154419, lr=4.05e-05, step=105, tac=1.067749] 14%|█▍        | 13/93 [01:32<05:24,  4.06s/it, act=1.061218, epoch=1, fut=0.041059, loss=2.141357, lr=3.96e-05, step=106, tac=1.061218] 15%|█▌        | 14/93 [01:32<05:29,  4.17s/it, act=1.061218, epoch=1, fut=0.041059, loss=2.141357, lr=3.96e-05, step=106, tac=1.061218] 15%|█▌        | 14/93 [01:34<05:29,  4.17s/it, act=1.046631, epoch=1, fut=0.038540, loss=2.110840, lr=3.88e-05, step=107, tac=1.046631] 16%|█▌        | 15/93 [01:34<04:32,  3.49s/it, act=1.046631, epoch=1, fut=0.038540, loss=2.110840, lr=3.88e-05, step=107, tac=1.046631] 16%|█▌        | 15/93 [01:36<04:32,  3.49s/it, act=1.032837, epoch=1, fut=0.038452, loss=2.083862, lr=3.79e-05, step=108, tac=1.032837] 17%|█▋        | 16/93 [01:36<03:50,  3.00s/it, act=1.032837, epoch=1, fut=0.038452, loss=2.083862, lr=3.79e-05, step=108, tac=1.032837] 17%|█▋        | 16/93 [01:47<03:50,  3.00s/it, act=1.055237, epoch=1, fut=0.040209, loss=2.129150, lr=3.71e-05, step=109, tac=1.055237] 18%|█▊        | 17/93 [01:47<06:49,  5.39s/it, act=1.055237, epoch=1, fut=0.040209, loss=2.129150, lr=3.71e-05, step=109, tac=1.055237] 18%|█▊        | 17/93 [01:50<06:49,  5.39s/it, act=1.053772, epoch=1, fut=0.039179, loss=2.125977, lr=3.62e-05, step=110, tac=1.053772] 19%|█▉        | 18/93 [01:50<05:57,  4.77s/it, act=1.053772, epoch=1, fut=0.039179, loss=2.125977, lr=3.62e-05, step=110, tac=1.053772] 19%|█▉        | 18/93 [01:57<05:57,  4.77s/it, act=1.056030, epoch=1, fut=0.039381, loss=2.130005, lr=3.54e-05, step=111, tac=1.056030] 20%|██        | 19/93 [01:57<06:37,  5.37s/it, act=1.056030, epoch=1, fut=0.039381, loss=2.130005, lr=3.54e-05, step=111, tac=1.056030] 20%|██        | 19/93 [01:59<06:37,  5.37s/it, act=1.059692, epoch=1, fut=0.038950, loss=2.137939, lr=3.45e-05, step=112, tac=1.059692] 22%|██▏       | 20/93 [01:59<05:08,  4.22s/it, act=1.059692, epoch=1, fut=0.038950, loss=2.137939, lr=3.45e-05, step=112, tac=1.059692] 22%|██▏       | 20/93 [02:02<05:08,  4.22s/it, act=1.062561, epoch=1, fut=0.039268, loss=2.143311, lr=3.37e-05, step=113, tac=1.062561] 23%|██▎       | 21/93 [02:02<04:52,  4.06s/it, act=1.062561, epoch=1, fut=0.039268, loss=2.143311, lr=3.37e-05, step=113, tac=1.062561] 23%|██▎       | 21/93 [02:51<04:52,  4.06s/it, act=1.054199, epoch=1, fut=0.038357, loss=2.126709, lr=3.29e-05, step=114, tac=1.054199] 24%|██▎       | 22/93 [02:51<20:45, 17.54s/it, act=1.054199, epoch=1, fut=0.038357, loss=2.126709, lr=3.29e-05, step=114, tac=1.054199]

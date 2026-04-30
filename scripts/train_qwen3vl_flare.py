@@ -361,6 +361,15 @@ class SftDataset(Dataset):
 
         state_raw = torch.stack(state_raw_list) if state_raw_list else None
 
+        # Paradigm C: in post-training the JSON records don't expose frame
+        # indices for delayed tactile lookup, so we reuse the current tactile
+        # as the "delayed" input.  The asymmetry between midtrain (variable
+        # delay_k) and post-training (delay_k=0) is intentional — midtrain
+        # teaches the model to be robust to delays; post-training fine-tunes
+        # to the small in-lab set.
+        time_r = self._beta_sample(B, device_cpu)
+        eps_r  = torch.randn_like(norm_actions)
+
         return {
             "input_ids": input_ids,
             "attention_mask": attention_mask,
@@ -370,8 +379,13 @@ class SftDataset(Dataset):
             "noisy_actions": x_t,
             "target": u_t,
             "timesteps": time,
+            "norm_actions": norm_actions,            # for L_refine residual target
             "tactile_f6s": norm_tacf6,
             "tactile_deforms": deforms_tensor,
+            "tactile_f6s_delayed": norm_tacf6,       # same as current (delay_k=0)
+            "tactile_deforms_delayed": deforms_tensor,
+            "time_r": time_r,
+            "eps_r": eps_r,
             "state_raw": state_raw,
             "flare_pixel_values": flare_pixel_values, # [B*S patches, C] or None (S = n_flare_steps)
             "flare_grid_thw": flare_grid_thw, # [B*S, 3] or None
@@ -524,7 +538,61 @@ def run_validation(model, val_dataloader, accelerator, args,
         n_fast = fast_embeds.shape[1]
         has_any_tac = bool(args.use_tactile_vec or args.use_tactile_deform)
 
-        if is_stage1 or not has_any_tac:
+        if args.use_tactile_refine_flow and has_any_tac:
+            full_embeds = torch.cat([
+                slow_embeds_ext, fast_embeds, state_embeds, timesteps, noisy_actions,
+            ], dim=1)
+            L_total = full_embeds.shape[1]
+            outputs = model.model(
+                inputs_embeds=full_embeds, position_ids=pos_ids,
+                attention_mask=batch["attention_mask"], use_cache=False,
+                output_hidden_states=use_flare,
+                latent_indexes=torch.arange(0, L_latent, device=full_embeds.device),
+                action_indexes=torch.arange(L_latent, L_total, device=full_embeds.device),
+                tactile_indexes=torch.arange(0, 0, device=full_embeds.device))
+            hidden = outputs.last_hidden_state
+            act_start = L_latent + n_fast + n_state + 1
+            v_act = raw_model.final_layer(hidden[:, act_start:act_start + chunk, :])
+            loss_act = nn.MSELoss()(v_act, target)
+
+            fe = fast_embeds if n_fast > 0 else None
+            se = state_embeds if n_state > 0 else None
+            ahat_noise = torch.randn_like(batch["noisy_actions"])
+            a_hat, cached_kv, n_action_in_cache = (
+                raw_model.forward_flow_action_only(
+                    inputs_embeds=slow_embeds_ext,
+                    position_ids=pos_ids,
+                    noise=ahat_noise,
+                    attention_mask=batch["attention_mask"],
+                    state_embeds=se,
+                    fast_embeds=fe,
+                    num_steps=args.action_flow_train_steps,
+                    refresh_clean_kv=True,
+                ))
+            norm_actions_gt = batch["norm_actions"].to(slow_embeds.dtype)
+            a_hat_for_residual = a_hat
+            if args.tactile_residual_jitter > 0:
+                a_hat_for_residual = a_hat_for_residual + (
+                    args.tactile_residual_jitter
+                    * torch.randn_like(a_hat_for_residual))
+            r_target = norm_actions_gt - a_hat_for_residual
+            eps_r = batch["eps_r"].to(slow_embeds.dtype)
+            tau_r = batch["time_r"].to(slow_embeds.dtype)
+            tau_r_b = tau_r[:, None, None]
+            r_tau = (1 - tau_r_b) * r_target + tau_r_b * eps_r
+            v_target_r = eps_r - r_target
+            v_pred_r = raw_model.tactile_residual_train_step(
+                cached_kv=cached_kv,
+                latent_position_ids=pos_ids,
+                n_action_in_cache=n_action_in_cache,
+                base_chunk=a_hat_for_residual,
+                tactile_f6=batch.get("tactile_f6s_delayed"),
+                tactile_deform=batch.get("tactile_deforms_delayed"),
+                r_tau=r_tau,
+                tau=tau_r,
+            )
+            loss_tac = nn.MSELoss()(v_pred_r, v_target_r)
+        elif is_stage1 or not has_any_tac:
             full_embeds = torch.cat([
                 slow_embeds_ext, fast_embeds, state_embeds, timesteps, noisy_actions,
             ], dim=1)
@@ -636,7 +704,7 @@ def train(args):
     )
     if args.use_tactile_deform:
         model.load_deform_encoder_weights(args.deform_encoder_ckpt)
-    model.initialize_vla_weights()
+    model.initialize_vla_weights(skip_tactile_zero_init=bool(args.use_tactile_refine_flow))
     if args.use_flare:
         accelerator.print(
             f"Flare alignment: {args.n_flare_steps} steps × {args.n_flare_tokens_per_frame} tok/frame "
@@ -645,7 +713,10 @@ def train(args):
 
     is_stage1 = (args.training_stage == 1)
     has_any_tactile = bool(args.use_tactile_vec or args.use_tactile_deform)
-    freeze_tactile = is_stage1 or (not has_any_tactile)
+    if args.use_tactile_refine_flow:
+        freeze_tactile = not has_any_tactile
+    else:
+        freeze_tactile = is_stage1 or (not has_any_tactile)
 
     if not args.resume_checkpoint:
         named_params = dict(model.named_parameters())
@@ -685,9 +756,10 @@ def train(args):
                     nn.init.xavier_uniform_(param)
                 elif param.ndim == 1:
                     nn.init.zeros_(param)
-        nn.init.zeros_(model.final_layer_tactile.mlp.fc2.weight)
-        if model.final_layer_tactile.mlp.fc2.bias is not None:
-            nn.init.zeros_(model.final_layer_tactile.mlp.fc2.bias)
+        if not args.use_tactile_refine_flow:
+            nn.init.zeros_(model.final_layer_tactile.mlp.fc2.weight)
+            if model.final_layer_tactile.mlp.fc2.bias is not None:
+                nn.init.zeros_(model.final_layer_tactile.mlp.fc2.bias)
         accelerator.print("Tactile expert re-initialized (resume_source=pretrain or no resume).")
     elif resumed_tactile:
         accelerator.print("Tactile expert weights kept from resumed midtrain checkpoint.")
@@ -832,8 +904,83 @@ def train(args):
             chunk = args.action_chunk
             target = batch["target"].to(slow_embeds.dtype)
             n_fast = fast_embeds.shape[1]
+            r_target_norm = None  # set only when Paradigm C ran with tactile
 
-            if is_stage1: # pretrain
+            if args.use_tactile_refine_flow:  # Paradigm C: action-only flow + tactile residual flow
+                # 1) L_flow — action expert single-step (tactile-blind)
+                full_embeds = torch.cat([
+                    slow_embeds_ext,
+                    fast_embeds, state_embeds, timesteps, noisy_actions,
+                ], dim=1)
+                L_total = full_embeds.shape[1]
+                outputs = model.model(
+                    inputs_embeds=full_embeds,
+                    position_ids=pos_ids,
+                    attention_mask=batch["attention_mask"],
+                    use_cache=False,
+                    output_hidden_states=use_flare,
+                    latent_indexes=torch.arange(0, L_latent, device=full_embeds.device),
+                    action_indexes=torch.arange(L_latent, L_total, device=full_embeds.device),
+                    tactile_indexes=torch.arange(0, 0, device=full_embeds.device),
+                )
+                hidden = outputs.last_hidden_state
+                act_pred_start = L_latent + n_fast + n_state + 1
+                v_act = raw_model.final_layer(
+                    hidden[:, act_pred_start: act_pred_start + chunk, :])
+                loss_act = nn.MSELoss()(v_act, target)
+
+                has_any_tac = bool(args.use_tactile_vec or args.use_tactile_deform)
+                if has_any_tac:
+                    fe = fast_embeds if n_fast > 0 else None
+                    se = state_embeds if n_state > 0 else None
+                    ahat_noise = torch.randn_like(batch["noisy_actions"])
+                    with torch.no_grad():
+                        a_hat, cached_kv, n_action_in_cache = (
+                            raw_model.forward_flow_action_only(
+                                inputs_embeds=slow_embeds_ext,
+                                position_ids=pos_ids,
+                                noise=ahat_noise,
+                                attention_mask=batch["attention_mask"],
+                                state_embeds=se,
+                                fast_embeds=fe,
+                                num_steps=args.action_flow_train_steps,
+                                refresh_clean_kv=True,
+                            ))
+
+                    norm_actions_gt = batch["norm_actions"].to(slow_embeds.dtype)
+                    # Optional jitter on Â: prevents r_target from collapsing
+                    # to 0 when the action expert overfits the small in-lab
+                    # dataset.  See refine/r_target_norm wandb metric.
+                    a_hat_for_residual = a_hat.detach()
+                    if args.tactile_residual_jitter > 0:
+                        a_hat_for_residual = a_hat_for_residual + (
+                            args.tactile_residual_jitter
+                            * torch.randn_like(a_hat_for_residual))
+                    r_target = norm_actions_gt - a_hat_for_residual
+                    eps_r    = batch["eps_r"].to(slow_embeds.dtype)
+                    tau_r    = batch["time_r"].to(slow_embeds.dtype)
+                    tau_r_b  = tau_r[:, None, None]
+                    r_tau    = (1 - tau_r_b) * r_target + tau_r_b * eps_r
+                    v_target_r = eps_r - r_target
+
+                    loss_tac = nn.MSELoss()(
+                        raw_model.tactile_residual_train_step(
+                            cached_kv=cached_kv,
+                            latent_position_ids=pos_ids,
+                            n_action_in_cache=n_action_in_cache,
+                            base_chunk=a_hat_for_residual,
+                            tactile_f6=batch.get("tactile_f6s_delayed"),
+                            tactile_deform=batch.get("tactile_deforms_delayed"),
+                            r_tau=r_tau,
+                            tau=tau_r,
+                        ),
+                        v_target_r,
+                    )
+                    r_target_norm = r_target.float().abs().mean().detach()
+                else:
+                    loss_tac = 0.0
+
+            elif is_stage1: # pretrain
                 full_embeds = torch.cat([
                     slow_embeds_ext,
                     fast_embeds, state_embeds, timesteps, noisy_actions,
@@ -988,7 +1135,9 @@ def train(args):
 
             loss = loss_act
             if torch.is_tensor(loss_tac):
-                loss = loss + args.tactile_loss_weight * loss_tac
+                tac_w = (args.tactile_refine_loss_weight if args.use_tactile_refine_flow
+                         else args.tactile_loss_weight)
+                loss = loss + tac_w * loss_tac
             if torch.is_tensor(loss_flare):
                 loss = loss + args.flare_loss_weight * loss_flare
 
@@ -1012,13 +1161,16 @@ def train(args):
                                        tac=f"{m['tactile_loss']:.6f}",
                                        fut=f"{m['flare_loss']:.6f}",
                                        lr=f"{lr_now:.2e}")
-                    wandb.log({
+                    log_dict = {
                         "total_loss":   m["total_loss"],
                         "action_loss":  m["action_loss"],
                         "tactile_loss": m["tactile_loss"],
                         "flare_loss":  m["flare_loss"],
                         "lr": lr_now,
-                    }, step=global_step)
+                    }
+                    if r_target_norm is not None:
+                        log_dict["refine/r_target_norm"] = float(r_target_norm)
+                    wandb.log(log_dict, step=global_step)
 
             # ── Validation ──
             if (val_dataloader is not None
@@ -1081,6 +1233,22 @@ if __name__ == "__main__":
     parser.add_argument("--tactile_loss_weight", type=float, default=1.0)
     parser.add_argument("--image_size", type=int, nargs=2, default=None, metavar=("W", "H"))
 
+    # action-only slow flow + tactile residual flow refinement
+    parser.add_argument("--use_tactile_refine_flow", type=int, default=0,
+                        help="1: tactile expert is trained as a residual-flow refinement "
+                             "head over the action expert's clean chunk Â. 0: legacy "
+                             "Paradigm A (delta_v residual on flow velocity).")
+    parser.add_argument("--tactile_refine_loss_weight", type=float, default=1.0, help="Weight on L_refine when use_tactile_refine_flow=1.")
+    parser.add_argument("--tactile_refine_noise_scale", type=float, default=0.1, help="Initial noise magnitude for the residual flow at τ=1.")
+    parser.add_argument("--action_flow_train_steps", type=int, default=5, help="Number of Euler steps for the no_grad action flow that produces Â during training.")
+    parser.add_argument("--tactile_residual_jitter", type=float, default=0.0,
+                        help="Std of Gaussian jitter added to Â before computing "
+                             "r_target during training. Prevents the residual from "
+                             "collapsing to 0 when the action expert overfits and "
+                             "Â ≈ A_demo. 0.05 (5%% of normalized range) is a good "
+                             "starting point if the refine/r_target_norm metric is "
+                             "trending toward 0. 0 (default) disables.")
+
     # Flare
     parser.add_argument("--use_flare", type=int, default=1, help="Enable flare visual prediction for latent expert.")
     parser.add_argument("--n_flare_tokens_per_frame", type=int, default=4, help="Number of tokens per future frame.")
@@ -1090,12 +1258,9 @@ if __name__ == "__main__":
     parser.add_argument("--flare_layer_index", type=int, default=-1, help="Layer to extract flare hidden states from (-1=last, e.g. -7 for ~3/4 depth).")
 
     # Validation
-    parser.add_argument("--val_ratio", type=float, default=0.0,
-                        help="Fraction of samples for validation (0=disable)")
-    parser.add_argument("--val_freq", type=int, default=0,
-                        help="Run validation every N steps (0=disable)")
-    parser.add_argument("--max_val_batches", type=int, default=50,
-                        help="Max batches per validation run")
+    parser.add_argument("--val_ratio", type=float, default=0.0, help="Fraction of samples for validation (0=disable)")
+    parser.add_argument("--val_freq", type=int, default=0, help="Run validation every N steps (0=disable)")
+    parser.add_argument("--max_val_batches", type=int, default=50, help="Max batches per validation run")
 
     args = parser.parse_args()
 

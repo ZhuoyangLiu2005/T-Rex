@@ -1,0 +1,40 @@
+# Default hyperparameters for the F6-only Tactile VQ-VAE.
+# CLI flags in train.py override anything here.
+
+data:
+  window: 16        # frames per encoded chunk; matches action_chunk
+  stride: 4         # window-start spacing during training (smaller = more samples)
+  val_ratio: 0.02   # episode-level held-out fraction
+  num_workers: 4
+
+model:
+  in_channels: 30           # 5 fingers × 6 dims
+  hidden_channels: 128
+  bottleneck_channels: 256
+  embed_dim: 256
+  n_strided_blocks: 2
+  codebook_size: 1024
+  commitment_weight: 0.25
+  decay: 0.99
+  revive_freq: 200
+  revive_threshold: 1.0
+  init_mode: uniform        # or "kaiming"
+
+loss:
+  use_magnitude_weight: true
+  weight_alpha: 2.0         # max extra weight on top of 1.0 for high-contact windows
+  weight_tau:   4.0         # F6 magnitude scale where weight saturates
+
+train:
+  epochs: 30
+  batch_size: 256
+  lr: 3.0e-4
+  min_lr_ratio: 0.05
+  warmup_steps: 500
+  weight_decay: 1.0e-4
+  grad_clip: 1.0
+  mixed_precision: bf16
+  seed: 42
+  log_every: 50
+  val_every: 2000
+  save_every_epoch: 1

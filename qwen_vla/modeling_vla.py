@@ -13,17 +13,22 @@ Architecture
   final_layer        : hidden_size    → action_dim    (action expert output)
   final_layer_tactile: hidden_size    → action_dim    (tactile expert residual)
 
-Residual tactile correction
-───────────────────────────
-  Action expert predicts: v_act  (base velocity)
-  Tactile expert predicts: delta_v (residual correction, zero-initialized)
-  Final velocity: v_final = v_act + delta_v
+Two flow-matching paradigms are supported:
 
-  This supports two-stage training:
-    Stage 1: no tactile → v_final = v_act
-    Stage 2: with tactile → v_final = v_act + delta_v
+(A) Paradigm A — joint flow with delta_v residual
+    Tactile is in every Euler step alongside action.  v_total = v_act + delta_v.
+    Methods: forward_flow / denoise_step (legacy).
+
+(C) Paradigm C — action-only slow flow + tactile residual flow
+    Slow path is tactile-blind, integrates 10 Euler steps of action expert →
+    clean chunk Â plus cached (latent + action) KV.  Fast path runs the tactile
+    expert as its own short flow on the residual r ≈ A_demo − Â, conditioned on
+    cached KV.  Final action: A_refined = Â + Δa.
+    Methods: forward_flow_action_only, tactile_residual_flow (inference),
+             tactile_residual_train_step (training).
 """
 
+import copy
 import os
 from typing import Optional, Tuple
 
@@ -238,8 +243,19 @@ class Qwen3VLVLAModel(nn.Module):
             print(f"  DeformEncoder missing keys: {missing}")
         print("DeformEncoder weights loaded.")
 
-    def initialize_vla_weights(self):
-        """Xavier-init all new VLA-specific linear layers."""
+    def initialize_vla_weights(self, skip_tactile_zero_init: bool = False):
+        """Xavier-init all new VLA-specific linear layers.
+
+        Parameters
+        ----------
+        skip_tactile_zero_init : bool
+            If True, do NOT zero-init `final_layer_tactile.mlp.fc2`.  When the
+            tactile head is trained as a residual-flow velocity predictor
+            (use_tactile_refine_flow=1), it must start non-trivial so the
+            refinement signal is alive from step 0.  When the tactile head is
+            trained as a delta_v residual on top of v_act (the legacy mode),
+            keep the zero-init so delta_v starts as a no-op.
+        """
         for m in [self.x_embedder, self.t_embedder, self.final_layer,
                   self.final_layer_tactile, self.tacf6_embedder]:
             for mm in m.modules():
@@ -259,11 +275,16 @@ class Qwen3VLVLAModel(nn.Module):
                     nn.init.xavier_uniform_(mm.weight)
                     if mm.bias is not None:
                         nn.init.zeros_(mm.bias)
-        # Zero-init final output layers so predictions start at zero
-        for fl in [self.final_layer, self.final_layer_tactile]:
-            nn.init.zeros_(fl.mlp.fc2.weight)
-            if fl.mlp.fc2.bias is not None:
-                nn.init.zeros_(fl.mlp.fc2.bias)
+        # Zero-init action expert's output head so v_act starts at zero (will
+        # be overwritten by the pretrained checkpoint when resuming).
+        nn.init.zeros_(self.final_layer.mlp.fc2.weight)
+        if self.final_layer.mlp.fc2.bias is not None:
+            nn.init.zeros_(self.final_layer.mlp.fc2.bias)
+        # Tactile head: zero-init only when used as a delta_v residual.
+        if not skip_tactile_zero_init:
+            nn.init.zeros_(self.final_layer_tactile.mlp.fc2.weight)
+            if self.final_layer_tactile.mlp.fc2.bias is not None:
+                nn.init.zeros_(self.final_layer_tactile.mlp.fc2.bias)
         # Flare prediction projection
         if self.n_flare_tokens > 0:
             for mm in self.flare_proj.modules():
@@ -490,6 +511,286 @@ class Qwen3VLVLAModel(nn.Module):
             x_t = x_t + dt * v_t
             time = time + dt
         return x_t
+
+    # ──────────────────────────────────────────────────────────────────────
+    # Paradigm C — action-only slow flow + tactile residual flow
+    # ──────────────────────────────────────────────────────────────────────
+
+    def forward_flow_action_only(
+        self,
+        inputs_embeds: torch.Tensor,            # [B, L_latent, H]   slow + flare embeds
+        position_ids: torch.Tensor,             # [3, B, L_latent]   M-RoPE for latent
+        noise: torch.Tensor,                    # [B, n_chunk, action_dim]
+        attention_mask: Optional[torch.Tensor] = None,
+        state_embeds: Optional[torch.Tensor] = None,    # [B, S, H] or None
+        fast_embeds: Optional[torch.Tensor] = None,     # [B, F, H] or None
+        num_steps: int = 10,
+        refresh_clean_kv: bool = True,
+    ) -> Tuple[torch.Tensor, "DynamicCache", int]:
+        """Tactile-blind Euler flow for the action expert.
+
+        Returns
+        -------
+        clean_chunk : [B, n_chunk, action_dim]   the integrated Â at τ=0.
+        cached_kv   : DynamicCache with [latent_KV | action_KV] suitable for
+                      reuse by tactile_residual_flow / tactile_residual_train_step.
+        n_action_in_cache : int   number of action tokens in `cached_kv`.
+
+        When `refresh_clean_kv=True`, after integration we run one extra forward
+        at τ=0 with the clean Â so that the cached action KV reflects the clean
+        state the tactile expert will attend to at refinement time.
+        """
+        device = noise.device
+        dtype  = torch.bfloat16
+        dt     = torch.tensor(-1.0 / num_steps, dtype=dtype, device=device)
+        x_t    = noise.to(dtype)
+        time   = torch.tensor(1.0, dtype=dtype, device=device)
+        n_chunk = noise.shape[1]
+        B      = inputs_embeds.shape[0]
+        H      = inputs_embeds.shape[2]
+
+        if fast_embeds is None:
+            fast_embeds = torch.empty((B, 0, H), device=device, dtype=dtype)
+        if state_embeds is None:
+            state_embeds = torch.empty((B, 0, H), device=device, dtype=dtype)
+        n_state = state_embeds.shape[1]
+        L_latent = inputs_embeds.shape[1]
+
+        past_kv = None
+        n_act = 0
+        while time >= -dt / 2:
+            timesteps = self.t_embedder(time.expand(B)).unsqueeze(1)
+            noisy_act = self.x_embedder(x_t)
+            act_parts = [fast_embeds]
+            if n_state > 0:
+                act_parts.append(state_embeds)
+            act_parts += [timesteps, noisy_act]
+            act_seq = torch.cat(act_parts, dim=1)
+            n_act = act_seq.shape[1]
+
+            if past_kv is None:
+                full_embeds = torch.cat([inputs_embeds, act_seq], dim=1)
+                outputs = self.model(
+                    inputs_embeds=full_embeds,
+                    position_ids=position_ids,
+                    attention_mask=attention_mask,
+                    past_key_values=past_kv,
+                    use_cache=True,
+                    latent_indexes=torch.arange(0, L_latent, device=device),
+                    action_indexes=torch.arange(L_latent, L_latent + n_act, device=device),
+                    tactile_indexes=torch.arange(0, 0, device=device),
+                )
+            else:
+                past_kv.crop(-n_act)
+                extended_pos = self.model._extend_position_ids(position_ids, n_act, 0)
+                act_pos = extended_pos[..., -n_act:]
+                outputs = self.model(
+                    inputs_embeds=act_seq,
+                    position_ids=act_pos,
+                    past_key_values=past_kv,
+                    use_cache=True,
+                    latent_indexes=torch.arange(0, 0, device=device),
+                    action_indexes=torch.arange(0, n_act, device=device),
+                    tactile_indexes=torch.arange(0, 0, device=device),
+                )
+
+            hidden = outputs.last_hidden_state
+            v_act  = self.final_layer(hidden[:, -n_chunk:, :])
+            x_t    = x_t + dt * v_act
+            time   = time + dt
+            past_kv = outputs.past_key_values
+
+        if refresh_clean_kv and past_kv is not None:
+            past_kv.crop(-n_act)
+            clean_timesteps = self.t_embedder(
+                torch.zeros(B, device=device, dtype=dtype)
+            ).unsqueeze(1)
+            clean_actions = self.x_embedder(x_t)
+            clean_parts = [fast_embeds]
+            if n_state > 0:
+                clean_parts.append(state_embeds)
+            clean_parts += [clean_timesteps, clean_actions]
+            clean_seq = torch.cat(clean_parts, dim=1)
+            n_act_final = clean_seq.shape[1]
+            extended_pos = self.model._extend_position_ids(position_ids, n_act_final, 0)
+            act_pos_final = extended_pos[..., -n_act_final:]
+            _ = self.model(
+                inputs_embeds=clean_seq,
+                position_ids=act_pos_final,
+                past_key_values=past_kv,
+                use_cache=True,
+                latent_indexes=torch.arange(0, 0, device=device),
+                action_indexes=torch.arange(0, n_act_final, device=device),
+                tactile_indexes=torch.arange(0, 0, device=device),
+            )
+            n_action_in_cache = n_act_final
+        else:
+            n_action_in_cache = n_act
+
+        return x_t, past_kv, n_action_in_cache
+
+    def _embed_tactile_observations(
+        self,
+        tactile_f6: Optional[torch.Tensor],
+        tactile_deform: Optional[torch.Tensor],
+        device: torch.device,
+        dtype: torch.dtype,
+    ) -> torch.Tensor:
+        """Build [B, n_obs, H] tactile observation embedding (vec + deform)."""
+        tac_parts = []
+        if tactile_f6 is not None and tactile_f6.shape[1] > 0:
+            tac_parts.append(self.tacf6_embedder(tactile_f6.to(dtype)))
+        if (tactile_deform is not None
+                and tactile_deform.shape[1] > 0
+                and self.use_tactile_deform):
+            Bd, nf, C, Hd, Wd = tactile_deform.shape
+            flat = tactile_deform.view(-1, C, Hd, Wd).to(dtype)
+            feats = self.deform_encoder(flat).view(Bd, nf, -1)
+            tac_parts.append(self.deform_proj(feats.to(dtype)))
+        if not tac_parts:
+            raise ValueError(
+                "tactile residual flow requires tactile_f6 or tactile_deform")
+        return torch.cat(tac_parts, dim=1)
+
+    def tactile_residual_train_step(
+        self,
+        cached_kv,                              # DynamicCache with latent + action KV
+        latent_position_ids: torch.Tensor,      # [3, B, L_latent]
+        n_action_in_cache: int,
+        base_chunk: torch.Tensor,               # [B, n_chunk, action_dim]  Â (detached)
+        tactile_f6: Optional[torch.Tensor] = None,
+        tactile_deform: Optional[torch.Tensor] = None,
+        r_tau: torch.Tensor = None,             # [B, n_chunk, action_dim]  noisy residual
+        tau: torch.Tensor = None,               # [B] flow time scalars
+    ) -> torch.Tensor:
+        """Single tactile-only forward at (r_τ, τ).
+
+        Returns predicted velocity v_pred [B, n_chunk, action_dim] suitable for
+        L_refine = MSE(v_pred, ε_r − r_target).  Does NOT integrate; this is the
+        training-time analog of one Euler step of `tactile_residual_flow`.
+        """
+        device = base_chunk.device
+        dtype  = torch.bfloat16
+        B      = base_chunk.shape[0]
+        n_chunk = base_chunk.shape[1]
+
+        tac_obs = self._embed_tactile_observations(
+            tactile_f6, tactile_deform, device, dtype)
+        n_obs = tac_obs.shape[1]
+
+        tau_emb = self.t_embedder(tau.to(dtype)).unsqueeze(1)            # [B, 1, H]
+        r_emb   = self.x_embedder(r_tau.to(dtype))                       # [B, n_chunk, H]
+        full_embeds = torch.cat([tac_obs, tau_emb, r_emb], dim=1)
+        n_tac_seq = full_embeds.shape[1]
+
+        extended_pos = self.model._extend_position_ids(
+            latent_position_ids, n_action_in_cache, n_tac_seq)
+        tac_pos = extended_pos[..., -n_tac_seq:]
+
+        outputs = self.model(
+            inputs_embeds=full_embeds,
+            position_ids=tac_pos,
+            past_key_values=cached_kv,
+            use_cache=True,
+            latent_indexes=torch.arange(0, 0, device=device),
+            action_indexes=torch.arange(0, 0, device=device),
+            tactile_indexes=torch.arange(0, n_tac_seq, device=device),
+        )
+        hidden = outputs.last_hidden_state
+        v_pred = self.final_layer_tactile(hidden[:, -n_chunk:, :])
+        return v_pred
+
+    @staticmethod
+    def _clone_dynamic_cache(cache: DynamicCache) -> DynamicCache:
+        """Manual clone of a DynamicCache: torch.deepcopy fails on non-leaf
+        tensors, so we copy the per-layer K/V tensors with detach().clone()."""
+        new_cache = DynamicCache()
+        # Mirror per-layer DynamicLayer instances with cloned K/V tensors.
+        if hasattr(cache, "layers") and isinstance(cache.layers, list):
+            from transformers.cache_utils import DynamicLayer
+            for layer in cache.layers:
+                new_layer = DynamicLayer()
+                if getattr(layer, "is_initialized", False):
+                    new_layer.dtype  = layer.dtype
+                    new_layer.device = layer.device
+                    new_layer.keys   = layer.keys.detach().clone()
+                    new_layer.values = layer.values.detach().clone()
+                    new_layer.is_initialized = True
+                new_cache.layers.append(new_layer)
+        else:
+            # Older (pre-4.55) API: key_cache / value_cache lists at top level.
+            if hasattr(cache, "key_cache"):
+                new_cache.key_cache = [k.detach().clone() for k in cache.key_cache]
+                new_cache.value_cache = [v.detach().clone() for v in cache.value_cache]
+                new_cache._seen_tokens = getattr(cache, "_seen_tokens", 0)
+            else:
+                raise NotImplementedError(
+                    "Unrecognized DynamicCache layout; cannot clone for "
+                    "tactile_residual_flow.")
+        return new_cache
+
+    @torch.no_grad()
+    def tactile_residual_flow(
+        self,
+        cached_kv,
+        latent_position_ids: torch.Tensor,
+        n_action_in_cache: int,
+        base_chunk: torch.Tensor,
+        tactile_f6: Optional[torch.Tensor] = None,
+        tactile_deform: Optional[torch.Tensor] = None,
+        num_steps: int = 4,
+        noise_scale: float = 0.1,
+    ) -> torch.Tensor:
+        """Tactile-only Euler flow on the residual r ≈ A_demo − Â.
+
+        Returns Δa [B, n_chunk, action_dim] to be applied as A_refined = Â + Δa.
+
+        `cached_kv` is cloned (manual tensor.clone) so multiple async refreshes
+        during a single action chunk can each start from the slow-path snapshot.
+        """
+        cache = self._clone_dynamic_cache(cached_kv)
+        device = base_chunk.device
+        dtype  = torch.bfloat16
+        B      = base_chunk.shape[0]
+        n_chunk, action_dim = base_chunk.shape[1], base_chunk.shape[2]
+
+        tac_obs = self._embed_tactile_observations(
+            tactile_f6, tactile_deform, device, dtype)
+        n_obs = tac_obs.shape[1]
+        n_tac_seq = n_obs + 1 + n_chunk
+
+        extended_pos = self.model._extend_position_ids(
+            latent_position_ids, n_action_in_cache, n_tac_seq)
+        tac_pos = extended_pos[..., -n_tac_seq:]
+
+        r = (torch.randn(B, n_chunk, action_dim, device=device) * noise_scale
+             ).to(dtype)
+        dt   = torch.tensor(-1.0 / num_steps, dtype=dtype, device=device)
+        time = torch.tensor(1.0, dtype=dtype, device=device)
+
+        step = 0
+        while time >= -dt / 2:
+            tau_emb = self.t_embedder(time.expand(B)).unsqueeze(1)
+            r_emb   = self.x_embedder(r)
+            full_embeds = torch.cat([tac_obs, tau_emb, r_emb], dim=1)
+            if step > 0:
+                cache.crop(-n_tac_seq)
+            outputs = self.model(
+                inputs_embeds=full_embeds,
+                position_ids=tac_pos,
+                past_key_values=cache,
+                use_cache=True,
+                latent_indexes=torch.arange(0, 0, device=device),
+                action_indexes=torch.arange(0, 0, device=device),
+                tactile_indexes=torch.arange(0, n_tac_seq, device=device),
+            )
+            hidden = outputs.last_hidden_state
+            v_r = self.final_layer_tactile(hidden[:, -n_chunk:, :])
+            r = r + dt * v_r
+            time = time + dt
+            step += 1
+
+        return r
 
     def named_parameters(self, *args, **kwargs):
         return super().named_parameters(*args, **kwargs)

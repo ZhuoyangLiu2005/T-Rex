@@ -32,4 +32,8 @@ python test_qwen3vl_flare_real.py \
   --action_dim ${ACTION_DIM} \
   --action_chunk ${ACTION_CHUNK} \
   --port 5678 \
-  --image_size 384 288
+  --image_size 384 288 \
+  --use_tactile_refine_flow 1 \
+  --action_flow_eval_steps 10 \
+  --tactile_refine_flow_steps 4 \
+  --tactile_refine_noise_scale 0.1

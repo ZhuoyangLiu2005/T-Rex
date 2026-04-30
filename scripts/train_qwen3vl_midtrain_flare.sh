@@ -154,6 +154,13 @@ accelerate launch \
     --tactile_intermediate_size 1536 \
     --training_stage 2 \
     --tactile_loss_weight 1.0 \
+    --use_tactile_refine_flow 1 \
+    --tactile_refine_loss_weight 1.0 \
+    --tactile_refine_noise_scale 0.1 \
+    --action_flow_train_steps 5 \
+    --action_flow_eval_steps 10 \
+    --tactile_delay_offsets 0 4 8 12 \
+    --tactile_residual_jitter 0.0 \
     --resume_checkpoint "${RESUME_CHECKPOINT}" \
     --use_flare 1 \
     --n_flare_tokens_per_frame 4 \

@@ -370,17 +370,44 @@ def model_predict(
         noise = torch.randn(1, args.action_chunk, args.action_dim,
                             dtype=torch.bfloat16, device=device)
 
-        samples = model.forward_flow(
-            inputs_embeds  = slow_embeds,
-            position_ids   = position_ids,
-            attention_mask = attention_mask,
-            noise          = noise,
-            num_steps      = 10,
-            state_embeds   = state_embeds,
-            tactile_f6     = tac_f6_tensor,
-            tactile_deform = tac_deform_tensor,
-            fast_embeds    = fast_embeds,
-        )
+        if getattr(args, "use_tactile_refine_flow", 0):
+            # Paradigm C: action-only slow flow → Â, then tactile residual flow → Δa
+            a_hat, cached_kv, n_action_in_cache = model.forward_flow_action_only(
+                inputs_embeds   = slow_embeds,
+                position_ids    = position_ids,
+                attention_mask  = attention_mask,
+                noise           = noise,
+                state_embeds    = state_embeds,
+                fast_embeds     = fast_embeds,
+                num_steps       = getattr(args, "action_flow_eval_steps", 10),
+                refresh_clean_kv= True,
+            )
+            if (tac_f6_tensor is not None) or (tac_deform_tensor is not None):
+                delta_a = model.tactile_residual_flow(
+                    cached_kv          = cached_kv,
+                    latent_position_ids= position_ids,
+                    n_action_in_cache  = n_action_in_cache,
+                    base_chunk         = a_hat,
+                    tactile_f6         = tac_f6_tensor,
+                    tactile_deform     = tac_deform_tensor,
+                    num_steps          = getattr(args, "tactile_refine_flow_steps", 4),
+                    noise_scale        = getattr(args, "tactile_refine_noise_scale", 0.1),
+                )
+                samples = a_hat + delta_a
+            else:
+                samples = a_hat
+        else:
+            samples = model.forward_flow(
+                inputs_embeds  = slow_embeds,
+                position_ids   = position_ids,
+                attention_mask = attention_mask,
+                noise          = noise,
+                num_steps      = 10,
+                state_embeds   = state_embeds,
+                tactile_f6     = tac_f6_tensor,
+                tactile_deform = tac_deform_tensor,
+                fast_embeds    = fast_embeds,
+            )
 
         norm_actions = samples[0].float().cpu().numpy()
         actions = _denormalize(
@@ -837,6 +864,16 @@ if __name__ == "__main__":
     parser.add_argument("--cuda", type=str, default="0")
     parser.add_argument("--port", type=int, default=5555)
     parser.add_argument("--image_size", type=int, nargs=2, default=None, metavar=("W", "H"))
+
+    # Paradigm C
+    parser.add_argument("--use_tactile_refine_flow", type=int, default=0,
+                        help="1: action-only slow flow + tactile residual flow refinement.")
+    parser.add_argument("--action_flow_eval_steps", type=int, default=10,
+                        help="Number of Euler steps for the slow action-only flow.")
+    parser.add_argument("--tactile_refine_flow_steps", type=int, default=4,
+                        help="Number of Euler steps for the tactile residual flow.")
+    parser.add_argument("--tactile_refine_noise_scale", type=float, default=0.1,
+                        help="Initial noise magnitude for the residual flow at τ=1.")
 
     args = parser.parse_args()
     main(args)

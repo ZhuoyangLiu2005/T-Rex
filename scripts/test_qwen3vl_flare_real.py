@@ -2,11 +2,28 @@
 Real-world ZeroMQ inference server for the Qwen3-VL MoT VLA model
 with flare visual prediction tokens (multi-token per frame).
 
-Self-contained — does not import from the offline test script.
+Two inference paradigms:
+
+(A) Paradigm A (legacy, --use_tactile_refine_flow 0)
+    Single forward_flow per request — fully synchronous.
+
+(C) Paradigm C (--use_tactile_refine_flow 1)
+    Stateful slow/fast protocol:
+      slow request → forward_flow_action_only → cache (latent + action) KV,
+                     return Â chunk.
+      fast request → tactile_residual_flow on cached KV with fresh tactile,
+                     return A_refined = Â + Δa.
+      slow_and_fast → run both in sequence (typical at chunk start).
+
+    The client orchestrates cadence (e.g. slow every 16 robot steps, fast at
+    offsets 0, 4, 8, 12).  ZMQ REP is single-threaded so a fast request
+    arriving mid-slow naturally waits until slow finishes — the "if a
+    refinement has not finished, wait until it finishes" guarantee.
 """
 
 import os
 import sys
+import threading
 
 _SCRIPT_DIR  = os.path.dirname(os.path.abspath(__file__))
 _PROJECT_DIR = os.path.dirname(_SCRIPT_DIR)
@@ -17,6 +34,7 @@ import argparse
 import json
 import io
 import pickle
+import time
 import traceback
 
 import numpy as np
@@ -244,7 +262,36 @@ def model_load(args):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Inference
+# Tactile encoding helpers (shared across paradigms)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _encode_tactile_f6(tactile_f6_input, statistic, device):
+    if tactile_f6_input is None:
+        return None
+    tacf6 = np.array(tactile_f6_input, dtype=np.float32).reshape(-1)
+    norm_tacf6 = _normalize(tacf6, statistic["tacf6_mask"],
+                            statistic["tacf6_min"], statistic["tacf6_max"])
+    return (torch.tensor(norm_tacf6.reshape(-1, 6), dtype=torch.bfloat16)
+            .unsqueeze(0).to(device))
+
+
+def _encode_tactile_deform(tactile_deform_input, device):
+    if tactile_deform_input is None:
+        return None
+    arr = np.array(tactile_deform_input, dtype=np.float32)
+    if arr.max() > 1.0:
+        arr = arr / 255.0
+    if arr.ndim == 3:
+        return (torch.tensor(arr).unsqueeze(0).unsqueeze(2)
+                .to(device, dtype=torch.bfloat16))
+    elif arr.ndim == 4:
+        return (torch.tensor(arr).unsqueeze(0)
+                .to(device, dtype=torch.bfloat16))
+    return None
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Inference (Paradigm A — legacy)
 # ─────────────────────────────────────────────────────────────────────────────
 
 def model_predict(
@@ -328,25 +375,11 @@ def model_predict(
                 position_ids, model.n_flare_tokens)
 
         # ── Tactile ──────────────────────────────────────────────────────
-        tac_f6_tensor = None
-        if args.use_tactile_vec and tactile_f6_input is not None:
-            tacf6 = np.array(tactile_f6_input, dtype=np.float32).reshape(-1)
-            norm_tacf6 = _normalize(tacf6, statistic["tacf6_mask"],
-                                    statistic["tacf6_min"], statistic["tacf6_max"])
-            tac_f6_tensor = (torch.tensor(norm_tacf6.reshape(-1, 6), dtype=torch.bfloat16)
-                             .unsqueeze(0).to(device))
-
-        tac_deform_tensor = None
-        if args.use_tactile_deform and tactile_deform_input is not None:
-            arr = np.array(tactile_deform_input, dtype=np.float32)
-            if arr.max() > 1.0:
-                arr = arr / 255.0
-            if arr.ndim == 3:
-                tac_deform_tensor = (torch.tensor(arr).unsqueeze(0).unsqueeze(2)
-                                     .to(device, dtype=torch.bfloat16))
-            elif arr.ndim == 4:
-                tac_deform_tensor = (torch.tensor(arr).unsqueeze(0)
-                                     .to(device, dtype=torch.bfloat16))
+        tac_f6_tensor     = _encode_tactile_f6(
+            tactile_f6_input if args.use_tactile_vec else None,
+            statistic, device)
+        tac_deform_tensor = _encode_tactile_deform(
+            tactile_deform_input if args.use_tactile_deform else None, device)
 
         # ── Flow-matching denoising ──────────────────────────────────────
         noise = torch.randn(1, args.action_chunk, args.action_dim,
@@ -372,6 +405,221 @@ def model_predict(
     return list(actions)
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Paradigm C — stateful slow/fast inference
+# ─────────────────────────────────────────────────────────────────────────────
+
+class ParadigmCServer:
+    """
+    Stateful server for Paradigm C async inference.
+
+    Holds the slow-path snapshot (cached latent + action KV, base chunk Â,
+    encoded fast cameras + state, latent position ids) between requests so a
+    subsequent fast request can run tactile_residual_flow without re-encoding
+    the visual tower.
+
+    A single `lock` serializes all model calls so:
+      • only one inference runs on the GPU at a time, and
+      • a fast request that arrives while a slow inference is still in flight
+        blocks until the slow one finishes ("wait until refinement finishes"
+        semantic).  ZMQ REP is already single-threaded; the lock is belt-and-
+        braces for any future move to a multi-threaded transport.
+    """
+
+    def __init__(self, args, model, processor, statistic):
+        self.args      = args
+        self.model     = model
+        self.processor = processor
+        self.statistic = statistic
+        self.device    = f"cuda:{args.cuda}"
+        self.lock      = threading.Lock()
+
+        # Slow-path snapshot
+        self.cached_kv          = None
+        self.A_hat              = None             # [B, n_chunk, action_dim] bf16
+        self.A_hat_denorm       = None             # numpy after denorm
+        self.position_ids       = None
+        self.attention_mask     = None
+        self.n_action_in_cache  = 0
+        self.chunk_id           = -1               # incremented per slow
+
+    # -- internal: build slow embeddings, run action-only flow, cache state --
+    def _run_slow(
+        self, task_description, slow_images, fast_images,
+        tactile_f6_input=None, tactile_deform_input=None, state_fast=None,
+    ):
+        args, model, processor, statistic = (
+            self.args, self.model, self.processor, self.statistic)
+        device = self.device
+
+        if args.image_size:
+            _sz = tuple(args.image_size)
+            slow_images = [img.resize(_sz, Image.LANCZOS) for img in slow_images]
+            fast_images = [img.resize(_sz, Image.LANCZOS) for img in fast_images]
+
+        state_embeds = None
+        if args.use_robot_state and state_fast is not None:
+            norm_state = _normalize(
+                np.array(state_fast, dtype=np.float32),
+                statistic["state_mask"], statistic["state_min"], statistic["state_max"])
+            state_vec = torch.tensor(norm_state, dtype=torch.bfloat16).unsqueeze(0).to(device)
+            state_embeds = model.state_embedder(state_vec).unsqueeze(1)
+
+        n_slow = len(slow_images)
+        all_pil = slow_images + fast_images
+        content = [{"type": "image"} for _ in slow_images]
+        content.append({"type": "text", "text": task_description})
+        content += [{"type": "image"} for _ in fast_images]
+        messages = [{"role": "user", "content": content}]
+        text = processor.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True)
+        inp = processor(text=text, images=all_pil if all_pil else None,
+                        return_tensors="pt", padding=False)
+
+        input_ids = inp.input_ids.to(device)
+        attention_mask = inp.attention_mask.to(device)
+        pixel_values = (inp.pixel_values.to(device, dtype=torch.bfloat16)
+                        if getattr(inp, "pixel_values", None) is not None else None)
+        image_grid_thw = (inp.image_grid_thw.to(device)
+                          if getattr(inp, "image_grid_thw", None) is not None else None)
+
+        inputs_embeds = model.prepare_inputs_embeds(
+            input_ids=input_ids, pixel_values=pixel_values,
+            image_grid_thw=image_grid_thw)
+
+        fast_embeds = None
+        if image_grid_thw is not None and fast_images:
+            merge = getattr(model.visual, "spatial_merge_size",
+                            getattr(processor.image_processor, "merge_size", 2))
+            n_slow_img_tokens = sum(
+                int(g[0] * (g[1] // merge) * (g[2] // merge))
+                for g in image_grid_thw[:n_slow])
+            slow_embeds, fast_embeds = split_slow_fast_embeds(
+                inputs_embeds, input_ids,
+                model.image_token_id, n_slow_img_tokens)
+        else:
+            slow_embeds = inputs_embeds
+
+        position_ids, _ = model.get_rope_index(
+            input_ids=input_ids, image_grid_thw=image_grid_thw,
+            attention_mask=attention_mask)
+        position_ids = position_ids[:, :, :slow_embeds.shape[1]]
+
+        if model.n_flare_tokens > 0:
+            flare_q = model.flare_queries.to(
+                device=slow_embeds.device, dtype=slow_embeds.dtype)
+            slow_embeds = torch.cat([slow_embeds, flare_q.expand(1, -1, -1)], dim=1)
+            position_ids = extend_position_ids_for_flare(
+                position_ids, model.n_flare_tokens)
+
+        noise = torch.randn(1, args.action_chunk, args.action_dim,
+                            dtype=torch.bfloat16, device=device)
+        a_hat, cached_kv, n_action_in_cache = model.forward_flow_action_only(
+            inputs_embeds=slow_embeds,
+            position_ids=position_ids,
+            attention_mask=attention_mask,
+            noise=noise,
+            state_embeds=state_embeds,
+            fast_embeds=fast_embeds,
+            num_steps=args.action_flow_eval_steps,
+            refresh_clean_kv=True,
+        )
+
+        self.cached_kv         = cached_kv
+        self.A_hat             = a_hat
+        self.position_ids      = position_ids
+        self.attention_mask    = attention_mask
+        self.n_action_in_cache = n_action_in_cache
+        self.chunk_id         += 1
+
+        norm_actions = a_hat[0].float().cpu().numpy()
+        self.A_hat_denorm = _denormalize(
+            norm_actions, statistic["action_mask"],
+            statistic["action_min"], statistic["action_max"])
+        return list(self.A_hat_denorm), self.chunk_id
+
+    # -- internal: run tactile residual flow on cached state --
+    def _run_fast(self, tactile_f6_input=None, tactile_deform_input=None):
+        args, model, statistic = self.args, self.model, self.statistic
+        device = self.device
+
+        if self.cached_kv is None or self.A_hat is None:
+            raise RuntimeError(
+                "fast request received before any slow request — server has "
+                "no cached state. Send mode='slow' or 'slow_and_fast' first.")
+
+        tac_f6_tensor     = _encode_tactile_f6(
+            tactile_f6_input if args.use_tactile_vec else None,
+            statistic, device)
+        tac_deform_tensor = _encode_tactile_deform(
+            tactile_deform_input if args.use_tactile_deform else None, device)
+
+        delta_a = model.tactile_residual_flow(
+            cached_kv          = self.cached_kv,
+            latent_position_ids= self.position_ids,
+            n_action_in_cache  = self.n_action_in_cache,
+            base_chunk         = self.A_hat,
+            tactile_f6         = tac_f6_tensor,
+            tactile_deform     = tac_deform_tensor,
+            num_steps          = args.tactile_refine_flow_steps,
+            noise_scale        = args.tactile_refine_noise_scale,
+        )
+        a_refined_norm = (self.A_hat + delta_a)[0].float().cpu().numpy()
+        a_refined = _denormalize(
+            a_refined_norm, statistic["action_mask"],
+            statistic["action_min"], statistic["action_max"])
+        return list(a_refined), self.chunk_id
+
+    def predict(self, mode, payload):
+        """Top-level dispatch.  Returns dict suitable for pickling back to
+        the client.  Any exception inside a mode's body is propagated to the
+        caller, which logs and replies with status='error'."""
+        slow_img = (Image.open(io.BytesIO(payload["image_head"])).convert("RGB")
+                    if "image_head" in payload else None)
+        fast_list = []
+        if "image_wrist_right" in payload:
+            fast_list.append(Image.open(io.BytesIO(payload["image_wrist_right"])).convert("RGB"))
+        if "image_wrist_left" in payload:
+            fast_list.append(Image.open(io.BytesIO(payload["image_wrist_left"])).convert("RGB"))
+
+        tac_f6     = payload.get("tactile_f6")
+        tac_deform = payload.get("tactile_deform", payload.get("tactile_image_deform"))
+        state_fast = payload.get("state_fast")
+        task_desc  = payload.get("task_description", "")
+
+        with self.lock, torch.inference_mode():
+            self.model = self.model.to(self.device).eval()
+            t0 = time.time()
+            if mode == "slow":
+                if slow_img is None:
+                    raise ValueError("slow request requires image_head")
+                actions, cid = self._run_slow(
+                    task_desc, [slow_img], fast_list,
+                    tac_f6, tac_deform, state_fast)
+                latency_ms = (time.time() - t0) * 1000.0
+                return {"status": "success", "mode": "slow",
+                        "actions": actions, "chunk_id": cid,
+                        "latency_ms": latency_ms}
+            elif mode == "fast":
+                actions, cid = self._run_fast(tac_f6, tac_deform)
+                latency_ms = (time.time() - t0) * 1000.0
+                return {"status": "success", "mode": "fast",
+                        "actions": actions, "chunk_id": cid,
+                        "latency_ms": latency_ms}
+            elif mode == "slow_and_fast":
+                if slow_img is None:
+                    raise ValueError("slow_and_fast request requires image_head")
+                self._run_slow(task_desc, [slow_img], fast_list,
+                               tac_f6, tac_deform, state_fast)
+                actions, cid = self._run_fast(tac_f6, tac_deform)
+                latency_ms = (time.time() - t0) * 1000.0
+                return {"status": "success", "mode": "slow_and_fast",
+                        "actions": actions, "chunk_id": cid,
+                        "latency_ms": latency_ms}
+            else:
+                raise ValueError(f"unknown mode: {mode}")
+
+
 def main(args):
     print(f"Loading VLA model from checkpoint: {args.checkpoint_path}")
     model, processor, statistic, action_tokenizer = model_load(args)
@@ -386,44 +634,91 @@ def main(args):
     dummy_f6    = np.zeros((5, 6), dtype=np.float32) if args.use_tactile_vec else None
     dummy_deform = np.zeros((5, 240, 240), dtype=np.float32) if args.use_tactile_deform else None
 
-    dummy_out = model_predict(
-        args, model, processor, statistic, action_tokenizer,
-        "dummy task", dummy_slow, dummy_fast, dummy_f6, dummy_deform, dummy_state)
-    print(f"Warm-up output shape: {np.array(dummy_out).shape}")
+    refine_mode = bool(args.use_tactile_refine_flow)
+    if refine_mode:
+        server = ParadigmCServer(args, model, processor, statistic)
+        # Warm-up: run one slow_and_fast and discard
+        dummy_payload = {
+            "image_head":         _pil_to_bytes(dummy_slow[0]),
+            "image_wrist_right":  _pil_to_bytes(dummy_fast[0]),
+            "task_description":   "dummy task",
+            "tactile_f6":         dummy_f6,
+            "tactile_deform":     dummy_deform,
+            "state_fast":         dummy_state,
+        }
+        if len(dummy_fast) > 1:
+            dummy_payload["image_wrist_left"] = _pil_to_bytes(dummy_fast[1])
+        result = server.predict("slow_and_fast", dummy_payload)
+        print(f"Warm-up [tactile_refine_flow=on] output shape: "
+              f"{np.array(result['actions']).shape}, "
+              f"latency {result['latency_ms']:.1f} ms")
+    else:
+        dummy_out = model_predict(
+            args, model, processor, statistic, action_tokenizer,
+            "dummy task", dummy_slow, dummy_fast, dummy_f6, dummy_deform, dummy_state)
+        print(f"Warm-up output shape: {np.array(dummy_out).shape}")
 
     # ZMQ Server
     context = zmq.Context()
     socket = context.socket(zmq.REP)
     socket.bind(f"tcp://0.0.0.0:{args.port}")
-    print(f"VLA Server listening on port {args.port}...")
+    print(f"VLA Server listening on port {args.port} "
+          f"(tactile_refine_flow={'on' if refine_mode else 'off'}, "
+          f"single-threaded REP)")
 
     step_counter = 0
+    n_slow = n_fast = 0
     while True:
         try:
             payload = pickle.loads(socket.recv())
-            slow_img = Image.open(io.BytesIO(payload["image_head"])).convert("RGB")
-            fast_list = [Image.open(io.BytesIO(payload["image_wrist_right"])).convert("RGB")]
-            if "image_wrist_left" in payload:
-                fast_list.append(Image.open(io.BytesIO(payload["image_wrist_left"])).convert("RGB"))
 
-            tac_f6 = payload.get("tactile_f6") if args.use_tactile_vec else None
-            tac_deform = None
-            if args.use_tactile_deform:
-                tac_deform = payload.get("tactile_deform", payload.get("tactile_image_deform"))
+            if refine_mode:
+                # Default to slow_and_fast for first request, slow_and_fast or
+                # slow if the client didn't specify (matches legacy clients).
+                mode = payload.get("mode", "slow_and_fast")
+                result = server.predict(mode, payload)
+                if mode == "fast":
+                    n_fast += 1
+                else:
+                    n_slow += 1
+            else:
+                slow_img = Image.open(io.BytesIO(payload["image_head"])).convert("RGB")
+                fast_list = [Image.open(io.BytesIO(payload["image_wrist_right"])).convert("RGB")]
+                if "image_wrist_left" in payload:
+                    fast_list.append(Image.open(io.BytesIO(payload["image_wrist_left"])).convert("RGB"))
 
-            actions = model_predict(
-                args, model, processor, statistic, action_tokenizer,
-                payload["task_description"], [slow_img], fast_list,
-                tac_f6, tac_deform, payload.get("state_fast"))
+                tac_f6 = payload.get("tactile_f6") if args.use_tactile_vec else None
+                tac_deform = None
+                if args.use_tactile_deform:
+                    tac_deform = payload.get("tactile_deform", payload.get("tactile_image_deform"))
 
-            socket.send(pickle.dumps({"status": "success", "actions": actions}))
+                actions = model_predict(
+                    args, model, processor, statistic, action_tokenizer,
+                    payload["task_description"], [slow_img], fast_list,
+                    tac_f6, tac_deform, payload.get("state_fast"))
+                result = {"status": "success", "actions": actions}
+
+            socket.send(pickle.dumps(result))
             step_counter += 1
             if step_counter % 10 == 0:
-                print(f"Processed {step_counter} requests. Task: {payload['task_description']}")
+                if refine_mode:
+                    print(f"Processed {step_counter} requests "
+                          f"(slow={n_slow}, fast={n_fast}, "
+                          f"chunk_id={server.chunk_id}). "
+                          f"Task: {payload.get('task_description', '')}")
+                else:
+                    print(f"Processed {step_counter} requests. "
+                          f"Task: {payload.get('task_description', '')}")
 
         except Exception as e:
             traceback.print_exc()
             socket.send(pickle.dumps({"status": "error", "message": str(e)}))
+
+
+def _pil_to_bytes(img: Image.Image) -> bytes:
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
 
 
 if __name__ == "__main__":
@@ -445,6 +740,21 @@ if __name__ == "__main__":
     parser.add_argument("--cuda", type=str, default="0")
     parser.add_argument("--port", type=int, default=5555)
     parser.add_argument("--image_size", type=int, nargs=2, default=None, metavar=("W", "H"))
+
+    # Paradigm C
+    parser.add_argument("--use_tactile_refine_flow", type=int, default=0,
+                        help="1: stateful slow/fast inference. The client "
+                             "sends payloads with mode='slow' (full payload) "
+                             "every chunk_size robot steps and mode='fast' "
+                             "(tactile only, reuses cached KV) every "
+                             "chunk_size/refine_async_ratio steps. The first "
+                             "request must be 'slow' or 'slow_and_fast'.")
+    parser.add_argument("--action_flow_eval_steps", type=int, default=10,
+                        help="Number of Euler steps for the action-only slow flow.")
+    parser.add_argument("--tactile_refine_flow_steps", type=int, default=4,
+                        help="Number of Euler steps for the tactile residual flow at fast tick.")
+    parser.add_argument("--tactile_refine_noise_scale", type=float, default=0.1,
+                        help="Initial noise magnitude for the residual flow at τ=1.")
 
     args = parser.parse_args()
     main(args)

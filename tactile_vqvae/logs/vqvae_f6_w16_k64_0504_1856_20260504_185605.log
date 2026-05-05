@@ -1,0 +1,1019 @@
+ipex flag is deprecated, will be removed in Accelerate v1.10. From 2.7.0, PyTorch has all needed optimizations for Intel CPU and XPU.
+The following values were not passed to `accelerate launch` and had defaults used instead:
+		More than one GPU was found, enabling multi-GPU training.
+		If this was unintended please pass in `--num_processes=1`.
+	`--dynamo_backend` was set to a value of `'no'`
+To avoid this warning pass in values for each of the problematic parameters or run `accelerate config`.
+[rank5]:[W504 18:57:28.293874399 ProcessGroupNCCL.cpp:4561] [PG ID 0 PG GUID 0 Rank 5]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank2]:[W504 18:57:28.295616303 ProcessGroupNCCL.cpp:4561] [PG ID 0 PG GUID 0 Rank 2]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank7]:[W504 18:57:28.341631616 ProcessGroupNCCL.cpp:4561] [PG ID 0 PG GUID 0 Rank 7]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank1]:[W504 18:57:28.484356260 ProcessGroupNCCL.cpp:4561] [PG ID 0 PG GUID 0 Rank 1]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank6]:[W504 18:57:28.493426000 ProcessGroupNCCL.cpp:4561] [PG ID 0 PG GUID 0 Rank 6]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank4]:[W504 18:57:28.562318442 ProcessGroupNCCL.cpp:4561] [PG ID 0 PG GUID 0 Rank 4]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank3]:[W504 18:57:28.569971658 ProcessGroupNCCL.cpp:4561] [PG ID 0 PG GUID 0 Rank 3]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank0]:[W504 18:57:28.573000828 ProcessGroupNCCL.cpp:4561] [PG ID 0 PG GUID 0 Rank 0]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[VQ-VAE] run_dir = /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856
+[VQ-VAE] device  = cuda:0, mixed_precision=bf16
+[VQ-VAE] Scanning /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/midtrain/merged for episodes …
+[VQ-VAE] tacf6_min[:6] = [-11.921875    -0.4597168   -0.4951172   -0.39526367  -0.09002686
+  -0.19238281], tacf6_max[:6] = [5.9453125e+00 1.8375000e+01 2.2440430e+01 8.9035034e-03 2.3315430e-02
+ 1.0499191e-01]
+[VQ-VAE] train: 5912 eps / 2993228 windows ; val: 121 eps / 59236 windows
+[VQ-VAE] config: {
+  "window": 16,
+  "in_channels": 30,
+  "hidden_channels": 128,
+  "bottleneck_channels": 256,
+  "embed_dim": 256,
+  "n_strided_blocks": 2,
+  "codebook_size": 64,
+  "commitment_weight": 0.25,
+  "decay": 0.99,
+  "revive_freq": 200,
+  "revive_threshold": 1.0,
+  "use_magnitude_weight": true,
+  "weight_alpha": 2.0,
+  "weight_tau": 4.0,
+  "init_mode": "uniform"
+}
+[VQ-VAE] params: 0.93M
+wandb: Using wandb-core as the SDK backend. Please refer to https://wandb.me/wandb-core for more information.
+wandb: Currently logged in as: liumail2023 (liumail2023-peking-university). Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.18.3
+wandb: Run data is saved locally in /mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/wandb/run-20260504_185746-j469wwk8
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run vqvae_f6_w16_k64_0504_1856
+wandb: ⭐️ View project at https://wandb.ai/liumail2023-peking-university/dex_mot_tactile_vqvae
+wandb: 🚀 View run at https://wandb.ai/liumail2023-peking-university/dex_mot_tactile_vqvae/runs/j469wwk8
+[VQ-VAE] 30 epochs × 1461 steps = 43830 total optimizer steps (per rank)
+[step       0 | ep  0] recon=0.5356 vq=0.0189 perp=3.9 active=26/64 revived=0 lr=6.00e-07 elapsed=8s
+[step      50 | ep  0] recon=0.1396 vq=0.0041 perp=2.5 active=8/64 revived=0 lr=3.06e-05 elapsed=35s
+[step     100 | ep  0] recon=0.0524 vq=0.0046 perp=4.2 active=8/64 revived=0 lr=6.06e-05 elapsed=65s
+[step     150 | ep  0] recon=0.0440 vq=0.0181 perp=4.7 active=8/64 revived=0 lr=9.06e-05 elapsed=96s
+[step     200 | ep  0] recon=0.0389 vq=0.0155 perp=41.5 active=61/64 revived=0 lr=1.21e-04 elapsed=127s
+[step     250 | ep  0] recon=0.0238 vq=0.0086 perp=15.8 active=40/64 revived=0 lr=1.51e-04 elapsed=158s
+[step     300 | ep  0] recon=0.0294 vq=0.0143 perp=17.0 active=41/64 revived=0 lr=1.81e-04 elapsed=187s
+[step     350 | ep  0] recon=0.0262 vq=0.0161 perp=16.5 active=41/64 revived=0 lr=2.11e-04 elapsed=219s
+[step     400 | ep  0] recon=0.0250 vq=0.0162 perp=39.1 active=63/64 revived=0 lr=2.41e-04 elapsed=248s
+[step     450 | ep  0] recon=0.0186 vq=0.0107 perp=23.9 active=51/64 revived=0 lr=2.71e-04 elapsed=279s
+[step     500 | ep  0] recon=0.0196 vq=0.0119 perp=21.9 active=52/64 revived=0 lr=3.00e-04 elapsed=308s
+[step     550 | ep  0] recon=0.0211 vq=0.0132 perp=23.2 active=52/64 revived=0 lr=3.00e-04 elapsed=339s
+[step     600 | ep  0] recon=0.0206 vq=0.0114 perp=36.1 active=64/64 revived=0 lr=3.00e-04 elapsed=369s
+[step     650 | ep  0] recon=0.0191 vq=0.0108 perp=22.6 active=55/64 revived=0 lr=3.00e-04 elapsed=400s
+[step     700 | ep  0] recon=0.0177 vq=0.0099 perp=21.6 active=56/64 revived=0 lr=3.00e-04 elapsed=430s
+[step     750 | ep  0] recon=0.0176 vq=0.0109 perp=24.2 active=57/64 revived=0 lr=3.00e-04 elapsed=462s
+[step     800 | ep  0] recon=0.0170 vq=0.0105 perp=36.0 active=64/64 revived=0 lr=3.00e-04 elapsed=492s
+[step     850 | ep  0] recon=0.0201 vq=0.0113 perp=23.2 active=57/64 revived=0 lr=3.00e-04 elapsed=525s
+[step     900 | ep  0] recon=0.0178 vq=0.0110 perp=26.9 active=59/64 revived=0 lr=3.00e-04 elapsed=554s
+[step     950 | ep  0] recon=0.0181 vq=0.0106 perp=27.0 active=59/64 revived=0 lr=3.00e-04 elapsed=587s
+[step    1000 | ep  0] recon=0.0180 vq=0.0099 perp=26.9 active=63/64 revived=0 lr=3.00e-04 elapsed=618s
+[step    1050 | ep  0] recon=0.0172 vq=0.0099 perp=24.5 active=62/64 revived=0 lr=3.00e-04 elapsed=650s
+[step    1100 | ep  0] recon=0.0197 vq=0.0104 perp=23.9 active=62/64 revived=0 lr=3.00e-04 elapsed=680s
+[step    1150 | ep  0] recon=0.0202 vq=0.0127 perp=25.4 active=62/64 revived=0 lr=3.00e-04 elapsed=712s
+[step    1200 | ep  0] recon=0.0214 vq=0.0128 perp=27.3 active=64/64 revived=0 lr=3.00e-04 elapsed=743s
+[step    1250 | ep  0] recon=0.0157 vq=0.0091 perp=25.0 active=63/64 revived=0 lr=3.00e-04 elapsed=774s
+[step    1300 | ep  0] recon=0.0201 vq=0.0105 perp=28.4 active=63/64 revived=0 lr=3.00e-04 elapsed=804s
+[step    1350 | ep  0] recon=0.0199 vq=0.0120 perp=25.7 active=63/64 revived=0 lr=3.00e-04 elapsed=836s
+[step    1400 | ep  0] recon=0.0162 vq=0.0098 perp=25.8 active=63/64 revived=0 lr=3.00e-04 elapsed=866s
+[step    1450 | ep  0] recon=0.0146 vq=0.0082 perp=28.5 active=64/64 revived=0 lr=3.00e-04 elapsed=898s
+[2026-05-04 19:12:52,076] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch000.pt
+[step    1500 | ep  1] recon=0.0151 vq=0.0084 perp=26.7 active=64/64 revived=0 lr=3.00e-04 elapsed=960s
+[step    1550 | ep  1] recon=0.0159 vq=0.0092 perp=26.0 active=64/64 revived=0 lr=3.00e-04 elapsed=990s
+[step    1600 | ep  1] recon=0.0208 vq=0.0121 perp=26.4 active=64/64 revived=0 lr=3.00e-04 elapsed=1023s
+[step    1650 | ep  1] recon=0.0222 vq=0.0121 perp=27.0 active=64/64 revived=0 lr=3.00e-04 elapsed=1053s
+[step    1700 | ep  1] recon=0.0183 vq=0.0099 perp=28.7 active=64/64 revived=0 lr=2.99e-04 elapsed=1085s
+[step    1750 | ep  1] recon=0.0168 vq=0.0095 perp=28.4 active=64/64 revived=0 lr=2.99e-04 elapsed=1115s
+[step    1800 | ep  1] recon=0.0148 vq=0.0084 perp=25.0 active=64/64 revived=0 lr=2.99e-04 elapsed=1147s
+[step    1850 | ep  1] recon=0.0177 vq=0.0096 perp=27.9 active=63/64 revived=0 lr=2.99e-04 elapsed=1177s
+[step    1900 | ep  1] recon=0.0182 vq=0.0103 perp=27.2 active=64/64 revived=0 lr=2.99e-04 elapsed=1209s
+[step    1950 | ep  1] recon=0.0190 vq=0.0099 perp=26.0 active=63/64 revived=0 lr=2.99e-04 elapsed=1240s
+[step    2000 | ep  1] recon=0.0152 vq=0.0083 perp=25.7 active=64/64 revived=0 lr=2.99e-04 elapsed=1272s
+[2026-05-04 19:19:00,744] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-05-04 19:19:00,744] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-05-04 19:19:00,744] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-05-04 19:19:00,744] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-05-04 19:19:00,744] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-05-04 19:19:00,745] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+[2026-05-04 19:19:00,759] [INFO] [real_accelerator.py:219:get_accelerator] Setting ds_accelerator to cuda (auto detect)
+  [val @ step 2000] val_recon=0.0227 val_vq=0.0133 val_perplexity=6.9955 val_active=24.8276
+[step    2050 | ep  1] recon=0.0180 vq=0.0099 perp=28.3 active=62/64 revived=0 lr=2.99e-04 elapsed=1323s
+[step    2100 | ep  1] recon=0.0218 vq=0.0115 perp=26.7 active=64/64 revived=0 lr=2.99e-04 elapsed=1353s
+[step    2150 | ep  1] recon=0.0165 vq=0.0091 perp=28.6 active=64/64 revived=0 lr=2.99e-04 elapsed=1385s
+[step    2200 | ep  1] recon=0.0214 vq=0.0116 perp=26.7 active=64/64 revived=0 lr=2.99e-04 elapsed=1416s
+[step    2250 | ep  1] recon=0.0162 vq=0.0087 perp=26.0 active=64/64 revived=0 lr=2.99e-04 elapsed=1449s
+[step    2300 | ep  1] recon=0.0174 vq=0.0101 perp=24.0 active=64/64 revived=0 lr=2.99e-04 elapsed=1481s
+[step    2350 | ep  1] recon=0.0148 vq=0.0079 perp=26.0 active=64/64 revived=0 lr=2.99e-04 elapsed=1516s
+[step    2400 | ep  1] recon=0.0188 vq=0.0097 perp=25.8 active=64/64 revived=0 lr=2.99e-04 elapsed=1549s
+[step    2450 | ep  1] recon=0.0179 vq=0.0090 perp=25.0 active=64/64 revived=0 lr=2.99e-04 elapsed=1585s
+[step    2500 | ep  1] recon=0.0184 vq=0.0100 perp=25.3 active=64/64 revived=0 lr=2.99e-04 elapsed=1618s
+[step    2550 | ep  1] recon=0.0195 vq=0.0100 perp=26.3 active=64/64 revived=0 lr=2.98e-04 elapsed=1654s
+[step    2600 | ep  1] recon=0.0138 vq=0.0075 perp=25.1 active=64/64 revived=0 lr=2.98e-04 elapsed=1687s
+[step    2650 | ep  1] recon=0.0211 vq=0.0111 perp=23.5 active=64/64 revived=0 lr=2.98e-04 elapsed=1723s
+[step    2700 | ep  1] recon=0.0183 vq=0.0094 perp=24.1 active=64/64 revived=0 lr=2.98e-04 elapsed=1756s
+[step    2750 | ep  1] recon=0.0190 vq=0.0101 perp=24.4 active=64/64 revived=0 lr=2.98e-04 elapsed=1792s
+[step    2800 | ep  1] recon=0.0166 vq=0.0088 perp=23.9 active=64/64 revived=0 lr=2.98e-04 elapsed=1826s
+[step    2850 | ep  1] recon=0.0204 vq=0.0109 perp=27.9 active=64/64 revived=0 lr=2.98e-04 elapsed=1862s
+[step    2900 | ep  1] recon=0.0188 vq=0.0094 perp=26.5 active=64/64 revived=0 lr=2.98e-04 elapsed=1896s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch001.pt
+[step    2950 | ep  2] recon=0.0215 vq=0.0104 perp=23.1 active=64/64 revived=0 lr=2.98e-04 elapsed=1932s
+[step    3000 | ep  2] recon=0.0201 vq=0.0098 perp=26.0 active=64/64 revived=0 lr=2.98e-04 elapsed=1966s
+[step    3050 | ep  2] recon=0.0170 vq=0.0089 perp=25.3 active=64/64 revived=0 lr=2.98e-04 elapsed=2002s
+[step    3100 | ep  2] recon=0.0194 vq=0.0098 perp=24.6 active=63/64 revived=0 lr=2.97e-04 elapsed=2036s
+[step    3150 | ep  2] recon=0.0157 vq=0.0089 perp=25.1 active=64/64 revived=0 lr=2.97e-04 elapsed=2072s
+[step    3200 | ep  2] recon=0.0171 vq=0.0080 perp=23.7 active=64/64 revived=0 lr=2.97e-04 elapsed=2106s
+[step    3250 | ep  2] recon=0.0160 vq=0.0094 perp=21.9 active=63/64 revived=0 lr=2.97e-04 elapsed=2141s
+[step    3300 | ep  2] recon=0.0209 vq=0.0097 perp=25.4 active=64/64 revived=0 lr=2.97e-04 elapsed=2175s
+[step    3350 | ep  2] recon=0.0199 vq=0.0110 perp=25.7 active=64/64 revived=0 lr=2.97e-04 elapsed=2210s
+[step    3400 | ep  2] recon=0.0184 vq=0.0098 perp=25.4 active=64/64 revived=0 lr=2.97e-04 elapsed=2244s
+[step    3450 | ep  2] recon=0.0146 vq=0.0074 perp=22.8 active=64/64 revived=0 lr=2.97e-04 elapsed=2279s
+[step    3500 | ep  2] recon=0.0194 vq=0.0090 perp=23.6 active=64/64 revived=0 lr=2.97e-04 elapsed=2314s
+[step    3550 | ep  2] recon=0.0170 vq=0.0082 perp=25.3 active=64/64 revived=0 lr=2.97e-04 elapsed=2345s
+[step    3600 | ep  2] recon=0.0180 vq=0.0094 perp=25.6 active=63/64 revived=0 lr=2.96e-04 elapsed=2374s
+[step    3650 | ep  2] recon=0.0194 vq=0.0097 perp=23.0 active=64/64 revived=0 lr=2.96e-04 elapsed=2403s
+[step    3700 | ep  2] recon=0.0212 vq=0.0104 perp=23.9 active=64/64 revived=0 lr=2.96e-04 elapsed=2431s
+[step    3750 | ep  2] recon=0.0202 vq=0.0102 perp=24.9 active=64/64 revived=0 lr=2.96e-04 elapsed=2461s
+[step    3800 | ep  2] recon=0.0192 vq=0.0103 perp=24.8 active=64/64 revived=0 lr=2.96e-04 elapsed=2489s
+[step    3850 | ep  2] recon=0.0232 vq=0.0111 perp=25.2 active=64/64 revived=0 lr=2.96e-04 elapsed=2518s
+[step    3900 | ep  2] recon=0.0159 vq=0.0081 perp=24.0 active=63/64 revived=0 lr=2.96e-04 elapsed=2547s
+[step    3950 | ep  2] recon=0.0157 vq=0.0083 perp=24.4 active=64/64 revived=0 lr=2.96e-04 elapsed=2576s
+[step    4000 | ep  2] recon=0.0212 vq=0.0112 perp=26.4 active=64/64 revived=0 lr=2.95e-04 elapsed=2605s
+  [val @ step 4000] val_recon=0.0218 val_vq=0.0120 val_perplexity=6.7434 val_active=24.5517
+[step    4050 | ep  2] recon=0.0203 vq=0.0097 perp=25.3 active=64/64 revived=0 lr=2.95e-04 elapsed=2634s
+[step    4100 | ep  2] recon=0.0208 vq=0.0100 perp=23.9 active=64/64 revived=0 lr=2.95e-04 elapsed=2663s
+[step    4150 | ep  2] recon=0.0214 vq=0.0107 perp=25.9 active=64/64 revived=0 lr=2.95e-04 elapsed=2691s
+[step    4200 | ep  2] recon=0.0189 vq=0.0094 perp=23.8 active=64/64 revived=0 lr=2.95e-04 elapsed=2720s
+[step    4250 | ep  2] recon=0.0178 vq=0.0089 perp=24.5 active=64/64 revived=0 lr=2.95e-04 elapsed=2749s
+[step    4300 | ep  2] recon=0.0165 vq=0.0081 perp=24.9 active=64/64 revived=0 lr=2.95e-04 elapsed=2778s
+[step    4350 | ep  2] recon=0.0172 vq=0.0082 perp=24.7 active=64/64 revived=0 lr=2.94e-04 elapsed=2807s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch002.pt
+[step    4400 | ep  3] recon=0.0156 vq=0.0074 perp=25.6 active=64/64 revived=0 lr=2.94e-04 elapsed=2837s
+[step    4450 | ep  3] recon=0.0160 vq=0.0080 perp=23.9 active=64/64 revived=0 lr=2.94e-04 elapsed=2867s
+[step    4500 | ep  3] recon=0.0196 vq=0.0094 perp=25.0 active=63/64 revived=0 lr=2.94e-04 elapsed=2895s
+[step    4550 | ep  3] recon=0.0156 vq=0.0079 perp=24.6 active=64/64 revived=0 lr=2.94e-04 elapsed=2925s
+[step    4600 | ep  3] recon=0.0172 vq=0.0087 perp=23.3 active=63/64 revived=0 lr=2.94e-04 elapsed=2953s
+[step    4650 | ep  3] recon=0.0215 vq=0.0110 perp=24.0 active=64/64 revived=0 lr=2.94e-04 elapsed=2983s
+[step    4700 | ep  3] recon=0.0180 vq=0.0088 perp=22.8 active=64/64 revived=0 lr=2.93e-04 elapsed=3011s
+[step    4750 | ep  3] recon=0.0188 vq=0.0092 perp=23.6 active=64/64 revived=0 lr=2.93e-04 elapsed=3040s
+[step    4800 | ep  3] recon=0.0184 vq=0.0094 perp=23.9 active=64/64 revived=0 lr=2.93e-04 elapsed=3069s
+[step    4850 | ep  3] recon=0.0187 vq=0.0094 perp=25.2 active=64/64 revived=0 lr=2.93e-04 elapsed=3098s
+[step    4900 | ep  3] recon=0.0168 vq=0.0086 perp=24.1 active=64/64 revived=0 lr=2.93e-04 elapsed=3126s
+[step    4950 | ep  3] recon=0.0187 vq=0.0087 perp=23.2 active=64/64 revived=0 lr=2.93e-04 elapsed=3155s
+[step    5000 | ep  3] recon=0.0175 vq=0.0085 perp=24.2 active=63/64 revived=0 lr=2.92e-04 elapsed=3184s
+[step    5050 | ep  3] recon=0.0155 vq=0.0071 perp=23.4 active=64/64 revived=0 lr=2.92e-04 elapsed=3213s
+[step    5100 | ep  3] recon=0.0195 vq=0.0089 perp=23.3 active=64/64 revived=0 lr=2.92e-04 elapsed=3242s
+[step    5150 | ep  3] recon=0.0172 vq=0.0085 perp=21.9 active=64/64 revived=0 lr=2.92e-04 elapsed=3271s
+[step    5200 | ep  3] recon=0.0163 vq=0.0080 perp=22.1 active=64/64 revived=0 lr=2.92e-04 elapsed=3299s
+[step    5250 | ep  3] recon=0.0155 vq=0.0073 perp=25.4 active=64/64 revived=0 lr=2.92e-04 elapsed=3329s
+[step    5300 | ep  3] recon=0.0142 vq=0.0075 perp=22.8 active=64/64 revived=0 lr=2.91e-04 elapsed=3358s
+[step    5350 | ep  3] recon=0.0177 vq=0.0078 perp=22.8 active=64/64 revived=0 lr=2.91e-04 elapsed=3387s
+[step    5400 | ep  3] recon=0.0171 vq=0.0072 perp=22.7 active=64/64 revived=0 lr=2.91e-04 elapsed=3416s
+[step    5450 | ep  3] recon=0.0203 vq=0.0100 perp=24.6 active=64/64 revived=0 lr=2.91e-04 elapsed=3445s
+[step    5500 | ep  3] recon=0.0182 vq=0.0090 perp=23.1 active=62/64 revived=0 lr=2.91e-04 elapsed=3473s
+[step    5550 | ep  3] recon=0.0157 vq=0.0082 perp=23.3 active=64/64 revived=0 lr=2.91e-04 elapsed=3503s
+[step    5600 | ep  3] recon=0.0167 vq=0.0080 perp=22.0 active=64/64 revived=0 lr=2.90e-04 elapsed=3531s
+[step    5650 | ep  3] recon=0.0160 vq=0.0078 perp=22.9 active=63/64 revived=0 lr=2.90e-04 elapsed=3561s
+[step    5700 | ep  3] recon=0.0191 vq=0.0095 perp=22.4 active=64/64 revived=0 lr=2.90e-04 elapsed=3589s
+[step    5750 | ep  3] recon=0.0186 vq=0.0082 perp=21.9 active=63/64 revived=0 lr=2.90e-04 elapsed=3619s
+[step    5800 | ep  3] recon=0.0156 vq=0.0082 perp=23.8 active=64/64 revived=0 lr=2.90e-04 elapsed=3647s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch003.pt
+[step    5850 | ep  4] recon=0.0202 vq=0.0097 perp=22.2 active=63/64 revived=0 lr=2.89e-04 elapsed=3677s
+[step    5900 | ep  4] recon=0.0183 vq=0.0087 perp=23.9 active=64/64 revived=0 lr=2.89e-04 elapsed=3707s
+[step    5950 | ep  4] recon=0.0173 vq=0.0087 perp=22.7 active=64/64 revived=0 lr=2.89e-04 elapsed=3735s
+[step    6000 | ep  4] recon=0.0208 vq=0.0097 perp=23.4 active=64/64 revived=0 lr=2.89e-04 elapsed=3765s
+  [val @ step 6000] val_recon=0.0217 val_vq=0.0108 val_perplexity=6.3238 val_active=24.3793
+[step    6050 | ep  4] recon=0.0181 vq=0.0089 perp=21.7 active=64/64 revived=0 lr=2.89e-04 elapsed=3793s
+[step    6100 | ep  4] recon=0.0215 vq=0.0093 perp=22.2 active=63/64 revived=0 lr=2.88e-04 elapsed=3823s
+[step    6150 | ep  4] recon=0.0174 vq=0.0091 perp=22.5 active=63/64 revived=0 lr=2.88e-04 elapsed=3851s
+[step    6200 | ep  4] recon=0.0182 vq=0.0085 perp=21.9 active=64/64 revived=0 lr=2.88e-04 elapsed=3881s
+[step    6250 | ep  4] recon=0.0190 vq=0.0083 perp=22.9 active=63/64 revived=0 lr=2.88e-04 elapsed=3909s
+[step    6300 | ep  4] recon=0.0181 vq=0.0082 perp=21.2 active=64/64 revived=0 lr=2.88e-04 elapsed=3939s
+[step    6350 | ep  4] recon=0.0196 vq=0.0097 perp=24.8 active=64/64 revived=0 lr=2.87e-04 elapsed=3966s
+[step    6400 | ep  4] recon=0.0168 vq=0.0081 perp=21.4 active=64/64 revived=0 lr=2.87e-04 elapsed=3996s
+[step    6450 | ep  4] recon=0.0216 vq=0.0099 perp=22.9 active=64/64 revived=0 lr=2.87e-04 elapsed=4024s
+[step    6500 | ep  4] recon=0.0201 vq=0.0089 perp=22.6 active=64/64 revived=0 lr=2.87e-04 elapsed=4054s
+[step    6550 | ep  4] recon=0.0174 vq=0.0084 perp=20.6 active=64/64 revived=0 lr=2.87e-04 elapsed=4082s
+[step    6600 | ep  4] recon=0.0253 vq=0.0114 perp=22.7 active=64/64 revived=0 lr=2.86e-04 elapsed=4112s
+[step    6650 | ep  4] recon=0.0155 vq=0.0074 perp=20.7 active=63/64 revived=0 lr=2.86e-04 elapsed=4139s
+[step    6700 | ep  4] recon=0.0176 vq=0.0082 perp=22.2 active=64/64 revived=0 lr=2.86e-04 elapsed=4169s
+[step    6750 | ep  4] recon=0.0197 vq=0.0092 perp=22.4 active=64/64 revived=0 lr=2.86e-04 elapsed=4196s
+[step    6800 | ep  4] recon=0.0204 vq=0.0099 perp=22.4 active=64/64 revived=0 lr=2.85e-04 elapsed=4226s
+[step    6850 | ep  4] recon=0.0158 vq=0.0071 perp=23.3 active=64/64 revived=0 lr=2.85e-04 elapsed=4254s
+[step    6900 | ep  4] recon=0.0200 vq=0.0098 perp=24.3 active=64/64 revived=0 lr=2.85e-04 elapsed=4284s
+[step    6950 | ep  4] recon=0.0168 vq=0.0083 perp=22.7 active=64/64 revived=0 lr=2.85e-04 elapsed=4312s
+[step    7000 | ep  4] recon=0.0154 vq=0.0066 perp=21.7 active=64/64 revived=0 lr=2.84e-04 elapsed=4342s
+[step    7050 | ep  4] recon=0.0162 vq=0.0068 perp=21.0 active=64/64 revived=0 lr=2.84e-04 elapsed=4369s
+[step    7100 | ep  4] recon=0.0173 vq=0.0081 perp=21.8 active=64/64 revived=0 lr=2.84e-04 elapsed=4399s
+[step    7150 | ep  4] recon=0.0234 vq=0.0098 perp=23.6 active=64/64 revived=0 lr=2.84e-04 elapsed=4427s
+[step    7200 | ep  4] recon=0.0208 vq=0.0090 perp=22.9 active=64/64 revived=0 lr=2.84e-04 elapsed=4457s
+[step    7250 | ep  4] recon=0.0187 vq=0.0092 perp=22.0 active=64/64 revived=0 lr=2.83e-04 elapsed=4485s
+[step    7300 | ep  4] recon=0.0178 vq=0.0079 perp=21.5 active=64/64 revived=0 lr=2.83e-04 elapsed=4514s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch004.pt
+[step    7350 | ep  5] recon=0.0165 vq=0.0078 perp=22.1 active=64/64 revived=0 lr=2.83e-04 elapsed=4543s
+[step    7400 | ep  5] recon=0.0160 vq=0.0073 perp=20.5 active=62/64 revived=0 lr=2.83e-04 elapsed=4573s
+[step    7450 | ep  5] recon=0.0249 vq=0.0129 perp=22.5 active=64/64 revived=0 lr=2.82e-04 elapsed=4601s
+[step    7500 | ep  5] recon=0.0161 vq=0.0080 perp=21.3 active=64/64 revived=0 lr=2.82e-04 elapsed=4631s
+[step    7550 | ep  5] recon=0.0165 vq=0.0074 perp=20.4 active=62/64 revived=0 lr=2.82e-04 elapsed=4659s
+[step    7600 | ep  5] recon=0.0184 vq=0.0081 perp=20.6 active=64/64 revived=0 lr=2.82e-04 elapsed=4688s
+[step    7650 | ep  5] recon=0.0183 vq=0.0081 perp=22.9 active=64/64 revived=0 lr=2.81e-04 elapsed=4716s
+[step    7700 | ep  5] recon=0.0165 vq=0.0076 perp=21.0 active=64/64 revived=0 lr=2.81e-04 elapsed=4745s
+[step    7750 | ep  5] recon=0.0179 vq=0.0082 perp=20.1 active=63/64 revived=0 lr=2.81e-04 elapsed=4773s
+[step    7800 | ep  5] recon=0.0203 vq=0.0093 perp=22.7 active=64/64 revived=0 lr=2.81e-04 elapsed=4802s
+[step    7850 | ep  5] recon=0.0180 vq=0.0081 perp=23.5 active=64/64 revived=0 lr=2.80e-04 elapsed=4830s
+[step    7900 | ep  5] recon=0.0168 vq=0.0071 perp=21.9 active=64/64 revived=0 lr=2.80e-04 elapsed=4859s
+[step    7950 | ep  5] recon=0.0156 vq=0.0069 perp=21.8 active=64/64 revived=0 lr=2.80e-04 elapsed=4887s
+[step    8000 | ep  5] recon=0.0190 vq=0.0086 perp=23.4 active=64/64 revived=0 lr=2.79e-04 elapsed=4916s
+  [val @ step 8000] val_recon=0.0218 val_vq=0.0106 val_perplexity=6.1253 val_active=24.3793
+[step    8050 | ep  5] recon=0.0203 vq=0.0094 perp=23.0 active=64/64 revived=0 lr=2.79e-04 elapsed=4944s
+[step    8100 | ep  5] recon=0.0187 vq=0.0081 perp=22.3 active=64/64 revived=0 lr=2.79e-04 elapsed=4973s
+[step    8150 | ep  5] recon=0.0183 vq=0.0084 perp=21.2 active=64/64 revived=0 lr=2.79e-04 elapsed=5001s
+[step    8200 | ep  5] recon=0.0176 vq=0.0082 perp=21.1 active=64/64 revived=0 lr=2.78e-04 elapsed=5029s
+[step    8250 | ep  5] recon=0.0177 vq=0.0082 perp=21.3 active=64/64 revived=0 lr=2.78e-04 elapsed=5057s
+[step    8300 | ep  5] recon=0.0169 vq=0.0077 perp=22.4 active=64/64 revived=0 lr=2.78e-04 elapsed=5086s
+[step    8350 | ep  5] recon=0.0140 vq=0.0069 perp=22.6 active=64/64 revived=0 lr=2.78e-04 elapsed=5114s
+[step    8400 | ep  5] recon=0.0192 vq=0.0086 perp=23.5 active=64/64 revived=0 lr=2.77e-04 elapsed=5142s
+[step    8450 | ep  5] recon=0.0169 vq=0.0076 perp=21.5 active=64/64 revived=0 lr=2.77e-04 elapsed=5171s
+[step    8500 | ep  5] recon=0.0214 vq=0.0099 perp=22.9 active=64/64 revived=0 lr=2.77e-04 elapsed=5199s
+[step    8550 | ep  5] recon=0.0167 vq=0.0077 perp=23.7 active=64/64 revived=0 lr=2.76e-04 elapsed=5228s
+[step    8600 | ep  5] recon=0.0160 vq=0.0070 perp=22.2 active=64/64 revived=0 lr=2.76e-04 elapsed=5255s
+[step    8650 | ep  5] recon=0.0191 vq=0.0082 perp=22.0 active=64/64 revived=0 lr=2.76e-04 elapsed=5284s
+[step    8700 | ep  5] recon=0.0184 vq=0.0083 perp=23.1 active=64/64 revived=0 lr=2.76e-04 elapsed=5312s
+[step    8750 | ep  5] recon=0.0192 vq=0.0089 perp=22.6 active=64/64 revived=0 lr=2.75e-04 elapsed=5341s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch005.pt
+[step    8800 | ep  6] recon=0.0219 vq=0.0100 perp=22.2 active=64/64 revived=0 lr=2.75e-04 elapsed=5369s
+[step    8850 | ep  6] recon=0.0156 vq=0.0074 perp=22.4 active=64/64 revived=0 lr=2.75e-04 elapsed=5399s
+[step    8900 | ep  6] recon=0.0161 vq=0.0073 perp=21.8 active=64/64 revived=0 lr=2.74e-04 elapsed=5427s
+[step    8950 | ep  6] recon=0.0219 vq=0.0098 perp=21.4 active=64/64 revived=0 lr=2.74e-04 elapsed=5456s
+[step    9000 | ep  6] recon=0.0189 vq=0.0082 perp=21.7 active=63/64 revived=0 lr=2.74e-04 elapsed=5483s
+[step    9050 | ep  6] recon=0.0155 vq=0.0067 perp=21.6 active=64/64 revived=0 lr=2.73e-04 elapsed=5513s
+[step    9100 | ep  6] recon=0.0157 vq=0.0066 perp=21.0 active=63/64 revived=0 lr=2.73e-04 elapsed=5540s
+[step    9150 | ep  6] recon=0.0208 vq=0.0093 perp=22.2 active=64/64 revived=0 lr=2.73e-04 elapsed=5570s
+[step    9200 | ep  6] recon=0.0200 vq=0.0086 perp=22.3 active=64/64 revived=0 lr=2.73e-04 elapsed=5597s
+[step    9250 | ep  6] recon=0.0152 vq=0.0070 perp=21.6 active=64/64 revived=0 lr=2.72e-04 elapsed=5626s
+[step    9300 | ep  6] recon=0.0181 vq=0.0085 perp=23.4 active=64/64 revived=0 lr=2.72e-04 elapsed=5653s
+[step    9350 | ep  6] recon=0.0130 vq=0.0061 perp=22.0 active=64/64 revived=0 lr=2.72e-04 elapsed=5683s
+[step    9400 | ep  6] recon=0.0163 vq=0.0071 perp=20.5 active=64/64 revived=0 lr=2.71e-04 elapsed=5710s
+[step    9450 | ep  6] recon=0.0197 vq=0.0084 perp=20.9 active=64/64 revived=0 lr=2.71e-04 elapsed=5739s
+[step    9500 | ep  6] recon=0.0164 vq=0.0077 perp=20.9 active=64/64 revived=0 lr=2.71e-04 elapsed=5767s
+[step    9550 | ep  6] recon=0.0175 vq=0.0080 perp=22.5 active=64/64 revived=0 lr=2.70e-04 elapsed=5796s
+[step    9600 | ep  6] recon=0.0178 vq=0.0071 perp=22.6 active=64/64 revived=0 lr=2.70e-04 elapsed=5823s
+[step    9650 | ep  6] recon=0.0148 vq=0.0068 perp=22.8 active=64/64 revived=0 lr=2.70e-04 elapsed=5852s
+[step    9700 | ep  6] recon=0.0152 vq=0.0068 perp=23.0 active=64/64 revived=0 lr=2.69e-04 elapsed=5879s
+[step    9750 | ep  6] recon=0.0162 vq=0.0074 perp=22.8 active=64/64 revived=0 lr=2.69e-04 elapsed=5909s
+[step    9800 | ep  6] recon=0.0180 vq=0.0084 perp=23.2 active=64/64 revived=0 lr=2.69e-04 elapsed=5936s
+[step    9850 | ep  6] recon=0.0178 vq=0.0081 perp=21.6 active=64/64 revived=0 lr=2.68e-04 elapsed=5966s
+[step    9900 | ep  6] recon=0.0189 vq=0.0087 perp=23.1 active=64/64 revived=0 lr=2.68e-04 elapsed=5994s
+[step    9950 | ep  6] recon=0.0198 vq=0.0088 perp=24.3 active=64/64 revived=0 lr=2.68e-04 elapsed=6023s
+[step   10000 | ep  6] recon=0.0182 vq=0.0079 perp=21.7 active=64/64 revived=0 lr=2.68e-04 elapsed=6051s
+  [val @ step 10000] val_recon=0.0219 val_vq=0.0104 val_perplexity=6.1408 val_active=24.3103
+[step   10050 | ep  6] recon=0.0178 vq=0.0082 perp=23.0 active=64/64 revived=0 lr=2.67e-04 elapsed=6081s
+[step   10100 | ep  6] recon=0.0138 vq=0.0062 perp=22.4 active=64/64 revived=0 lr=2.67e-04 elapsed=6108s
+[step   10150 | ep  6] recon=0.0184 vq=0.0083 perp=21.9 active=64/64 revived=0 lr=2.67e-04 elapsed=6138s
+[step   10200 | ep  6] recon=0.0204 vq=0.0080 perp=21.6 active=64/64 revived=0 lr=2.66e-04 elapsed=6166s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch006.pt
+[step   10250 | ep  7] recon=0.0189 vq=0.0078 perp=22.3 active=64/64 revived=0 lr=2.66e-04 elapsed=6196s
+[step   10300 | ep  7] recon=0.0165 vq=0.0070 perp=21.4 active=63/64 revived=0 lr=2.66e-04 elapsed=6224s
+[step   10350 | ep  7] recon=0.0256 vq=0.0102 perp=23.1 active=64/64 revived=0 lr=2.65e-04 elapsed=6254s
+[step   10400 | ep  7] recon=0.0167 vq=0.0068 perp=21.6 active=64/64 revived=0 lr=2.65e-04 elapsed=6282s
+[step   10450 | ep  7] recon=0.0188 vq=0.0084 perp=22.4 active=64/64 revived=0 lr=2.64e-04 elapsed=6312s
+[step   10500 | ep  7] recon=0.0149 vq=0.0059 perp=22.5 active=64/64 revived=0 lr=2.64e-04 elapsed=6340s
+[step   10550 | ep  7] recon=0.0190 vq=0.0087 perp=22.5 active=64/64 revived=0 lr=2.64e-04 elapsed=6369s
+[step   10600 | ep  7] recon=0.0172 vq=0.0077 perp=22.7 active=64/64 revived=0 lr=2.63e-04 elapsed=6397s
+[step   10650 | ep  7] recon=0.0197 vq=0.0088 perp=22.8 active=64/64 revived=0 lr=2.63e-04 elapsed=6427s
+[step   10700 | ep  7] recon=0.0163 vq=0.0071 perp=20.9 active=64/64 revived=0 lr=2.63e-04 elapsed=6455s
+[step   10750 | ep  7] recon=0.0163 vq=0.0073 perp=20.7 active=63/64 revived=0 lr=2.62e-04 elapsed=6485s
+[step   10800 | ep  7] recon=0.0179 vq=0.0072 perp=21.6 active=64/64 revived=0 lr=2.62e-04 elapsed=6513s
+[step   10850 | ep  7] recon=0.0129 vq=0.0062 perp=20.7 active=64/64 revived=0 lr=2.62e-04 elapsed=6542s
+[step   10900 | ep  7] recon=0.0192 vq=0.0081 perp=20.4 active=64/64 revived=0 lr=2.61e-04 elapsed=6570s
+[step   10950 | ep  7] recon=0.0192 vq=0.0091 perp=22.7 active=64/64 revived=0 lr=2.61e-04 elapsed=6600s
+[step   11000 | ep  7] recon=0.0189 vq=0.0082 perp=22.0 active=64/64 revived=0 lr=2.61e-04 elapsed=6628s
+[step   11050 | ep  7] recon=0.0166 vq=0.0077 perp=22.2 active=64/64 revived=0 lr=2.60e-04 elapsed=6658s
+[step   11100 | ep  7] recon=0.0179 vq=0.0076 perp=21.2 active=64/64 revived=0 lr=2.60e-04 elapsed=6685s
+[step   11150 | ep  7] recon=0.0164 vq=0.0069 perp=21.2 active=64/64 revived=0 lr=2.60e-04 elapsed=6714s
+[step   11200 | ep  7] recon=0.0163 vq=0.0070 perp=20.0 active=64/64 revived=0 lr=2.59e-04 elapsed=6742s
+[step   11250 | ep  7] recon=0.0154 vq=0.0073 perp=22.0 active=64/64 revived=0 lr=2.59e-04 elapsed=6771s
+[step   11300 | ep  7] recon=0.0185 vq=0.0078 perp=20.0 active=64/64 revived=0 lr=2.58e-04 elapsed=6798s
+[step   11350 | ep  7] recon=0.0140 vq=0.0062 perp=22.0 active=64/64 revived=0 lr=2.58e-04 elapsed=6828s
+[step   11400 | ep  7] recon=0.0184 vq=0.0074 perp=22.4 active=64/64 revived=0 lr=2.58e-04 elapsed=6855s
+[step   11450 | ep  7] recon=0.0133 vq=0.0056 perp=21.2 active=64/64 revived=0 lr=2.57e-04 elapsed=6884s
+[step   11500 | ep  7] recon=0.0191 vq=0.0091 perp=22.4 active=64/64 revived=0 lr=2.57e-04 elapsed=6911s
+[step   11550 | ep  7] recon=0.0140 vq=0.0059 perp=21.2 active=64/64 revived=0 lr=2.57e-04 elapsed=6941s
+[step   11600 | ep  7] recon=0.0161 vq=0.0076 perp=21.3 active=64/64 revived=0 lr=2.56e-04 elapsed=6968s
+[step   11650 | ep  7] recon=0.0195 vq=0.0082 perp=21.5 active=64/64 revived=0 lr=2.56e-04 elapsed=6997s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch007.pt
+[step   11700 | ep  8] recon=0.0189 vq=0.0086 perp=21.5 active=64/64 revived=0 lr=2.56e-04 elapsed=7027s
+[step   11750 | ep  8] recon=0.0222 vq=0.0090 perp=20.5 active=64/64 revived=0 lr=2.55e-04 elapsed=7054s
+[step   11800 | ep  8] recon=0.0189 vq=0.0081 perp=22.7 active=64/64 revived=0 lr=2.55e-04 elapsed=7084s
+[step   11850 | ep  8] recon=0.0203 vq=0.0086 perp=23.3 active=64/64 revived=0 lr=2.54e-04 elapsed=7111s
+[step   11900 | ep  8] recon=0.0148 vq=0.0063 perp=21.2 active=64/64 revived=0 lr=2.54e-04 elapsed=7141s
+[step   11950 | ep  8] recon=0.0153 vq=0.0065 perp=21.4 active=64/64 revived=0 lr=2.54e-04 elapsed=7168s
+[step   12000 | ep  8] recon=0.0159 vq=0.0069 perp=22.8 active=64/64 revived=0 lr=2.53e-04 elapsed=7197s
+  [val @ step 12000] val_recon=0.0219 val_vq=0.0108 val_perplexity=6.5464 val_active=24.7931
+[step   12050 | ep  8] recon=0.0174 vq=0.0078 perp=22.0 active=64/64 revived=0 lr=2.53e-04 elapsed=7225s
+[step   12100 | ep  8] recon=0.0183 vq=0.0081 perp=21.2 active=64/64 revived=0 lr=2.53e-04 elapsed=7255s
+[step   12150 | ep  8] recon=0.0172 vq=0.0074 perp=21.3 active=64/64 revived=0 lr=2.52e-04 elapsed=7282s
+[step   12200 | ep  8] recon=0.0213 vq=0.0089 perp=21.9 active=64/64 revived=0 lr=2.52e-04 elapsed=7311s
+[step   12250 | ep  8] recon=0.0160 vq=0.0068 perp=23.7 active=64/64 revived=0 lr=2.51e-04 elapsed=7339s
+[step   12300 | ep  8] recon=0.0188 vq=0.0083 perp=22.1 active=64/64 revived=0 lr=2.51e-04 elapsed=7368s
+[step   12350 | ep  8] recon=0.0170 vq=0.0073 perp=21.2 active=64/64 revived=0 lr=2.51e-04 elapsed=7396s
+[step   12400 | ep  8] recon=0.0184 vq=0.0079 perp=21.5 active=64/64 revived=0 lr=2.50e-04 elapsed=7425s
+[step   12450 | ep  8] recon=0.0206 vq=0.0091 perp=22.2 active=64/64 revived=0 lr=2.50e-04 elapsed=7453s
+[step   12500 | ep  8] recon=0.0210 vq=0.0090 perp=21.7 active=63/64 revived=0 lr=2.49e-04 elapsed=7482s
+[step   12550 | ep  8] recon=0.0192 vq=0.0078 perp=20.6 active=63/64 revived=0 lr=2.49e-04 elapsed=7510s
+[step   12600 | ep  8] recon=0.0182 vq=0.0084 perp=23.4 active=64/64 revived=0 lr=2.49e-04 elapsed=7539s
+[step   12650 | ep  8] recon=0.0200 vq=0.0084 perp=21.7 active=64/64 revived=0 lr=2.48e-04 elapsed=7566s
+[step   12700 | ep  8] recon=0.0186 vq=0.0080 perp=22.1 active=64/64 revived=0 lr=2.48e-04 elapsed=7596s
+[step   12750 | ep  8] recon=0.0161 vq=0.0071 perp=21.9 active=63/64 revived=0 lr=2.47e-04 elapsed=7623s
+[step   12800 | ep  8] recon=0.0188 vq=0.0080 perp=22.8 active=64/64 revived=0 lr=2.47e-04 elapsed=7652s
+[step   12850 | ep  8] recon=0.0207 vq=0.0088 perp=21.1 active=64/64 revived=0 lr=2.47e-04 elapsed=7680s
+[step   12900 | ep  8] recon=0.0205 vq=0.0083 perp=21.8 active=64/64 revived=0 lr=2.46e-04 elapsed=7709s
+[step   12950 | ep  8] recon=0.0172 vq=0.0075 perp=22.5 active=64/64 revived=0 lr=2.46e-04 elapsed=7736s
+[step   13000 | ep  8] recon=0.0182 vq=0.0073 perp=23.0 active=64/64 revived=0 lr=2.45e-04 elapsed=7765s
+[step   13050 | ep  8] recon=0.0163 vq=0.0076 perp=22.6 active=64/64 revived=0 lr=2.45e-04 elapsed=7793s
+[step   13100 | ep  8] recon=0.0213 vq=0.0089 perp=21.9 active=64/64 revived=0 lr=2.45e-04 elapsed=7822s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch008.pt
+[step   13150 | ep  9] recon=0.0174 vq=0.0080 perp=22.5 active=64/64 revived=0 lr=2.44e-04 elapsed=7851s
+[step   13200 | ep  9] recon=0.0174 vq=0.0078 perp=22.1 active=64/64 revived=0 lr=2.44e-04 elapsed=7881s
+[step   13250 | ep  9] recon=0.0166 vq=0.0066 perp=21.0 active=64/64 revived=0 lr=2.43e-04 elapsed=7909s
+[step   13300 | ep  9] recon=0.0173 vq=0.0078 perp=21.0 active=64/64 revived=0 lr=2.43e-04 elapsed=7938s
+[step   13350 | ep  9] recon=0.0201 vq=0.0093 perp=21.9 active=64/64 revived=0 lr=2.42e-04 elapsed=7978s
+[step   13400 | ep  9] recon=0.0176 vq=0.0073 perp=21.5 active=64/64 revived=0 lr=2.42e-04 elapsed=8025s
+[step   13450 | ep  9] recon=0.0183 vq=0.0078 perp=23.3 active=64/64 revived=0 lr=2.42e-04 elapsed=8068s
+[step   13500 | ep  9] recon=0.0178 vq=0.0076 perp=22.8 active=64/64 revived=0 lr=2.41e-04 elapsed=8112s
+[step   13550 | ep  9] recon=0.0167 vq=0.0073 perp=20.1 active=64/64 revived=0 lr=2.41e-04 elapsed=8156s
+[step   13600 | ep  9] recon=0.0231 vq=0.0091 perp=22.9 active=64/64 revived=0 lr=2.40e-04 elapsed=8200s
+[step   13650 | ep  9] recon=0.0160 vq=0.0063 perp=23.2 active=64/64 revived=0 lr=2.40e-04 elapsed=8244s
+[step   13700 | ep  9] recon=0.0161 vq=0.0072 perp=21.4 active=64/64 revived=0 lr=2.40e-04 elapsed=8287s
+[step   13750 | ep  9] recon=0.0188 vq=0.0080 perp=21.0 active=64/64 revived=0 lr=2.39e-04 elapsed=8332s
+[step   13800 | ep  9] recon=0.0172 vq=0.0071 perp=21.8 active=64/64 revived=0 lr=2.39e-04 elapsed=8374s
+[step   13850 | ep  9] recon=0.0222 vq=0.0091 perp=22.8 active=64/64 revived=0 lr=2.38e-04 elapsed=8425s
+[step   13900 | ep  9] recon=0.0174 vq=0.0070 perp=22.0 active=64/64 revived=0 lr=2.38e-04 elapsed=8471s
+[step   13950 | ep  9] recon=0.0181 vq=0.0076 perp=20.6 active=64/64 revived=0 lr=2.37e-04 elapsed=8540s
+[step   14000 | ep  9] recon=0.0157 vq=0.0071 perp=21.3 active=64/64 revived=0 lr=2.37e-04 elapsed=8608s
+  [val @ step 14000] val_recon=0.0239 val_vq=0.0105 val_perplexity=6.1601 val_active=24.4828
+[step   14050 | ep  9] recon=0.0140 vq=0.0058 perp=22.4 active=64/64 revived=0 lr=2.37e-04 elapsed=8681s
+[step   14100 | ep  9] recon=0.0201 vq=0.0082 perp=21.1 active=64/64 revived=0 lr=2.36e-04 elapsed=8748s
+[step   14150 | ep  9] recon=0.0196 vq=0.0084 perp=20.9 active=64/64 revived=0 lr=2.36e-04 elapsed=8799s
+[step   14200 | ep  9] recon=0.0197 vq=0.0079 perp=21.8 active=64/64 revived=0 lr=2.35e-04 elapsed=8840s
+[step   14250 | ep  9] recon=0.0182 vq=0.0071 perp=21.6 active=64/64 revived=0 lr=2.35e-04 elapsed=8883s
+[step   14300 | ep  9] recon=0.0200 vq=0.0086 perp=22.7 active=64/64 revived=0 lr=2.34e-04 elapsed=8922s
+[step   14350 | ep  9] recon=0.0191 vq=0.0078 perp=21.5 active=64/64 revived=0 lr=2.34e-04 elapsed=8963s
+[step   14400 | ep  9] recon=0.0180 vq=0.0074 perp=20.0 active=63/64 revived=0 lr=2.34e-04 elapsed=9003s
+[step   14450 | ep  9] recon=0.0131 vq=0.0057 perp=20.8 active=64/64 revived=0 lr=2.33e-04 elapsed=9044s
+[step   14500 | ep  9] recon=0.0198 vq=0.0082 perp=21.8 active=64/64 revived=0 lr=2.33e-04 elapsed=9084s
+[step   14550 | ep  9] recon=0.0166 vq=0.0073 perp=21.2 active=63/64 revived=0 lr=2.32e-04 elapsed=9126s
+[step   14600 | ep  9] recon=0.0187 vq=0.0080 perp=23.2 active=63/64 revived=0 lr=2.32e-04 elapsed=9159s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch009.pt
+[step   14650 | ep 10] recon=0.0162 vq=0.0066 perp=21.4 active=64/64 revived=0 lr=2.31e-04 elapsed=9196s
+[step   14700 | ep 10] recon=0.0145 vq=0.0062 perp=21.4 active=64/64 revived=0 lr=2.31e-04 elapsed=9231s
+[step   14750 | ep 10] recon=0.0184 vq=0.0076 perp=22.7 active=64/64 revived=0 lr=2.30e-04 elapsed=9268s
+[step   14800 | ep 10] recon=0.0183 vq=0.0078 perp=22.2 active=64/64 revived=0 lr=2.30e-04 elapsed=9302s
+[step   14850 | ep 10] recon=0.0197 vq=0.0079 perp=20.8 active=64/64 revived=0 lr=2.30e-04 elapsed=9339s
+[step   14900 | ep 10] recon=0.0195 vq=0.0082 perp=22.1 active=64/64 revived=0 lr=2.29e-04 elapsed=9373s
+[step   14950 | ep 10] recon=0.0178 vq=0.0074 perp=23.2 active=64/64 revived=0 lr=2.29e-04 elapsed=9409s
+[step   15000 | ep 10] recon=0.0210 vq=0.0076 perp=21.2 active=64/64 revived=0 lr=2.28e-04 elapsed=9443s
+[step   15050 | ep 10] recon=0.0236 vq=0.0101 perp=23.1 active=64/64 revived=0 lr=2.28e-04 elapsed=9479s
+[step   15100 | ep 10] recon=0.0168 vq=0.0064 perp=21.9 active=63/64 revived=0 lr=2.27e-04 elapsed=9510s
+[step   15150 | ep 10] recon=0.0161 vq=0.0067 perp=22.8 active=64/64 revived=0 lr=2.27e-04 elapsed=9546s
+[step   15200 | ep 10] recon=0.0175 vq=0.0064 perp=20.7 active=64/64 revived=0 lr=2.26e-04 elapsed=9580s
+[step   15250 | ep 10] recon=0.0179 vq=0.0075 perp=21.6 active=64/64 revived=0 lr=2.26e-04 elapsed=9617s
+[step   15300 | ep 10] recon=0.0171 vq=0.0072 perp=21.2 active=64/64 revived=0 lr=2.26e-04 elapsed=9650s
+[step   15350 | ep 10] recon=0.0144 vq=0.0064 perp=21.2 active=64/64 revived=0 lr=2.25e-04 elapsed=9687s
+[step   15400 | ep 10] recon=0.0152 vq=0.0060 perp=21.6 active=64/64 revived=0 lr=2.25e-04 elapsed=9721s
+[step   15450 | ep 10] recon=0.0208 vq=0.0086 perp=21.2 active=62/64 revived=0 lr=2.24e-04 elapsed=9757s
+[step   15500 | ep 10] recon=0.0179 vq=0.0072 perp=20.7 active=64/64 revived=0 lr=2.24e-04 elapsed=9791s
+[step   15550 | ep 10] recon=0.0179 vq=0.0077 perp=21.9 active=64/64 revived=0 lr=2.23e-04 elapsed=9827s
+[step   15600 | ep 10] recon=0.0171 vq=0.0069 perp=22.5 active=64/64 revived=0 lr=2.23e-04 elapsed=9861s
+[step   15650 | ep 10] recon=0.0153 vq=0.0064 perp=21.9 active=64/64 revived=0 lr=2.22e-04 elapsed=9896s
+[step   15700 | ep 10] recon=0.0174 vq=0.0067 perp=21.0 active=64/64 revived=0 lr=2.22e-04 elapsed=9929s
+[step   15750 | ep 10] recon=0.0168 vq=0.0074 perp=22.4 active=64/64 revived=0 lr=2.21e-04 elapsed=9965s
+[step   15800 | ep 10] recon=0.0210 vq=0.0087 perp=22.5 active=64/64 revived=0 lr=2.21e-04 elapsed=9999s
+[step   15850 | ep 10] recon=0.0207 vq=0.0081 perp=22.1 active=64/64 revived=0 lr=2.20e-04 elapsed=10035s
+[step   15900 | ep 10] recon=0.0140 vq=0.0059 perp=21.3 active=64/64 revived=0 lr=2.20e-04 elapsed=10068s
+[step   15950 | ep 10] recon=0.0197 vq=0.0082 perp=21.1 active=64/64 revived=0 lr=2.20e-04 elapsed=10103s
+[step   16000 | ep 10] recon=0.0202 vq=0.0089 perp=21.9 active=64/64 revived=0 lr=2.19e-04 elapsed=10137s
+  [val @ step 16000] val_recon=0.0231 val_vq=0.0101 val_perplexity=5.9939 val_active=24.5172
+[step   16050 | ep 10] recon=0.0205 vq=0.0078 perp=19.6 active=64/64 revived=0 lr=2.19e-04 elapsed=10175s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch010.pt
+[step   16100 | ep 11] recon=0.0153 vq=0.0067 perp=21.1 active=64/64 revived=0 lr=2.18e-04 elapsed=10212s
+[step   16150 | ep 11] recon=0.0222 vq=0.0093 perp=21.9 active=64/64 revived=0 lr=2.18e-04 elapsed=10249s
+[step   16200 | ep 11] recon=0.0198 vq=0.0087 perp=23.7 active=64/64 revived=0 lr=2.17e-04 elapsed=10283s
+[step   16250 | ep 11] recon=0.0139 vq=0.0065 perp=22.7 active=64/64 revived=0 lr=2.17e-04 elapsed=10320s
+[step   16300 | ep 11] recon=0.0166 vq=0.0064 perp=20.5 active=64/64 revived=0 lr=2.16e-04 elapsed=10355s
+[step   16350 | ep 11] recon=0.0164 vq=0.0076 perp=22.1 active=64/64 revived=0 lr=2.16e-04 elapsed=10392s
+[step   16400 | ep 11] recon=0.0173 vq=0.0071 perp=21.0 active=64/64 revived=0 lr=2.15e-04 elapsed=10427s
+[step   16450 | ep 11] recon=0.0150 vq=0.0065 perp=20.7 active=64/64 revived=0 lr=2.15e-04 elapsed=10464s
+[step   16500 | ep 11] recon=0.0174 vq=0.0072 perp=20.9 active=64/64 revived=0 lr=2.14e-04 elapsed=10497s
+[step   16550 | ep 11] recon=0.0224 vq=0.0080 perp=21.5 active=64/64 revived=0 lr=2.14e-04 elapsed=10533s
+[step   16600 | ep 11] recon=0.0147 vq=0.0063 perp=21.5 active=64/64 revived=0 lr=2.13e-04 elapsed=10568s
+[step   16650 | ep 11] recon=0.0173 vq=0.0070 perp=21.8 active=64/64 revived=0 lr=2.13e-04 elapsed=10605s
+[step   16700 | ep 11] recon=0.0244 vq=0.0090 perp=21.7 active=64/64 revived=0 lr=2.12e-04 elapsed=10639s
+[step   16750 | ep 11] recon=0.0202 vq=0.0083 perp=21.5 active=63/64 revived=0 lr=2.12e-04 elapsed=10675s
+[step   16800 | ep 11] recon=0.0172 vq=0.0075 perp=20.8 active=64/64 revived=0 lr=2.12e-04 elapsed=10710s
+[step   16850 | ep 11] recon=0.0175 vq=0.0066 perp=21.6 active=64/64 revived=0 lr=2.11e-04 elapsed=10751s
+[step   16900 | ep 11] recon=0.0182 vq=0.0074 perp=21.7 active=63/64 revived=0 lr=2.11e-04 elapsed=10791s
+[step   16950 | ep 11] recon=0.0137 vq=0.0055 perp=20.5 active=64/64 revived=0 lr=2.10e-04 elapsed=10832s
+[step   17000 | ep 11] recon=0.0169 vq=0.0065 perp=21.6 active=64/64 revived=0 lr=2.10e-04 elapsed=10872s
+[step   17050 | ep 11] recon=0.0145 vq=0.0058 perp=21.2 active=63/64 revived=0 lr=2.09e-04 elapsed=10914s
+[step   17100 | ep 11] recon=0.0187 vq=0.0074 perp=22.9 active=64/64 revived=0 lr=2.09e-04 elapsed=10949s
+[step   17150 | ep 11] recon=0.0164 vq=0.0061 perp=21.3 active=64/64 revived=0 lr=2.08e-04 elapsed=10986s
+[step   17200 | ep 11] recon=0.0194 vq=0.0085 perp=22.0 active=64/64 revived=0 lr=2.08e-04 elapsed=11019s
+[step   17250 | ep 11] recon=0.0198 vq=0.0074 perp=21.2 active=64/64 revived=0 lr=2.07e-04 elapsed=11057s
+[step   17300 | ep 11] recon=0.0157 vq=0.0062 perp=20.7 active=64/64 revived=0 lr=2.07e-04 elapsed=11091s
+[step   17350 | ep 11] recon=0.0160 vq=0.0064 perp=20.6 active=64/64 revived=0 lr=2.06e-04 elapsed=11128s
+[step   17400 | ep 11] recon=0.0181 vq=0.0080 perp=22.3 active=63/64 revived=0 lr=2.06e-04 elapsed=11162s
+[step   17450 | ep 11] recon=0.0165 vq=0.0063 perp=22.3 active=64/64 revived=0 lr=2.05e-04 elapsed=11200s
+[step   17500 | ep 11] recon=0.0204 vq=0.0082 perp=21.8 active=64/64 revived=0 lr=2.05e-04 elapsed=11233s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch011.pt
+[step   17550 | ep 12] recon=0.0190 vq=0.0080 perp=21.1 active=64/64 revived=0 lr=2.04e-04 elapsed=11269s
+[step   17600 | ep 12] recon=0.0157 vq=0.0070 perp=22.4 active=64/64 revived=0 lr=2.04e-04 elapsed=11306s
+[step   17650 | ep 12] recon=0.0197 vq=0.0079 perp=22.2 active=64/64 revived=0 lr=2.03e-04 elapsed=11342s
+[step   17700 | ep 12] recon=0.0186 vq=0.0072 perp=20.1 active=64/64 revived=0 lr=2.03e-04 elapsed=11378s
+[step   17750 | ep 12] recon=0.0149 vq=0.0063 perp=20.6 active=64/64 revived=0 lr=2.02e-04 elapsed=11418s
+[step   17800 | ep 12] recon=0.0209 vq=0.0088 perp=21.2 active=64/64 revived=0 lr=2.02e-04 elapsed=11460s
+[step   17850 | ep 12] recon=0.0170 vq=0.0069 perp=21.9 active=64/64 revived=0 lr=2.01e-04 elapsed=11501s
+[step   17900 | ep 12] recon=0.0180 vq=0.0073 perp=21.7 active=63/64 revived=0 lr=2.01e-04 elapsed=11544s
+[step   17950 | ep 12] recon=0.0167 vq=0.0065 perp=21.8 active=64/64 revived=0 lr=2.00e-04 elapsed=11583s
+[step   18000 | ep 12] recon=0.0183 vq=0.0070 perp=21.7 active=64/64 revived=0 lr=2.00e-04 elapsed=11626s
+  [val @ step 18000] val_recon=0.0227 val_vq=0.0095 val_perplexity=6.0460 val_active=24.2414
+[step   18050 | ep 12] recon=0.0203 vq=0.0076 perp=21.5 active=64/64 revived=0 lr=1.99e-04 elapsed=11667s
+[step   18100 | ep 12] recon=0.0157 vq=0.0061 perp=20.0 active=63/64 revived=0 lr=1.99e-04 elapsed=11708s
+[step   18150 | ep 12] recon=0.0150 vq=0.0071 perp=23.1 active=64/64 revived=0 lr=1.98e-04 elapsed=11746s
+[step   18200 | ep 12] recon=0.0193 vq=0.0075 perp=21.6 active=64/64 revived=0 lr=1.98e-04 elapsed=11787s
+[step   18250 | ep 12] recon=0.0245 vq=0.0092 perp=20.7 active=64/64 revived=0 lr=1.97e-04 elapsed=11827s
+[step   18300 | ep 12] recon=0.0182 vq=0.0074 perp=22.7 active=64/64 revived=0 lr=1.97e-04 elapsed=11866s
+[step   18350 | ep 12] recon=0.0193 vq=0.0071 perp=21.9 active=64/64 revived=0 lr=1.96e-04 elapsed=11907s
+[step   18400 | ep 12] recon=0.0179 vq=0.0075 perp=23.0 active=64/64 revived=0 lr=1.96e-04 elapsed=11948s
+[step   18450 | ep 12] recon=0.0189 vq=0.0078 perp=23.1 active=63/64 revived=0 lr=1.95e-04 elapsed=11982s
+[step   18500 | ep 12] recon=0.0172 vq=0.0071 perp=20.4 active=63/64 revived=0 lr=1.95e-04 elapsed=12018s
+[step   18550 | ep 12] recon=0.0167 vq=0.0070 perp=23.0 active=64/64 revived=0 lr=1.94e-04 elapsed=12053s
+[step   18600 | ep 12] recon=0.0164 vq=0.0067 perp=21.2 active=64/64 revived=0 lr=1.94e-04 elapsed=12087s
+[step   18650 | ep 12] recon=0.0158 vq=0.0062 perp=21.6 active=64/64 revived=0 lr=1.93e-04 elapsed=12122s
+[step   18700 | ep 12] recon=0.0166 vq=0.0071 perp=21.8 active=64/64 revived=0 lr=1.93e-04 elapsed=12157s
+[step   18750 | ep 12] recon=0.0164 vq=0.0069 perp=20.9 active=64/64 revived=0 lr=1.92e-04 elapsed=12193s
+[step   18800 | ep 12] recon=0.0179 vq=0.0071 perp=20.8 active=64/64 revived=0 lr=1.92e-04 elapsed=12228s
+[step   18850 | ep 12] recon=0.0179 vq=0.0072 perp=21.4 active=64/64 revived=0 lr=1.91e-04 elapsed=12265s
+[step   18900 | ep 12] recon=0.0148 vq=0.0061 perp=22.5 active=64/64 revived=0 lr=1.91e-04 elapsed=12300s
+[step   18950 | ep 12] recon=0.0177 vq=0.0068 perp=20.3 active=64/64 revived=0 lr=1.90e-04 elapsed=12334s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch012.pt
+[step   19000 | ep 13] recon=0.0186 vq=0.0070 perp=21.1 active=63/64 revived=0 lr=1.90e-04 elapsed=12368s
+[step   19050 | ep 13] recon=0.0160 vq=0.0063 perp=20.3 active=64/64 revived=0 lr=1.89e-04 elapsed=12402s
+[step   19100 | ep 13] recon=0.0183 vq=0.0077 perp=21.4 active=64/64 revived=0 lr=1.89e-04 elapsed=12437s
+[step   19150 | ep 13] recon=0.0198 vq=0.0074 perp=21.3 active=63/64 revived=0 lr=1.88e-04 elapsed=12470s
+[step   19200 | ep 13] recon=0.0204 vq=0.0074 perp=21.7 active=64/64 revived=0 lr=1.88e-04 elapsed=12507s
+[step   19250 | ep 13] recon=0.0160 vq=0.0068 perp=21.8 active=64/64 revived=0 lr=1.87e-04 elapsed=12542s
+[step   19300 | ep 13] recon=0.0145 vq=0.0059 perp=21.5 active=64/64 revived=0 lr=1.87e-04 elapsed=12578s
+[step   19350 | ep 13] recon=0.0200 vq=0.0072 perp=23.3 active=64/64 revived=0 lr=1.86e-04 elapsed=12613s
+[step   19400 | ep 13] recon=0.0174 vq=0.0070 perp=22.5 active=64/64 revived=0 lr=1.86e-04 elapsed=12649s
+[step   19450 | ep 13] recon=0.0176 vq=0.0070 perp=21.8 active=64/64 revived=0 lr=1.85e-04 elapsed=12684s
+[step   19500 | ep 13] recon=0.0154 vq=0.0064 perp=21.9 active=64/64 revived=0 lr=1.85e-04 elapsed=12720s
+[step   19550 | ep 13] recon=0.0231 vq=0.0088 perp=22.5 active=64/64 revived=0 lr=1.84e-04 elapsed=12754s
+[step   19600 | ep 13] recon=0.0204 vq=0.0079 perp=22.3 active=64/64 revived=0 lr=1.84e-04 elapsed=12788s
+[step   19650 | ep 13] recon=0.0173 vq=0.0072 perp=21.3 active=63/64 revived=0 lr=1.83e-04 elapsed=12823s
+[step   19700 | ep 13] recon=0.0199 vq=0.0080 perp=21.6 active=64/64 revived=0 lr=1.83e-04 elapsed=12858s
+[step   19750 | ep 13] recon=0.0192 vq=0.0080 perp=21.0 active=63/64 revived=0 lr=1.82e-04 elapsed=12893s
+[step   19800 | ep 13] recon=0.0155 vq=0.0064 perp=21.2 active=63/64 revived=0 lr=1.82e-04 elapsed=12928s
+[step   19850 | ep 13] recon=0.0196 vq=0.0076 perp=21.7 active=64/64 revived=0 lr=1.81e-04 elapsed=12964s
+[step   19900 | ep 13] recon=0.0181 vq=0.0067 perp=22.5 active=64/64 revived=0 lr=1.81e-04 elapsed=12998s
+[step   19950 | ep 13] recon=0.0175 vq=0.0065 perp=22.3 active=64/64 revived=0 lr=1.80e-04 elapsed=13034s
+[step   20000 | ep 13] recon=0.0197 vq=0.0088 perp=21.6 active=64/64 revived=0 lr=1.80e-04 elapsed=13068s
+  [val @ step 20000] val_recon=0.0227 val_vq=0.0094 val_perplexity=6.0925 val_active=24.3793
+[step   20050 | ep 13] recon=0.0186 vq=0.0065 perp=21.3 active=64/64 revived=0 lr=1.79e-04 elapsed=13104s
+[step   20100 | ep 13] recon=0.0165 vq=0.0068 perp=22.1 active=64/64 revived=0 lr=1.79e-04 elapsed=13138s
+[step   20150 | ep 13] recon=0.0209 vq=0.0084 perp=23.0 active=64/64 revived=0 lr=1.78e-04 elapsed=13175s
+[step   20200 | ep 13] recon=0.0200 vq=0.0076 perp=21.2 active=64/64 revived=0 lr=1.78e-04 elapsed=13209s
+[step   20250 | ep 13] recon=0.0154 vq=0.0064 perp=21.7 active=64/64 revived=0 lr=1.77e-04 elapsed=13244s
+[step   20300 | ep 13] recon=0.0158 vq=0.0065 perp=23.1 active=64/64 revived=0 lr=1.77e-04 elapsed=13278s
+[step   20350 | ep 13] recon=0.0209 vq=0.0078 perp=20.6 active=64/64 revived=0 lr=1.76e-04 elapsed=13314s
+[step   20400 | ep 13] recon=0.0163 vq=0.0068 perp=22.9 active=64/64 revived=0 lr=1.76e-04 elapsed=13349s
+[step   20450 | ep 13] recon=0.0160 vq=0.0061 perp=21.4 active=64/64 revived=0 lr=1.75e-04 elapsed=13384s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch013.pt
+[step   20500 | ep 14] recon=0.0157 vq=0.0060 perp=20.4 active=63/64 revived=0 lr=1.75e-04 elapsed=13419s
+[step   20550 | ep 14] recon=0.0129 vq=0.0052 perp=21.3 active=64/64 revived=0 lr=1.74e-04 elapsed=13458s
+[step   20600 | ep 14] recon=0.0197 vq=0.0071 perp=22.3 active=64/64 revived=0 lr=1.74e-04 elapsed=13493s
+[step   20650 | ep 14] recon=0.0148 vq=0.0060 perp=21.0 active=64/64 revived=0 lr=1.73e-04 elapsed=13531s
+[step   20700 | ep 14] recon=0.0160 vq=0.0060 perp=21.6 active=64/64 revived=0 lr=1.73e-04 elapsed=13565s
+[step   20750 | ep 14] recon=0.0191 vq=0.0076 perp=21.7 active=64/64 revived=0 lr=1.72e-04 elapsed=13602s
+[step   20800 | ep 14] recon=0.0184 vq=0.0074 perp=22.6 active=64/64 revived=0 lr=1.72e-04 elapsed=13636s
+[step   20850 | ep 14] recon=0.0142 vq=0.0057 perp=21.6 active=64/64 revived=0 lr=1.71e-04 elapsed=13670s
+[step   20900 | ep 14] recon=0.0188 vq=0.0079 perp=23.1 active=64/64 revived=0 lr=1.71e-04 elapsed=13704s
+[step   20950 | ep 14] recon=0.0202 vq=0.0076 perp=20.7 active=64/64 revived=0 lr=1.70e-04 elapsed=13741s
+[step   21000 | ep 14] recon=0.0149 vq=0.0057 perp=20.2 active=63/64 revived=0 lr=1.70e-04 elapsed=13774s
+[step   21050 | ep 14] recon=0.0169 vq=0.0064 perp=21.6 active=64/64 revived=0 lr=1.69e-04 elapsed=13810s
+[step   21100 | ep 14] recon=0.0178 vq=0.0065 perp=20.3 active=64/64 revived=0 lr=1.68e-04 elapsed=13844s
+[step   21150 | ep 14] recon=0.0206 vq=0.0077 perp=22.0 active=63/64 revived=0 lr=1.68e-04 elapsed=13880s
+[step   21200 | ep 14] recon=0.0158 vq=0.0059 perp=20.8 active=64/64 revived=0 lr=1.67e-04 elapsed=13914s
+[step   21250 | ep 14] recon=0.0175 vq=0.0074 perp=22.2 active=64/64 revived=0 lr=1.67e-04 elapsed=13950s
+[step   21300 | ep 14] recon=0.0167 vq=0.0061 perp=20.7 active=63/64 revived=0 lr=1.66e-04 elapsed=13984s
+[step   21350 | ep 14] recon=0.0150 vq=0.0055 perp=22.6 active=64/64 revived=0 lr=1.66e-04 elapsed=14020s
+[step   21400 | ep 14] recon=0.0158 vq=0.0063 perp=22.5 active=64/64 revived=0 lr=1.65e-04 elapsed=14055s
+[step   21450 | ep 14] recon=0.0166 vq=0.0061 perp=22.3 active=64/64 revived=0 lr=1.65e-04 elapsed=14091s
+[step   21500 | ep 14] recon=0.0180 vq=0.0068 perp=21.7 active=64/64 revived=0 lr=1.64e-04 elapsed=14125s
+[step   21550 | ep 14] recon=0.0155 vq=0.0061 perp=22.9 active=64/64 revived=0 lr=1.64e-04 elapsed=14161s
+[step   21600 | ep 14] recon=0.0200 vq=0.0078 perp=22.1 active=64/64 revived=0 lr=1.63e-04 elapsed=14194s
+[step   21650 | ep 14] recon=0.0158 vq=0.0064 perp=22.9 active=64/64 revived=0 lr=1.63e-04 elapsed=14229s
+[step   21700 | ep 14] recon=0.0196 vq=0.0071 perp=21.8 active=64/64 revived=0 lr=1.62e-04 elapsed=14262s
+[step   21750 | ep 14] recon=0.0180 vq=0.0066 perp=22.0 active=64/64 revived=0 lr=1.62e-04 elapsed=14298s
+[step   21800 | ep 14] recon=0.0146 vq=0.0058 perp=21.1 active=63/64 revived=0 lr=1.61e-04 elapsed=14340s
+[step   21850 | ep 14] recon=0.0161 vq=0.0060 perp=20.4 active=63/64 revived=0 lr=1.61e-04 elapsed=14388s
+[step   21900 | ep 14] recon=0.0151 vq=0.0058 perp=21.6 active=64/64 revived=0 lr=1.60e-04 elapsed=14430s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch014.pt
+[step   21950 | ep 15] recon=0.0223 vq=0.0078 perp=20.3 active=64/64 revived=0 lr=1.60e-04 elapsed=14480s
+[step   22000 | ep 15] recon=0.0216 vq=0.0082 perp=21.7 active=64/64 revived=0 lr=1.59e-04 elapsed=14531s
+  [val @ step 22000] val_recon=0.0230 val_vq=0.0093 val_perplexity=6.0020 val_active=24.3103
+[step   22050 | ep 15] recon=0.0214 vq=0.0077 perp=21.2 active=64/64 revived=0 lr=1.59e-04 elapsed=14594s
+[step   22100 | ep 15] recon=0.0179 vq=0.0075 perp=21.2 active=64/64 revived=0 lr=1.58e-04 elapsed=14667s
+[step   22150 | ep 15] recon=0.0213 vq=0.0077 perp=22.8 active=64/64 revived=0 lr=1.58e-04 elapsed=14755s
+[step   22200 | ep 15] recon=0.0138 vq=0.0056 perp=22.3 active=64/64 revived=0 lr=1.57e-04 elapsed=14842s
+[step   22250 | ep 15] recon=0.0184 vq=0.0064 perp=20.9 active=64/64 revived=0 lr=1.57e-04 elapsed=14923s
+[step   22300 | ep 15] recon=0.0199 vq=0.0068 perp=21.0 active=64/64 revived=0 lr=1.56e-04 elapsed=14997s
+[step   22350 | ep 15] recon=0.0165 vq=0.0068 perp=21.8 active=64/64 revived=0 lr=1.56e-04 elapsed=15071s
+[step   22400 | ep 15] recon=0.0193 vq=0.0077 perp=21.7 active=64/64 revived=0 lr=1.55e-04 elapsed=15139s
+[step   22450 | ep 15] recon=0.0176 vq=0.0066 perp=22.9 active=64/64 revived=0 lr=1.55e-04 elapsed=15198s
+[step   22500 | ep 15] recon=0.0174 vq=0.0073 perp=22.2 active=64/64 revived=0 lr=1.54e-04 elapsed=15253s
+[step   22550 | ep 15] recon=0.0175 vq=0.0070 perp=21.3 active=63/64 revived=0 lr=1.54e-04 elapsed=15309s
+[step   22600 | ep 15] recon=0.0172 vq=0.0064 perp=22.5 active=64/64 revived=0 lr=1.53e-04 elapsed=15365s
+[step   22650 | ep 15] recon=0.0181 vq=0.0065 perp=21.9 active=64/64 revived=0 lr=1.52e-04 elapsed=15420s
+[step   22700 | ep 15] recon=0.0185 vq=0.0074 perp=21.5 active=64/64 revived=0 lr=1.52e-04 elapsed=15478s
+[step   22750 | ep 15] recon=0.0167 vq=0.0068 perp=21.6 active=64/64 revived=0 lr=1.51e-04 elapsed=15544s
+[step   22800 | ep 15] recon=0.0159 vq=0.0068 perp=20.9 active=64/64 revived=0 lr=1.51e-04 elapsed=15597s
+[step   22850 | ep 15] recon=0.0170 vq=0.0063 perp=21.5 active=63/64 revived=0 lr=1.50e-04 elapsed=15646s
+[step   22900 | ep 15] recon=0.0167 vq=0.0063 perp=22.4 active=64/64 revived=0 lr=1.50e-04 elapsed=15692s
+[step   22950 | ep 15] recon=0.0201 vq=0.0079 perp=21.5 active=63/64 revived=0 lr=1.49e-04 elapsed=15747s
+[step   23000 | ep 15] recon=0.0206 vq=0.0082 perp=20.5 active=64/64 revived=0 lr=1.49e-04 elapsed=15804s
+[step   23050 | ep 15] recon=0.0172 vq=0.0063 perp=20.7 active=64/64 revived=0 lr=1.48e-04 elapsed=15880s
+[step   23100 | ep 15] recon=0.0217 vq=0.0074 perp=22.1 active=64/64 revived=0 lr=1.48e-04 elapsed=15940s
+[step   23150 | ep 15] recon=0.0212 vq=0.0077 perp=20.9 active=64/64 revived=0 lr=1.47e-04 elapsed=15997s
+[step   23200 | ep 15] recon=0.0206 vq=0.0079 perp=21.2 active=64/64 revived=0 lr=1.47e-04 elapsed=16040s
+[step   23250 | ep 15] recon=0.0197 vq=0.0076 perp=22.0 active=64/64 revived=0 lr=1.46e-04 elapsed=16092s
+[step   23300 | ep 15] recon=0.0189 vq=0.0070 perp=21.9 active=63/64 revived=0 lr=1.46e-04 elapsed=16144s
+[step   23350 | ep 15] recon=0.0162 vq=0.0060 perp=22.2 active=64/64 revived=0 lr=1.45e-04 elapsed=16200s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch015.pt
+[step   23400 | ep 16] recon=0.0185 vq=0.0075 perp=21.5 active=64/64 revived=0 lr=1.45e-04 elapsed=16255s
+[step   23450 | ep 16] recon=0.0222 vq=0.0082 perp=23.0 active=64/64 revived=0 lr=1.44e-04 elapsed=16306s
+[step   23500 | ep 16] recon=0.0183 vq=0.0068 perp=20.7 active=64/64 revived=0 lr=1.44e-04 elapsed=16358s
+[step   23550 | ep 16] recon=0.0193 vq=0.0075 perp=22.1 active=64/64 revived=0 lr=1.43e-04 elapsed=16404s
+[step   23600 | ep 16] recon=0.0187 vq=0.0071 perp=22.1 active=64/64 revived=0 lr=1.43e-04 elapsed=16450s
+[step   23650 | ep 16] recon=0.0196 vq=0.0072 perp=24.5 active=64/64 revived=0 lr=1.42e-04 elapsed=16497s
+[step   23700 | ep 16] recon=0.0173 vq=0.0064 perp=22.1 active=64/64 revived=0 lr=1.42e-04 elapsed=16540s
+[step   23750 | ep 16] recon=0.0151 vq=0.0056 perp=22.7 active=64/64 revived=0 lr=1.41e-04 elapsed=16594s
+[step   23800 | ep 16] recon=0.0156 vq=0.0060 perp=21.5 active=64/64 revived=0 lr=1.41e-04 elapsed=16648s
+[step   23850 | ep 16] recon=0.0152 vq=0.0062 perp=22.8 active=64/64 revived=0 lr=1.40e-04 elapsed=16699s
+[step   23900 | ep 16] recon=0.0216 vq=0.0082 perp=22.5 active=64/64 revived=0 lr=1.40e-04 elapsed=16752s
+[step   23950 | ep 16] recon=0.0166 vq=0.0061 perp=21.9 active=63/64 revived=0 lr=1.39e-04 elapsed=16806s
+[step   24000 | ep 16] recon=0.0201 vq=0.0082 perp=22.0 active=64/64 revived=0 lr=1.39e-04 elapsed=16858s
+  [val @ step 24000] val_recon=0.0228 val_vq=0.0091 val_perplexity=6.0686 val_active=24.8276
+[step   24050 | ep 16] recon=0.0200 vq=0.0075 perp=22.2 active=64/64 revived=0 lr=1.38e-04 elapsed=16911s
+[step   24100 | ep 16] recon=0.0172 vq=0.0064 perp=22.0 active=64/64 revived=0 lr=1.38e-04 elapsed=16963s
+[step   24150 | ep 16] recon=0.0174 vq=0.0064 perp=20.5 active=64/64 revived=0 lr=1.37e-04 elapsed=17014s
+[step   24200 | ep 16] recon=0.0137 vq=0.0057 perp=23.3 active=64/64 revived=0 lr=1.37e-04 elapsed=17066s
+[step   24250 | ep 16] recon=0.0171 vq=0.0067 perp=20.5 active=64/64 revived=0 lr=1.36e-04 elapsed=17116s
+[step   24300 | ep 16] recon=0.0151 vq=0.0059 perp=21.2 active=64/64 revived=0 lr=1.36e-04 elapsed=17167s
+[step   24350 | ep 16] recon=0.0175 vq=0.0061 perp=22.1 active=64/64 revived=0 lr=1.35e-04 elapsed=17209s
+[step   24400 | ep 16] recon=0.0184 vq=0.0065 perp=21.1 active=64/64 revived=0 lr=1.35e-04 elapsed=17254s
+[step   24450 | ep 16] recon=0.0190 vq=0.0074 perp=21.7 active=64/64 revived=0 lr=1.34e-04 elapsed=17298s
+[step   24500 | ep 16] recon=0.0179 vq=0.0067 perp=21.0 active=64/64 revived=0 lr=1.33e-04 elapsed=17344s
+[step   24550 | ep 16] recon=0.0235 vq=0.0085 perp=21.5 active=64/64 revived=0 lr=1.33e-04 elapsed=17392s
+[step   24600 | ep 16] recon=0.0181 vq=0.0064 perp=20.8 active=64/64 revived=0 lr=1.32e-04 elapsed=17450s
+[step   24650 | ep 16] recon=0.0148 vq=0.0059 perp=22.2 active=64/64 revived=0 lr=1.32e-04 elapsed=17510s
+[step   24700 | ep 16] recon=0.0183 vq=0.0072 perp=20.7 active=64/64 revived=0 lr=1.31e-04 elapsed=17569s
+[step   24750 | ep 16] recon=0.0152 vq=0.0054 perp=21.9 active=64/64 revived=0 lr=1.31e-04 elapsed=17623s
+[step   24800 | ep 16] recon=0.0162 vq=0.0062 perp=21.4 active=64/64 revived=0 lr=1.30e-04 elapsed=17679s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch016.pt
+[step   24850 | ep 17] recon=0.0197 vq=0.0076 perp=22.2 active=63/64 revived=0 lr=1.30e-04 elapsed=17733s
+[step   24900 | ep 17] recon=0.0234 vq=0.0087 perp=21.1 active=64/64 revived=0 lr=1.29e-04 elapsed=17791s
+[step   24950 | ep 17] recon=0.0176 vq=0.0064 perp=21.3 active=64/64 revived=0 lr=1.29e-04 elapsed=17845s
+[step   25000 | ep 17] recon=0.0192 vq=0.0070 perp=19.1 active=64/64 revived=0 lr=1.28e-04 elapsed=17898s
+[step   25050 | ep 17] recon=0.0191 vq=0.0070 perp=22.6 active=63/64 revived=0 lr=1.28e-04 elapsed=17948s
+[step   25100 | ep 17] recon=0.0165 vq=0.0060 perp=22.1 active=64/64 revived=0 lr=1.27e-04 elapsed=17997s
+[step   25150 | ep 17] recon=0.0142 vq=0.0060 perp=21.3 active=64/64 revived=0 lr=1.27e-04 elapsed=18042s
+[step   25200 | ep 17] recon=0.0165 vq=0.0065 perp=21.0 active=63/64 revived=0 lr=1.26e-04 elapsed=18089s
+[step   25250 | ep 17] recon=0.0204 vq=0.0072 perp=21.6 active=63/64 revived=0 lr=1.26e-04 elapsed=18137s
+[step   25300 | ep 17] recon=0.0197 vq=0.0069 perp=22.3 active=64/64 revived=0 lr=1.25e-04 elapsed=18191s
+[step   25350 | ep 17] recon=0.0190 vq=0.0071 perp=20.7 active=64/64 revived=0 lr=1.25e-04 elapsed=18244s
+[step   25400 | ep 17] recon=0.0152 vq=0.0055 perp=21.7 active=64/64 revived=0 lr=1.24e-04 elapsed=18300s
+[step   25450 | ep 17] recon=0.0182 vq=0.0067 perp=20.4 active=64/64 revived=0 lr=1.24e-04 elapsed=18368s
+[step   25500 | ep 17] recon=0.0175 vq=0.0072 perp=22.6 active=64/64 revived=0 lr=1.23e-04 elapsed=18430s
+[step   25550 | ep 17] recon=0.0172 vq=0.0071 perp=22.2 active=63/64 revived=0 lr=1.23e-04 elapsed=18484s
+[step   25600 | ep 17] recon=0.0178 vq=0.0072 perp=22.7 active=64/64 revived=0 lr=1.22e-04 elapsed=18539s
+[step   25650 | ep 17] recon=0.0155 vq=0.0065 perp=21.8 active=64/64 revived=0 lr=1.22e-04 elapsed=18592s
+[step   25700 | ep 17] recon=0.0157 vq=0.0060 perp=21.9 active=64/64 revived=0 lr=1.21e-04 elapsed=18645s
+[step   25750 | ep 17] recon=0.0216 vq=0.0084 perp=22.6 active=64/64 revived=0 lr=1.21e-04 elapsed=18698s
+[step   25800 | ep 17] recon=0.0141 vq=0.0054 perp=22.6 active=63/64 revived=0 lr=1.20e-04 elapsed=18743s
+[step   25850 | ep 17] recon=0.0162 vq=0.0063 perp=22.3 active=64/64 revived=0 lr=1.20e-04 elapsed=18783s
+[step   25900 | ep 17] recon=0.0169 vq=0.0067 perp=20.8 active=64/64 revived=0 lr=1.19e-04 elapsed=18814s
+[step   25950 | ep 17] recon=0.0208 vq=0.0076 perp=21.7 active=64/64 revived=0 lr=1.19e-04 elapsed=18855s
+[step   26000 | ep 17] recon=0.0178 vq=0.0066 perp=22.0 active=64/64 revived=0 lr=1.18e-04 elapsed=18883s
+  [val @ step 26000] val_recon=0.0227 val_vq=0.0090 val_perplexity=6.1471 val_active=24.2759
+[step   26050 | ep 17] recon=0.0178 vq=0.0068 perp=20.4 active=64/64 revived=0 lr=1.18e-04 elapsed=18913s
+[step   26100 | ep 17] recon=0.0158 vq=0.0057 perp=22.0 active=63/64 revived=0 lr=1.17e-04 elapsed=18941s
+[step   26150 | ep 17] recon=0.0164 vq=0.0065 perp=21.8 active=64/64 revived=0 lr=1.17e-04 elapsed=18971s
+[step   26200 | ep 17] recon=0.0163 vq=0.0065 perp=20.6 active=64/64 revived=0 lr=1.16e-04 elapsed=18999s
+[step   26250 | ep 17] recon=0.0165 vq=0.0062 perp=22.9 active=64/64 revived=0 lr=1.16e-04 elapsed=19029s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch017.pt
+[step   26300 | ep 18] recon=0.0157 vq=0.0065 perp=22.8 active=64/64 revived=0 lr=1.15e-04 elapsed=19056s
+[step   26350 | ep 18] recon=0.0147 vq=0.0055 perp=21.3 active=64/64 revived=0 lr=1.15e-04 elapsed=19086s
+[step   26400 | ep 18] recon=0.0205 vq=0.0079 perp=22.0 active=64/64 revived=0 lr=1.14e-04 elapsed=19113s
+[step   26450 | ep 18] recon=0.0189 vq=0.0070 perp=22.0 active=64/64 revived=0 lr=1.14e-04 elapsed=19142s
+[step   26500 | ep 18] recon=0.0192 vq=0.0072 perp=21.9 active=63/64 revived=0 lr=1.13e-04 elapsed=19170s
+[step   26550 | ep 18] recon=0.0180 vq=0.0068 perp=20.9 active=64/64 revived=0 lr=1.13e-04 elapsed=19199s
+[step   26600 | ep 18] recon=0.0212 vq=0.0084 perp=21.1 active=64/64 revived=0 lr=1.12e-04 elapsed=19227s
+[step   26650 | ep 18] recon=0.0134 vq=0.0053 perp=21.8 active=63/64 revived=0 lr=1.12e-04 elapsed=19256s
+[step   26700 | ep 18] recon=0.0163 vq=0.0063 perp=20.9 active=64/64 revived=0 lr=1.11e-04 elapsed=19284s
+[step   26750 | ep 18] recon=0.0231 vq=0.0085 perp=22.7 active=64/64 revived=0 lr=1.11e-04 elapsed=19313s
+[step   26800 | ep 18] recon=0.0179 vq=0.0065 perp=20.2 active=64/64 revived=0 lr=1.11e-04 elapsed=19341s
+[step   26850 | ep 18] recon=0.0177 vq=0.0074 perp=21.1 active=64/64 revived=0 lr=1.10e-04 elapsed=19370s
+[step   26900 | ep 18] recon=0.0200 vq=0.0071 perp=22.9 active=64/64 revived=0 lr=1.10e-04 elapsed=19398s
+[step   26950 | ep 18] recon=0.0171 vq=0.0062 perp=23.2 active=64/64 revived=0 lr=1.09e-04 elapsed=19427s
+[step   27000 | ep 18] recon=0.0168 vq=0.0064 perp=21.7 active=63/64 revived=0 lr=1.09e-04 elapsed=19456s
+[step   27050 | ep 18] recon=0.0165 vq=0.0063 perp=20.6 active=63/64 revived=0 lr=1.08e-04 elapsed=19485s
+[step   27100 | ep 18] recon=0.0201 vq=0.0070 perp=21.6 active=64/64 revived=0 lr=1.08e-04 elapsed=19513s
+[step   27150 | ep 18] recon=0.0171 vq=0.0060 perp=22.9 active=64/64 revived=0 lr=1.07e-04 elapsed=19542s
+[step   27200 | ep 18] recon=0.0184 vq=0.0065 perp=22.4 active=64/64 revived=0 lr=1.07e-04 elapsed=19570s
+[step   27250 | ep 18] recon=0.0192 vq=0.0077 perp=20.7 active=64/64 revived=0 lr=1.06e-04 elapsed=19600s
+[step   27300 | ep 18] recon=0.0156 vq=0.0062 perp=21.4 active=64/64 revived=0 lr=1.06e-04 elapsed=19627s
+[step   27350 | ep 18] recon=0.0209 vq=0.0077 perp=21.3 active=64/64 revived=0 lr=1.05e-04 elapsed=19657s
+[step   27400 | ep 18] recon=0.0146 vq=0.0058 perp=20.4 active=64/64 revived=0 lr=1.05e-04 elapsed=19685s
+[step   27450 | ep 18] recon=0.0214 vq=0.0086 perp=23.2 active=64/64 revived=0 lr=1.04e-04 elapsed=19714s
+[step   27500 | ep 18] recon=0.0164 vq=0.0061 perp=21.6 active=64/64 revived=0 lr=1.04e-04 elapsed=19741s
+[step   27550 | ep 18] recon=0.0176 vq=0.0066 perp=22.3 active=64/64 revived=0 lr=1.03e-04 elapsed=19771s
+[step   27600 | ep 18] recon=0.0152 vq=0.0056 perp=20.8 active=64/64 revived=0 lr=1.03e-04 elapsed=19798s
+[step   27650 | ep 18] recon=0.0179 vq=0.0065 perp=23.5 active=63/64 revived=0 lr=1.02e-04 elapsed=19828s
+[step   27700 | ep 18] recon=0.0212 vq=0.0073 perp=21.3 active=64/64 revived=0 lr=1.02e-04 elapsed=19855s
+[step   27750 | ep 18] recon=0.0140 vq=0.0055 perp=20.8 active=64/64 revived=0 lr=1.01e-04 elapsed=19886s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch018.pt
+[step   27800 | ep 19] recon=0.0209 vq=0.0080 perp=22.1 active=64/64 revived=0 lr=1.01e-04 elapsed=19920s
+[step   27850 | ep 19] recon=0.0162 vq=0.0061 perp=20.8 active=64/64 revived=0 lr=1.00e-04 elapsed=19954s
+[step   27900 | ep 19] recon=0.0156 vq=0.0061 perp=21.8 active=64/64 revived=0 lr=9.99e-05 elapsed=19986s
+[step   27950 | ep 19] recon=0.0208 vq=0.0079 perp=20.9 active=64/64 revived=0 lr=9.95e-05 elapsed=20021s
+[step   28000 | ep 19] recon=0.0186 vq=0.0067 perp=21.4 active=64/64 revived=0 lr=9.90e-05 elapsed=20054s
+  [val @ step 28000] val_recon=0.0223 val_vq=0.0091 val_perplexity=6.0333 val_active=24.2069
+[step   28050 | ep 19] recon=0.0171 vq=0.0067 perp=21.5 active=64/64 revived=0 lr=9.85e-05 elapsed=20090s
+[step   28100 | ep 19] recon=0.0192 vq=0.0063 perp=22.2 active=64/64 revived=0 lr=9.81e-05 elapsed=20122s
+[step   28150 | ep 19] recon=0.0133 vq=0.0059 perp=21.5 active=64/64 revived=0 lr=9.76e-05 elapsed=20155s
+[step   28200 | ep 19] recon=0.0162 vq=0.0060 perp=20.9 active=63/64 revived=0 lr=9.71e-05 elapsed=20189s
+[step   28250 | ep 19] recon=0.0171 vq=0.0066 perp=21.7 active=63/64 revived=0 lr=9.67e-05 elapsed=20223s
+[step   28300 | ep 19] recon=0.0180 vq=0.0066 perp=21.0 active=64/64 revived=0 lr=9.62e-05 elapsed=20257s
+[step   28350 | ep 19] recon=0.0201 vq=0.0075 perp=21.0 active=64/64 revived=0 lr=9.57e-05 elapsed=20290s
+[step   28400 | ep 19] recon=0.0235 vq=0.0089 perp=21.8 active=64/64 revived=0 lr=9.53e-05 elapsed=20325s
+[step   28450 | ep 19] recon=0.0176 vq=0.0069 perp=21.7 active=64/64 revived=0 lr=9.48e-05 elapsed=20358s
+[step   28500 | ep 19] recon=0.0178 vq=0.0070 perp=21.0 active=64/64 revived=0 lr=9.43e-05 elapsed=20392s
+[step   28550 | ep 19] recon=0.0149 vq=0.0058 perp=21.6 active=64/64 revived=0 lr=9.39e-05 elapsed=20424s
+[step   28600 | ep 19] recon=0.0153 vq=0.0059 perp=21.2 active=64/64 revived=0 lr=9.34e-05 elapsed=20457s
+[step   28650 | ep 19] recon=0.0195 vq=0.0073 perp=23.2 active=64/64 revived=0 lr=9.29e-05 elapsed=20486s
+[step   28700 | ep 19] recon=0.0191 vq=0.0071 perp=21.5 active=64/64 revived=0 lr=9.25e-05 elapsed=20515s
+[step   28750 | ep 19] recon=0.0146 vq=0.0054 perp=21.4 active=64/64 revived=0 lr=9.20e-05 elapsed=20542s
+[step   28800 | ep 19] recon=0.0181 vq=0.0072 perp=22.5 active=64/64 revived=0 lr=9.16e-05 elapsed=20571s
+[step   28850 | ep 19] recon=0.0146 vq=0.0058 perp=21.8 active=64/64 revived=0 lr=9.11e-05 elapsed=20599s
+[step   28900 | ep 19] recon=0.0171 vq=0.0063 perp=21.3 active=64/64 revived=0 lr=9.06e-05 elapsed=20627s
+[step   28950 | ep 19] recon=0.0142 vq=0.0056 perp=20.1 active=63/64 revived=0 lr=9.02e-05 elapsed=20655s
+[step   29000 | ep 19] recon=0.0172 vq=0.0066 perp=21.7 active=64/64 revived=0 lr=8.97e-05 elapsed=20683s
+[step   29050 | ep 19] recon=0.0181 vq=0.0073 perp=20.7 active=64/64 revived=0 lr=8.93e-05 elapsed=20712s
+[step   29100 | ep 19] recon=0.0164 vq=0.0059 perp=19.2 active=64/64 revived=0 lr=8.88e-05 elapsed=20740s
+[step   29150 | ep 19] recon=0.0180 vq=0.0069 perp=21.1 active=64/64 revived=0 lr=8.84e-05 elapsed=20768s
+[step   29200 | ep 19] recon=0.0200 vq=0.0073 perp=21.7 active=63/64 revived=0 lr=8.79e-05 elapsed=20797s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch019.pt
+[step   29250 | ep 20] recon=0.0216 vq=0.0086 perp=23.4 active=64/64 revived=0 lr=8.75e-05 elapsed=20826s
+[step   29300 | ep 20] recon=0.0141 vq=0.0056 perp=21.9 active=63/64 revived=0 lr=8.70e-05 elapsed=20855s
+[step   29350 | ep 20] recon=0.0162 vq=0.0068 perp=21.4 active=64/64 revived=0 lr=8.66e-05 elapsed=20883s
+[step   29400 | ep 20] recon=0.0164 vq=0.0065 perp=22.3 active=64/64 revived=0 lr=8.61e-05 elapsed=20912s
+[step   29450 | ep 20] recon=0.0184 vq=0.0069 perp=21.0 active=64/64 revived=0 lr=8.57e-05 elapsed=20940s
+[step   29500 | ep 20] recon=0.0176 vq=0.0069 perp=21.5 active=64/64 revived=0 lr=8.52e-05 elapsed=20970s
+[step   29550 | ep 20] recon=0.0162 vq=0.0059 perp=21.4 active=64/64 revived=0 lr=8.48e-05 elapsed=20997s
+[step   29600 | ep 20] recon=0.0208 vq=0.0086 perp=21.5 active=63/64 revived=0 lr=8.43e-05 elapsed=21026s
+[step   29650 | ep 20] recon=0.0223 vq=0.0085 perp=22.0 active=64/64 revived=0 lr=8.39e-05 elapsed=21054s
+[step   29700 | ep 20] recon=0.0153 vq=0.0053 perp=21.1 active=64/64 revived=0 lr=8.35e-05 elapsed=21082s
+[step   29750 | ep 20] recon=0.0167 vq=0.0062 perp=21.0 active=64/64 revived=0 lr=8.30e-05 elapsed=21111s
+[step   29800 | ep 20] recon=0.0185 vq=0.0072 perp=20.0 active=63/64 revived=0 lr=8.26e-05 elapsed=21139s
+[step   29850 | ep 20] recon=0.0188 vq=0.0068 perp=20.9 active=64/64 revived=0 lr=8.21e-05 elapsed=21168s
+[step   29900 | ep 20] recon=0.0233 vq=0.0091 perp=22.9 active=64/64 revived=0 lr=8.17e-05 elapsed=21196s
+[step   29950 | ep 20] recon=0.0185 vq=0.0076 perp=20.2 active=64/64 revived=0 lr=8.13e-05 elapsed=21223s
+[step   30000 | ep 20] recon=0.0173 vq=0.0071 perp=21.1 active=64/64 revived=0 lr=8.08e-05 elapsed=21252s
+  [val @ step 30000] val_recon=0.0221 val_vq=0.0093 val_perplexity=6.0164 val_active=24.0345
+[step   30050 | ep 20] recon=0.0170 vq=0.0060 perp=21.4 active=64/64 revived=0 lr=8.04e-05 elapsed=21279s
+[step   30100 | ep 20] recon=0.0149 vq=0.0059 perp=21.1 active=64/64 revived=0 lr=8.00e-05 elapsed=21307s
+[step   30150 | ep 20] recon=0.0163 vq=0.0064 perp=21.2 active=64/64 revived=0 lr=7.95e-05 elapsed=21336s
+[step   30200 | ep 20] recon=0.0223 vq=0.0081 perp=23.5 active=64/64 revived=0 lr=7.91e-05 elapsed=21364s
+[step   30250 | ep 20] recon=0.0173 vq=0.0062 perp=22.9 active=64/64 revived=0 lr=7.87e-05 elapsed=21392s
+[step   30300 | ep 20] recon=0.0177 vq=0.0070 perp=21.7 active=64/64 revived=0 lr=7.82e-05 elapsed=21420s
+[step   30350 | ep 20] recon=0.0210 vq=0.0080 perp=21.9 active=64/64 revived=0 lr=7.78e-05 elapsed=21449s
+[step   30400 | ep 20] recon=0.0195 vq=0.0073 perp=20.2 active=64/64 revived=0 lr=7.74e-05 elapsed=21477s
+[step   30450 | ep 20] recon=0.0188 vq=0.0080 perp=20.7 active=63/64 revived=0 lr=7.70e-05 elapsed=21505s
+[step   30500 | ep 20] recon=0.0215 vq=0.0078 perp=19.5 active=64/64 revived=0 lr=7.65e-05 elapsed=21535s
+[step   30550 | ep 20] recon=0.0174 vq=0.0064 perp=19.7 active=64/64 revived=0 lr=7.61e-05 elapsed=21562s
+[step   30600 | ep 20] recon=0.0187 vq=0.0068 perp=21.0 active=64/64 revived=0 lr=7.57e-05 elapsed=21591s
+[step   30650 | ep 20] recon=0.0187 vq=0.0068 perp=19.0 active=64/64 revived=0 lr=7.53e-05 elapsed=21619s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch020.pt
+[step   30700 | ep 21] recon=0.0183 vq=0.0068 perp=22.3 active=64/64 revived=0 lr=7.48e-05 elapsed=21650s
+[step   30750 | ep 21] recon=0.0224 vq=0.0090 perp=22.1 active=64/64 revived=0 lr=7.44e-05 elapsed=21677s
+[step   30800 | ep 21] recon=0.0153 vq=0.0057 perp=21.1 active=64/64 revived=0 lr=7.40e-05 elapsed=21707s
+[step   30850 | ep 21] recon=0.0151 vq=0.0063 perp=20.6 active=64/64 revived=0 lr=7.36e-05 elapsed=21735s
+[step   30900 | ep 21] recon=0.0154 vq=0.0068 perp=21.8 active=64/64 revived=0 lr=7.32e-05 elapsed=21764s
+[step   30950 | ep 21] recon=0.0176 vq=0.0070 perp=20.6 active=64/64 revived=0 lr=7.27e-05 elapsed=21792s
+[step   31000 | ep 21] recon=0.0182 vq=0.0068 perp=20.2 active=63/64 revived=0 lr=7.23e-05 elapsed=21820s
+[step   31050 | ep 21] recon=0.0151 vq=0.0060 perp=20.6 active=64/64 revived=0 lr=7.19e-05 elapsed=21848s
+[step   31100 | ep 21] recon=0.0172 vq=0.0064 perp=22.1 active=64/64 revived=0 lr=7.15e-05 elapsed=21876s
+[step   31150 | ep 21] recon=0.0203 vq=0.0080 perp=20.3 active=64/64 revived=0 lr=7.11e-05 elapsed=21912s
+[step   31200 | ep 21] recon=0.0184 vq=0.0072 perp=21.0 active=64/64 revived=0 lr=7.07e-05 elapsed=21956s
+[step   31250 | ep 21] recon=0.0206 vq=0.0079 perp=21.8 active=63/64 revived=0 lr=7.03e-05 elapsed=21999s
+[step   31300 | ep 21] recon=0.0176 vq=0.0071 perp=21.2 active=64/64 revived=0 lr=6.99e-05 elapsed=22043s
+[step   31350 | ep 21] recon=0.0160 vq=0.0067 perp=21.8 active=64/64 revived=0 lr=6.95e-05 elapsed=22086s
+[step   31400 | ep 21] recon=0.0173 vq=0.0068 perp=20.9 active=64/64 revived=0 lr=6.91e-05 elapsed=22129s
+[step   31450 | ep 21] recon=0.0215 vq=0.0082 perp=21.1 active=64/64 revived=0 lr=6.87e-05 elapsed=22171s
+[step   31500 | ep 21] recon=0.0178 vq=0.0071 perp=20.5 active=63/64 revived=0 lr=6.82e-05 elapsed=22214s
+[step   31550 | ep 21] recon=0.0202 vq=0.0082 perp=22.6 active=64/64 revived=0 lr=6.78e-05 elapsed=22257s
+[step   31600 | ep 21] recon=0.0199 vq=0.0079 perp=20.7 active=64/64 revived=0 lr=6.74e-05 elapsed=22299s
+[step   31650 | ep 21] recon=0.0169 vq=0.0069 perp=21.2 active=64/64 revived=0 lr=6.70e-05 elapsed=22342s
+[step   31700 | ep 21] recon=0.0180 vq=0.0069 perp=22.1 active=64/64 revived=0 lr=6.66e-05 elapsed=22382s
+[step   31750 | ep 21] recon=0.0168 vq=0.0059 perp=20.3 active=64/64 revived=0 lr=6.63e-05 elapsed=22425s
+[step   31800 | ep 21] recon=0.0151 vq=0.0058 perp=21.0 active=64/64 revived=0 lr=6.59e-05 elapsed=22465s
+[step   31850 | ep 21] recon=0.0198 vq=0.0081 perp=21.2 active=64/64 revived=0 lr=6.55e-05 elapsed=22509s
+[step   31900 | ep 21] recon=0.0175 vq=0.0068 perp=20.9 active=64/64 revived=0 lr=6.51e-05 elapsed=22550s
+[step   31950 | ep 21] recon=0.0193 vq=0.0075 perp=20.7 active=64/64 revived=0 lr=6.47e-05 elapsed=22594s
+[step   32000 | ep 21] recon=0.0195 vq=0.0081 perp=20.7 active=64/64 revived=0 lr=6.43e-05 elapsed=22636s
+  [val @ step 32000] val_recon=0.0215 val_vq=0.0091 val_perplexity=5.9758 val_active=24.2759
+[step   32050 | ep 21] recon=0.0173 vq=0.0072 perp=21.7 active=64/64 revived=0 lr=6.39e-05 elapsed=22679s
+[step   32100 | ep 21] recon=0.0203 vq=0.0085 perp=20.4 active=64/64 revived=0 lr=6.35e-05 elapsed=22719s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch021.pt
+[step   32150 | ep 22] recon=0.0166 vq=0.0061 perp=20.8 active=63/64 revived=0 lr=6.31e-05 elapsed=22763s
+[step   32200 | ep 22] recon=0.0164 vq=0.0067 perp=20.4 active=64/64 revived=0 lr=6.27e-05 elapsed=22805s
+[step   32250 | ep 22] recon=0.0175 vq=0.0070 perp=20.4 active=64/64 revived=0 lr=6.23e-05 elapsed=22847s
+[step   32300 | ep 22] recon=0.0186 vq=0.0076 perp=23.6 active=64/64 revived=0 lr=6.20e-05 elapsed=22887s
+[step   32350 | ep 22] recon=0.0247 vq=0.0091 perp=21.2 active=64/64 revived=0 lr=6.16e-05 elapsed=22930s
+[step   32400 | ep 22] recon=0.0177 vq=0.0070 perp=21.5 active=64/64 revived=0 lr=6.12e-05 elapsed=22971s
+[step   32450 | ep 22] recon=0.0173 vq=0.0069 perp=21.7 active=64/64 revived=0 lr=6.08e-05 elapsed=23014s
+[step   32500 | ep 22] recon=0.0169 vq=0.0067 perp=21.2 active=63/64 revived=0 lr=6.04e-05 elapsed=23058s
+[step   32550 | ep 22] recon=0.0226 vq=0.0091 perp=20.5 active=64/64 revived=0 lr=6.01e-05 elapsed=23105s
+[step   32600 | ep 22] recon=0.0173 vq=0.0064 perp=23.0 active=64/64 revived=0 lr=5.97e-05 elapsed=23151s
+[step   32650 | ep 22] recon=0.0158 vq=0.0065 perp=22.3 active=64/64 revived=0 lr=5.93e-05 elapsed=23195s
+[step   32700 | ep 22] recon=0.0169 vq=0.0064 perp=22.2 active=64/64 revived=0 lr=5.89e-05 elapsed=23239s
+[step   32750 | ep 22] recon=0.0174 vq=0.0061 perp=20.4 active=64/64 revived=0 lr=5.86e-05 elapsed=23281s
+[step   32800 | ep 22] recon=0.0140 vq=0.0055 perp=22.1 active=62/64 revived=0 lr=5.82e-05 elapsed=23322s
+[step   32850 | ep 22] recon=0.0157 vq=0.0064 perp=20.4 active=64/64 revived=0 lr=5.78e-05 elapsed=23365s
+[step   32900 | ep 22] recon=0.0192 vq=0.0077 perp=21.7 active=64/64 revived=0 lr=5.75e-05 elapsed=23405s
+[step   32950 | ep 22] recon=0.0193 vq=0.0077 perp=22.7 active=64/64 revived=0 lr=5.71e-05 elapsed=23447s
+[step   33000 | ep 22] recon=0.0194 vq=0.0075 perp=22.3 active=64/64 revived=0 lr=5.67e-05 elapsed=23486s
+[step   33050 | ep 22] recon=0.0137 vq=0.0050 perp=21.6 active=64/64 revived=0 lr=5.64e-05 elapsed=23527s
+[step   33100 | ep 22] recon=0.0141 vq=0.0055 perp=22.1 active=64/64 revived=0 lr=5.60e-05 elapsed=23567s
+[step   33150 | ep 22] recon=0.0174 vq=0.0074 perp=22.2 active=64/64 revived=0 lr=5.56e-05 elapsed=23609s
+[step   33200 | ep 22] recon=0.0164 vq=0.0070 perp=21.6 active=64/64 revived=0 lr=5.53e-05 elapsed=23647s
+[step   33250 | ep 22] recon=0.0146 vq=0.0060 perp=22.3 active=64/64 revived=0 lr=5.49e-05 elapsed=23689s
+[step   33300 | ep 22] recon=0.0194 vq=0.0076 perp=21.2 active=64/64 revived=0 lr=5.46e-05 elapsed=23728s
+[step   33350 | ep 22] recon=0.0181 vq=0.0065 perp=22.5 active=64/64 revived=0 lr=5.42e-05 elapsed=23767s
+[step   33400 | ep 22] recon=0.0213 vq=0.0079 perp=21.2 active=63/64 revived=0 lr=5.38e-05 elapsed=23806s
+[step   33450 | ep 22] recon=0.0171 vq=0.0064 perp=20.9 active=64/64 revived=0 lr=5.35e-05 elapsed=23845s
+[step   33500 | ep 22] recon=0.0155 vq=0.0061 perp=20.8 active=63/64 revived=0 lr=5.31e-05 elapsed=23883s
+[step   33550 | ep 22] recon=0.0183 vq=0.0066 perp=21.2 active=63/64 revived=0 lr=5.28e-05 elapsed=23922s
+[step   33600 | ep 22] recon=0.0175 vq=0.0068 perp=22.0 active=64/64 revived=0 lr=5.24e-05 elapsed=23959s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch022.pt
+[step   33650 | ep 23] recon=0.0191 vq=0.0072 perp=21.7 active=64/64 revived=0 lr=5.21e-05 elapsed=23999s
+[step   33700 | ep 23] recon=0.0242 vq=0.0093 perp=21.9 active=64/64 revived=0 lr=5.17e-05 elapsed=24037s
+[step   33750 | ep 23] recon=0.0219 vq=0.0086 perp=20.9 active=64/64 revived=0 lr=5.14e-05 elapsed=24075s
+[step   33800 | ep 23] recon=0.0176 vq=0.0067 perp=22.6 active=64/64 revived=0 lr=5.10e-05 elapsed=24112s
+[step   33850 | ep 23] recon=0.0148 vq=0.0060 perp=21.0 active=64/64 revived=0 lr=5.07e-05 elapsed=24149s
+[step   33900 | ep 23] recon=0.0168 vq=0.0064 perp=22.2 active=64/64 revived=0 lr=5.04e-05 elapsed=24188s
+[step   33950 | ep 23] recon=0.0148 vq=0.0059 perp=22.6 active=64/64 revived=0 lr=5.00e-05 elapsed=24224s
+[step   34000 | ep 23] recon=0.0157 vq=0.0061 perp=20.9 active=64/64 revived=0 lr=4.97e-05 elapsed=24263s
+  [val @ step 34000] val_recon=0.0219 val_vq=0.0090 val_perplexity=6.2067 val_active=24.0345
+[step   34050 | ep 23] recon=0.0172 vq=0.0069 perp=21.7 active=62/64 revived=0 lr=4.93e-05 elapsed=24300s
+[step   34100 | ep 23] recon=0.0189 vq=0.0078 perp=21.9 active=64/64 revived=0 lr=4.90e-05 elapsed=24340s
+[step   34150 | ep 23] recon=0.0213 vq=0.0076 perp=22.5 active=64/64 revived=0 lr=4.87e-05 elapsed=24376s
+[step   34200 | ep 23] recon=0.0161 vq=0.0064 perp=21.7 active=64/64 revived=0 lr=4.83e-05 elapsed=24416s
+[step   34250 | ep 23] recon=0.0189 vq=0.0077 perp=22.1 active=64/64 revived=0 lr=4.80e-05 elapsed=24452s
+[step   34300 | ep 23] recon=0.0174 vq=0.0073 perp=22.9 active=64/64 revived=0 lr=4.77e-05 elapsed=24491s
+[step   34350 | ep 23] recon=0.0160 vq=0.0060 perp=21.6 active=64/64 revived=0 lr=4.74e-05 elapsed=24527s
+[step   34400 | ep 23] recon=0.0201 vq=0.0073 perp=21.0 active=64/64 revived=0 lr=4.70e-05 elapsed=24566s
+[step   34450 | ep 23] recon=0.0190 vq=0.0075 perp=23.5 active=63/64 revived=0 lr=4.67e-05 elapsed=24601s
+[step   34500 | ep 23] recon=0.0175 vq=0.0075 perp=21.9 active=64/64 revived=0 lr=4.64e-05 elapsed=24640s
+[step   34550 | ep 23] recon=0.0165 vq=0.0066 perp=20.6 active=64/64 revived=0 lr=4.61e-05 elapsed=24674s
+[step   34600 | ep 23] recon=0.0173 vq=0.0073 perp=21.6 active=64/64 revived=0 lr=4.57e-05 elapsed=24711s
+[step   34650 | ep 23] recon=0.0150 vq=0.0061 perp=22.8 active=64/64 revived=0 lr=4.54e-05 elapsed=24748s
+[step   34700 | ep 23] recon=0.0173 vq=0.0070 perp=20.1 active=64/64 revived=0 lr=4.51e-05 elapsed=24785s
+[step   34750 | ep 23] recon=0.0160 vq=0.0058 perp=22.4 active=64/64 revived=0 lr=4.48e-05 elapsed=24820s
+[step   34800 | ep 23] recon=0.0219 vq=0.0088 perp=22.3 active=63/64 revived=0 lr=4.45e-05 elapsed=24864s
+[step   34850 | ep 23] recon=0.0174 vq=0.0073 perp=21.6 active=64/64 revived=0 lr=4.42e-05 elapsed=24900s
+[step   34900 | ep 23] recon=0.0192 vq=0.0069 perp=21.0 active=64/64 revived=0 lr=4.38e-05 elapsed=24938s
+[step   34950 | ep 23] recon=0.0182 vq=0.0070 perp=21.9 active=63/64 revived=0 lr=4.35e-05 elapsed=24976s
+[step   35000 | ep 23] recon=0.0205 vq=0.0083 perp=23.6 active=64/64 revived=0 lr=4.32e-05 elapsed=25014s
+[step   35050 | ep 23] recon=0.0161 vq=0.0055 perp=22.0 active=64/64 revived=0 lr=4.29e-05 elapsed=25048s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch023.pt
+[step   35100 | ep 24] recon=0.0158 vq=0.0063 perp=20.8 active=63/64 revived=0 lr=4.26e-05 elapsed=25086s
+[step   35150 | ep 24] recon=0.0171 vq=0.0067 perp=21.7 active=63/64 revived=0 lr=4.23e-05 elapsed=25122s
+[step   35200 | ep 24] recon=0.0167 vq=0.0062 perp=21.1 active=63/64 revived=0 lr=4.20e-05 elapsed=25158s
+[step   35250 | ep 24] recon=0.0182 vq=0.0067 perp=22.9 active=64/64 revived=0 lr=4.17e-05 elapsed=25192s
+[step   35300 | ep 24] recon=0.0145 vq=0.0059 perp=21.5 active=64/64 revived=0 lr=4.14e-05 elapsed=25229s
+[step   35350 | ep 24] recon=0.0168 vq=0.0071 perp=22.7 active=63/64 revived=0 lr=4.11e-05 elapsed=25265s
+[step   35400 | ep 24] recon=0.0189 vq=0.0080 perp=22.3 active=64/64 revived=0 lr=4.08e-05 elapsed=25303s
+[step   35450 | ep 24] recon=0.0156 vq=0.0061 perp=20.4 active=63/64 revived=0 lr=4.05e-05 elapsed=25338s
+[step   35500 | ep 24] recon=0.0120 vq=0.0044 perp=21.1 active=64/64 revived=0 lr=4.02e-05 elapsed=25376s
+[step   35550 | ep 24] recon=0.0178 vq=0.0069 perp=21.2 active=63/64 revived=0 lr=3.99e-05 elapsed=25410s
+[step   35600 | ep 24] recon=0.0137 vq=0.0060 perp=19.9 active=64/64 revived=0 lr=3.96e-05 elapsed=25446s
+[step   35650 | ep 24] recon=0.0182 vq=0.0078 perp=23.5 active=64/64 revived=0 lr=3.93e-05 elapsed=25482s
+[step   35700 | ep 24] recon=0.0232 vq=0.0086 perp=20.6 active=64/64 revived=0 lr=3.90e-05 elapsed=25519s
+[step   35750 | ep 24] recon=0.0177 vq=0.0068 perp=21.8 active=64/64 revived=0 lr=3.88e-05 elapsed=25555s
+[step   35800 | ep 24] recon=0.0180 vq=0.0068 perp=22.5 active=64/64 revived=0 lr=3.85e-05 elapsed=25594s
+[step   35850 | ep 24] recon=0.0163 vq=0.0061 perp=22.5 active=64/64 revived=0 lr=3.82e-05 elapsed=25630s
+[step   35900 | ep 24] recon=0.0131 vq=0.0055 perp=23.0 active=64/64 revived=0 lr=3.79e-05 elapsed=25667s
+[step   35950 | ep 24] recon=0.0148 vq=0.0064 perp=21.7 active=63/64 revived=0 lr=3.76e-05 elapsed=25702s
+[step   36000 | ep 24] recon=0.0191 vq=0.0074 perp=21.1 active=64/64 revived=0 lr=3.74e-05 elapsed=25741s
+  [val @ step 36000] val_recon=0.0220 val_vq=0.0092 val_perplexity=6.2713 val_active=23.9655
+[step   36050 | ep 24] recon=0.0199 vq=0.0078 perp=22.2 active=63/64 revived=0 lr=3.71e-05 elapsed=25778s
+[step   36100 | ep 24] recon=0.0222 vq=0.0084 perp=23.1 active=64/64 revived=0 lr=3.68e-05 elapsed=25816s
+[step   36150 | ep 24] recon=0.0160 vq=0.0064 perp=22.2 active=64/64 revived=0 lr=3.65e-05 elapsed=25851s
+[step   36200 | ep 24] recon=0.0207 vq=0.0086 perp=21.6 active=64/64 revived=0 lr=3.63e-05 elapsed=25894s
+[step   36250 | ep 24] recon=0.0182 vq=0.0073 perp=20.5 active=64/64 revived=0 lr=3.60e-05 elapsed=25930s
+[step   36300 | ep 24] recon=0.0208 vq=0.0084 perp=22.3 active=64/64 revived=0 lr=3.57e-05 elapsed=25968s
+[step   36350 | ep 24] recon=0.0208 vq=0.0082 perp=20.9 active=64/64 revived=0 lr=3.54e-05 elapsed=26005s
+[step   36400 | ep 24] recon=0.0168 vq=0.0064 perp=22.0 active=64/64 revived=0 lr=3.52e-05 elapsed=26044s
+[step   36450 | ep 24] recon=0.0195 vq=0.0081 perp=20.7 active=64/64 revived=0 lr=3.49e-05 elapsed=26081s
+[step   36500 | ep 24] recon=0.0178 vq=0.0070 perp=22.7 active=64/64 revived=0 lr=3.47e-05 elapsed=26117s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch024.pt
+[step   36550 | ep 25] recon=0.0211 vq=0.0080 perp=21.2 active=64/64 revived=0 lr=3.44e-05 elapsed=26154s
+[step   36600 | ep 25] recon=0.0146 vq=0.0063 perp=22.1 active=64/64 revived=0 lr=3.41e-05 elapsed=26193s
+[step   36650 | ep 25] recon=0.0139 vq=0.0061 perp=22.6 active=64/64 revived=0 lr=3.39e-05 elapsed=26230s
+[step   36700 | ep 25] recon=0.0234 vq=0.0092 perp=22.4 active=64/64 revived=0 lr=3.36e-05 elapsed=26269s
+[step   36750 | ep 25] recon=0.0174 vq=0.0072 perp=22.7 active=64/64 revived=0 lr=3.34e-05 elapsed=26305s
+[step   36800 | ep 25] recon=0.0173 vq=0.0063 perp=21.1 active=64/64 revived=0 lr=3.31e-05 elapsed=26348s
+[step   36850 | ep 25] recon=0.0142 vq=0.0054 perp=22.0 active=64/64 revived=0 lr=3.29e-05 elapsed=26393s
+[step   36900 | ep 25] recon=0.0162 vq=0.0066 perp=20.1 active=63/64 revived=0 lr=3.26e-05 elapsed=26445s
+[step   36950 | ep 25] recon=0.0184 vq=0.0070 perp=22.6 active=64/64 revived=0 lr=3.24e-05 elapsed=26494s
+[step   37000 | ep 25] recon=0.0157 vq=0.0064 perp=20.0 active=64/64 revived=0 lr=3.21e-05 elapsed=26549s
+[step   37050 | ep 25] recon=0.0187 vq=0.0072 perp=21.6 active=64/64 revived=0 lr=3.19e-05 elapsed=26600s
+[step   37100 | ep 25] recon=0.0213 vq=0.0081 perp=24.2 active=64/64 revived=0 lr=3.16e-05 elapsed=26656s
+[step   37150 | ep 25] recon=0.0172 vq=0.0066 perp=22.4 active=64/64 revived=0 lr=3.14e-05 elapsed=26713s
+[step   37200 | ep 25] recon=0.0198 vq=0.0077 perp=22.3 active=64/64 revived=0 lr=3.11e-05 elapsed=26775s
+[step   37250 | ep 25] recon=0.0159 vq=0.0067 perp=21.8 active=64/64 revived=0 lr=3.09e-05 elapsed=26833s
+[step   37300 | ep 25] recon=0.0194 vq=0.0077 perp=21.3 active=64/64 revived=0 lr=3.07e-05 elapsed=26896s
+[step   37350 | ep 25] recon=0.0170 vq=0.0065 perp=21.8 active=64/64 revived=0 lr=3.04e-05 elapsed=26947s
+[step   37400 | ep 25] recon=0.0180 vq=0.0083 perp=22.5 active=64/64 revived=0 lr=3.02e-05 elapsed=27003s
+[step   37450 | ep 25] recon=0.0197 vq=0.0081 perp=21.2 active=64/64 revived=0 lr=3.00e-05 elapsed=27054s
+[step   37500 | ep 25] recon=0.0169 vq=0.0068 perp=22.5 active=64/64 revived=0 lr=2.97e-05 elapsed=27110s
+[step   37550 | ep 25] recon=0.0206 vq=0.0089 perp=23.4 active=64/64 revived=0 lr=2.95e-05 elapsed=27161s
+[step   37600 | ep 25] recon=0.0151 vq=0.0059 perp=21.5 active=64/64 revived=0 lr=2.93e-05 elapsed=27215s
+[step   37650 | ep 25] recon=0.0166 vq=0.0062 perp=21.1 active=64/64 revived=0 lr=2.91e-05 elapsed=27265s
+[step   37700 | ep 25] recon=0.0210 vq=0.0082 perp=21.1 active=64/64 revived=0 lr=2.88e-05 elapsed=27320s
+[step   37750 | ep 25] recon=0.0179 vq=0.0072 perp=21.2 active=64/64 revived=0 lr=2.86e-05 elapsed=27372s
+[step   37800 | ep 25] recon=0.0146 vq=0.0062 perp=20.8 active=63/64 revived=0 lr=2.84e-05 elapsed=27427s
+[step   37850 | ep 25] recon=0.0157 vq=0.0064 perp=21.4 active=64/64 revived=0 lr=2.82e-05 elapsed=27478s
+[step   37900 | ep 25] recon=0.0162 vq=0.0061 perp=22.8 active=64/64 revived=0 lr=2.80e-05 elapsed=27532s
+[step   37950 | ep 25] recon=0.0240 vq=0.0092 perp=20.2 active=64/64 revived=0 lr=2.78e-05 elapsed=27583s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch025.pt
+[step   38000 | ep 26] recon=0.0157 vq=0.0069 perp=22.0 active=64/64 revived=0 lr=2.75e-05 elapsed=27643s
+  [val @ step 38000] val_recon=0.0221 val_vq=0.0094 val_perplexity=6.2151 val_active=23.9310
+[step   38050 | ep 26] recon=0.0157 vq=0.0065 perp=22.1 active=64/64 revived=0 lr=2.73e-05 elapsed=27706s
+[step   38100 | ep 26] recon=0.0159 vq=0.0068 perp=21.7 active=64/64 revived=0 lr=2.71e-05 elapsed=27763s
+[step   38150 | ep 26] recon=0.0209 vq=0.0079 perp=21.6 active=63/64 revived=0 lr=2.69e-05 elapsed=27826s
+[step   38200 | ep 26] recon=0.0160 vq=0.0062 perp=22.1 active=64/64 revived=0 lr=2.67e-05 elapsed=27883s
+[step   38250 | ep 26] recon=0.0190 vq=0.0069 perp=21.5 active=64/64 revived=0 lr=2.65e-05 elapsed=27928s
+[step   38300 | ep 26] recon=0.0205 vq=0.0077 perp=19.6 active=64/64 revived=0 lr=2.63e-05 elapsed=27971s
+[step   38350 | ep 26] recon=0.0158 vq=0.0062 perp=20.9 active=64/64 revived=0 lr=2.61e-05 elapsed=28013s
+[step   38400 | ep 26] recon=0.0165 vq=0.0068 perp=21.6 active=64/64 revived=0 lr=2.59e-05 elapsed=28041s
+[step   38450 | ep 26] recon=0.0240 vq=0.0099 perp=22.5 active=64/64 revived=0 lr=2.57e-05 elapsed=28071s
+[step   38500 | ep 26] recon=0.0217 vq=0.0087 perp=20.0 active=64/64 revived=0 lr=2.55e-05 elapsed=28099s
+[step   38550 | ep 26] recon=0.0171 vq=0.0075 perp=21.0 active=64/64 revived=0 lr=2.53e-05 elapsed=28128s
+[step   38600 | ep 26] recon=0.0172 vq=0.0069 perp=22.2 active=64/64 revived=0 lr=2.51e-05 elapsed=28156s
+[step   38650 | ep 26] recon=0.0164 vq=0.0069 perp=20.9 active=64/64 revived=0 lr=2.49e-05 elapsed=28187s
+[step   38700 | ep 26] recon=0.0149 vq=0.0067 perp=21.5 active=63/64 revived=0 lr=2.47e-05 elapsed=28214s
+[step   38750 | ep 26] recon=0.0175 vq=0.0073 perp=21.5 active=64/64 revived=0 lr=2.46e-05 elapsed=28244s
+[step   38800 | ep 26] recon=0.0157 vq=0.0062 perp=19.9 active=64/64 revived=0 lr=2.44e-05 elapsed=28271s
+[step   38850 | ep 26] recon=0.0190 vq=0.0070 perp=19.9 active=64/64 revived=0 lr=2.42e-05 elapsed=28301s
+[step   38900 | ep 26] recon=0.0220 vq=0.0085 perp=21.0 active=64/64 revived=0 lr=2.40e-05 elapsed=28328s
+[step   38950 | ep 26] recon=0.0224 vq=0.0086 perp=21.7 active=64/64 revived=0 lr=2.38e-05 elapsed=28358s
+[step   39000 | ep 26] recon=0.0202 vq=0.0081 perp=23.5 active=64/64 revived=0 lr=2.36e-05 elapsed=28386s
+[step   39050 | ep 26] recon=0.0197 vq=0.0083 perp=21.9 active=64/64 revived=0 lr=2.35e-05 elapsed=28415s
+[step   39100 | ep 26] recon=0.0176 vq=0.0070 perp=21.1 active=63/64 revived=0 lr=2.33e-05 elapsed=28442s
+[step   39150 | ep 26] recon=0.0236 vq=0.0097 perp=22.6 active=64/64 revived=0 lr=2.31e-05 elapsed=28472s
+[step   39200 | ep 26] recon=0.0142 vq=0.0055 perp=21.4 active=64/64 revived=0 lr=2.30e-05 elapsed=28499s
+[step   39250 | ep 26] recon=0.0182 vq=0.0071 perp=21.3 active=63/64 revived=0 lr=2.28e-05 elapsed=28529s
+[step   39300 | ep 26] recon=0.0157 vq=0.0063 perp=20.9 active=64/64 revived=0 lr=2.26e-05 elapsed=28556s
+[step   39350 | ep 26] recon=0.0170 vq=0.0062 perp=20.3 active=64/64 revived=0 lr=2.25e-05 elapsed=28585s
+[step   39400 | ep 26] recon=0.0179 vq=0.0070 perp=21.8 active=64/64 revived=0 lr=2.23e-05 elapsed=28612s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch026.pt
+[step   39450 | ep 27] recon=0.0195 vq=0.0074 perp=20.5 active=64/64 revived=0 lr=2.21e-05 elapsed=28643s
+[step   39500 | ep 27] recon=0.0194 vq=0.0077 perp=21.3 active=63/64 revived=0 lr=2.20e-05 elapsed=28671s
+[step   39550 | ep 27] recon=0.0154 vq=0.0064 perp=20.4 active=64/64 revived=0 lr=2.18e-05 elapsed=28700s
+[step   39600 | ep 27] recon=0.0157 vq=0.0064 perp=20.5 active=62/64 revived=0 lr=2.16e-05 elapsed=28728s
+[step   39650 | ep 27] recon=0.0164 vq=0.0059 perp=20.1 active=62/64 revived=0 lr=2.15e-05 elapsed=28758s
+[step   39700 | ep 27] recon=0.0222 vq=0.0076 perp=21.4 active=64/64 revived=0 lr=2.13e-05 elapsed=28785s
+[step   39750 | ep 27] recon=0.0172 vq=0.0069 perp=21.5 active=64/64 revived=0 lr=2.12e-05 elapsed=28814s
+[step   39800 | ep 27] recon=0.0188 vq=0.0078 perp=21.8 active=64/64 revived=0 lr=2.10e-05 elapsed=28841s
+[step   39850 | ep 27] recon=0.0205 vq=0.0082 perp=22.7 active=63/64 revived=0 lr=2.09e-05 elapsed=28871s
+[step   39900 | ep 27] recon=0.0166 vq=0.0068 perp=22.4 active=64/64 revived=0 lr=2.07e-05 elapsed=28898s
+[step   39950 | ep 27] recon=0.0178 vq=0.0073 perp=22.2 active=64/64 revived=0 lr=2.06e-05 elapsed=28927s
+[step   40000 | ep 27] recon=0.0212 vq=0.0085 perp=21.5 active=64/64 revived=0 lr=2.05e-05 elapsed=28955s
+  [val @ step 40000] val_recon=0.0220 val_vq=0.0092 val_perplexity=6.1217 val_active=23.5517
+[step   40050 | ep 27] recon=0.0187 vq=0.0069 perp=21.7 active=64/64 revived=0 lr=2.03e-05 elapsed=28984s
+[step   40100 | ep 27] recon=0.0193 vq=0.0075 perp=21.8 active=63/64 revived=0 lr=2.02e-05 elapsed=29011s
+[step   40150 | ep 27] recon=0.0183 vq=0.0082 perp=22.7 active=64/64 revived=0 lr=2.00e-05 elapsed=29040s
+[step   40200 | ep 27] recon=0.0236 vq=0.0097 perp=22.0 active=64/64 revived=0 lr=1.99e-05 elapsed=29067s
+[step   40250 | ep 27] recon=0.0166 vq=0.0062 perp=20.5 active=63/64 revived=0 lr=1.98e-05 elapsed=29096s
+[step   40300 | ep 27] recon=0.0152 vq=0.0059 perp=20.7 active=64/64 revived=0 lr=1.96e-05 elapsed=29123s
+[step   40350 | ep 27] recon=0.0181 vq=0.0071 perp=21.1 active=64/64 revived=0 lr=1.95e-05 elapsed=29152s
+[step   40400 | ep 27] recon=0.0148 vq=0.0064 perp=21.5 active=64/64 revived=0 lr=1.94e-05 elapsed=29179s
+[step   40450 | ep 27] recon=0.0201 vq=0.0089 perp=21.4 active=63/64 revived=0 lr=1.93e-05 elapsed=29208s
+[step   40500 | ep 27] recon=0.0145 vq=0.0056 perp=20.8 active=64/64 revived=0 lr=1.91e-05 elapsed=29235s
+[step   40550 | ep 27] recon=0.0182 vq=0.0074 perp=21.2 active=64/64 revived=0 lr=1.90e-05 elapsed=29264s
+[step   40600 | ep 27] recon=0.0159 vq=0.0064 perp=22.4 active=64/64 revived=0 lr=1.89e-05 elapsed=29291s
+[step   40650 | ep 27] recon=0.0165 vq=0.0063 perp=21.2 active=64/64 revived=0 lr=1.88e-05 elapsed=29321s
+[step   40700 | ep 27] recon=0.0155 vq=0.0065 perp=21.1 active=64/64 revived=0 lr=1.87e-05 elapsed=29347s
+[step   40750 | ep 27] recon=0.0198 vq=0.0091 perp=22.2 active=64/64 revived=0 lr=1.85e-05 elapsed=29376s
+[step   40800 | ep 27] recon=0.0172 vq=0.0075 perp=21.2 active=63/64 revived=0 lr=1.84e-05 elapsed=29403s
+[step   40850 | ep 27] recon=0.0180 vq=0.0073 perp=20.2 active=64/64 revived=0 lr=1.83e-05 elapsed=29432s
+[step   40900 | ep 27] recon=0.0140 vq=0.0059 perp=21.1 active=64/64 revived=0 lr=1.82e-05 elapsed=29459s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch027.pt
+[step   40950 | ep 28] recon=0.0217 vq=0.0076 perp=20.3 active=64/64 revived=0 lr=1.81e-05 elapsed=29487s
+[step   41000 | ep 28] recon=0.0191 vq=0.0081 perp=21.2 active=63/64 revived=0 lr=1.80e-05 elapsed=29516s
+[step   41050 | ep 28] recon=0.0180 vq=0.0074 perp=21.2 active=64/64 revived=0 lr=1.79e-05 elapsed=29543s
+[step   41100 | ep 28] recon=0.0190 vq=0.0072 perp=21.3 active=64/64 revived=0 lr=1.78e-05 elapsed=29572s
+[step   41150 | ep 28] recon=0.0151 vq=0.0065 perp=18.3 active=64/64 revived=0 lr=1.77e-05 elapsed=29599s
+[step   41200 | ep 28] recon=0.0199 vq=0.0080 perp=21.8 active=64/64 revived=0 lr=1.76e-05 elapsed=29628s
+[step   41250 | ep 28] recon=0.0166 vq=0.0068 perp=21.6 active=64/64 revived=0 lr=1.75e-05 elapsed=29655s
+[step   41300 | ep 28] recon=0.0210 vq=0.0083 perp=20.5 active=64/64 revived=0 lr=1.74e-05 elapsed=29684s
+[step   41350 | ep 28] recon=0.0170 vq=0.0070 perp=20.8 active=64/64 revived=0 lr=1.73e-05 elapsed=29711s
+[step   41400 | ep 28] recon=0.0163 vq=0.0063 perp=19.5 active=64/64 revived=0 lr=1.72e-05 elapsed=29740s
+[step   41450 | ep 28] recon=0.0186 vq=0.0071 perp=22.0 active=64/64 revived=0 lr=1.71e-05 elapsed=29767s
+[step   41500 | ep 28] recon=0.0196 vq=0.0077 perp=21.1 active=64/64 revived=0 lr=1.70e-05 elapsed=29797s
+[step   41550 | ep 28] recon=0.0174 vq=0.0072 perp=21.3 active=64/64 revived=0 lr=1.69e-05 elapsed=29824s
+[step   41600 | ep 28] recon=0.0167 vq=0.0074 perp=21.8 active=64/64 revived=0 lr=1.69e-05 elapsed=29853s
+[step   41650 | ep 28] recon=0.0201 vq=0.0075 perp=22.7 active=63/64 revived=0 lr=1.68e-05 elapsed=29880s
+[step   41700 | ep 28] recon=0.0174 vq=0.0072 perp=20.4 active=64/64 revived=0 lr=1.67e-05 elapsed=29909s
+[step   41750 | ep 28] recon=0.0233 vq=0.0091 perp=22.9 active=64/64 revived=0 lr=1.66e-05 elapsed=29937s
+[step   41800 | ep 28] recon=0.0180 vq=0.0070 perp=21.5 active=64/64 revived=0 lr=1.65e-05 elapsed=29966s
+[step   41850 | ep 28] recon=0.0166 vq=0.0066 perp=21.4 active=64/64 revived=0 lr=1.65e-05 elapsed=29993s
+[step   41900 | ep 28] recon=0.0183 vq=0.0068 perp=23.1 active=63/64 revived=0 lr=1.64e-05 elapsed=30022s
+[step   41950 | ep 28] recon=0.0189 vq=0.0074 perp=22.6 active=64/64 revived=0 lr=1.63e-05 elapsed=30049s
+[step   42000 | ep 28] recon=0.0211 vq=0.0088 perp=21.8 active=64/64 revived=0 lr=1.63e-05 elapsed=30078s
+  [val @ step 42000] val_recon=0.0221 val_vq=0.0088 val_perplexity=6.1675 val_active=24.1724
+[step   42050 | ep 28] recon=0.0172 vq=0.0066 perp=23.1 active=64/64 revived=0 lr=1.62e-05 elapsed=30105s
+[step   42100 | ep 28] recon=0.0176 vq=0.0067 perp=21.2 active=64/64 revived=0 lr=1.61e-05 elapsed=30135s
+[step   42150 | ep 28] recon=0.0159 vq=0.0062 perp=21.8 active=64/64 revived=0 lr=1.61e-05 elapsed=30162s
+[step   42200 | ep 28] recon=0.0191 vq=0.0078 perp=22.4 active=64/64 revived=0 lr=1.60e-05 elapsed=30191s
+[step   42250 | ep 28] recon=0.0192 vq=0.0077 perp=20.8 active=64/64 revived=0 lr=1.59e-05 elapsed=30219s
+[step   42300 | ep 28] recon=0.0186 vq=0.0068 perp=24.0 active=64/64 revived=0 lr=1.59e-05 elapsed=30248s
+[step   42350 | ep 28] recon=0.0184 vq=0.0072 perp=22.4 active=64/64 revived=0 lr=1.58e-05 elapsed=30276s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch028.pt
+[step   42400 | ep 29] recon=0.0190 vq=0.0077 perp=22.5 active=63/64 revived=0 lr=1.58e-05 elapsed=30308s
+[step   42450 | ep 29] recon=0.0241 vq=0.0095 perp=22.0 active=64/64 revived=0 lr=1.57e-05 elapsed=30336s
+[step   42500 | ep 29] recon=0.0167 vq=0.0071 perp=21.5 active=64/64 revived=0 lr=1.57e-05 elapsed=30365s
+[step   42550 | ep 29] recon=0.0149 vq=0.0063 perp=22.3 active=64/64 revived=0 lr=1.56e-05 elapsed=30393s
+[step   42600 | ep 29] recon=0.0196 vq=0.0084 perp=21.7 active=64/64 revived=0 lr=1.56e-05 elapsed=30422s
+[step   42650 | ep 29] recon=0.0187 vq=0.0085 perp=21.5 active=64/64 revived=0 lr=1.55e-05 elapsed=30450s
+[step   42700 | ep 29] recon=0.0145 vq=0.0057 perp=21.1 active=64/64 revived=0 lr=1.55e-05 elapsed=30479s
+[step   42750 | ep 29] recon=0.0187 vq=0.0075 perp=21.9 active=64/64 revived=0 lr=1.54e-05 elapsed=30508s
+[step   42800 | ep 29] recon=0.0168 vq=0.0063 perp=21.3 active=63/64 revived=0 lr=1.54e-05 elapsed=30537s
+[step   42850 | ep 29] recon=0.0202 vq=0.0074 perp=20.9 active=63/64 revived=0 lr=1.54e-05 elapsed=30565s
+[step   42900 | ep 29] recon=0.0171 vq=0.0070 perp=21.3 active=64/64 revived=0 lr=1.53e-05 elapsed=30594s
+[step   42950 | ep 29] recon=0.0166 vq=0.0073 perp=21.3 active=64/64 revived=0 lr=1.53e-05 elapsed=30622s
+[step   43000 | ep 29] recon=0.0207 vq=0.0082 perp=22.3 active=64/64 revived=0 lr=1.53e-05 elapsed=30651s
+[step   43050 | ep 29] recon=0.0184 vq=0.0066 perp=21.6 active=64/64 revived=0 lr=1.52e-05 elapsed=30679s
+[step   43100 | ep 29] recon=0.0192 vq=0.0078 perp=21.6 active=64/64 revived=0 lr=1.52e-05 elapsed=30708s
+[step   43150 | ep 29] recon=0.0147 vq=0.0062 perp=20.2 active=64/64 revived=0 lr=1.52e-05 elapsed=30735s
+[step   43200 | ep 29] recon=0.0178 vq=0.0076 perp=21.9 active=64/64 revived=0 lr=1.51e-05 elapsed=30765s
+[step   43250 | ep 29] recon=0.0158 vq=0.0065 perp=22.1 active=64/64 revived=0 lr=1.51e-05 elapsed=30792s
+[step   43300 | ep 29] recon=0.0184 vq=0.0072 perp=21.4 active=63/64 revived=0 lr=1.51e-05 elapsed=30821s
+[step   43350 | ep 29] recon=0.0163 vq=0.0060 perp=22.1 active=64/64 revived=0 lr=1.51e-05 elapsed=30848s
+[step   43400 | ep 29] recon=0.0159 vq=0.0065 perp=21.9 active=64/64 revived=0 lr=1.51e-05 elapsed=30877s
+[step   43450 | ep 29] recon=0.0209 vq=0.0075 perp=20.9 active=64/64 revived=0 lr=1.51e-05 elapsed=30904s
+[step   43500 | ep 29] recon=0.0171 vq=0.0073 perp=21.4 active=63/64 revived=0 lr=1.50e-05 elapsed=30933s
+[step   43550 | ep 29] recon=0.0139 vq=0.0057 perp=22.8 active=64/64 revived=0 lr=1.50e-05 elapsed=30960s
+[step   43600 | ep 29] recon=0.0204 vq=0.0083 perp=20.7 active=64/64 revived=0 lr=1.50e-05 elapsed=30989s
+[step   43650 | ep 29] recon=0.0190 vq=0.0073 perp=21.4 active=64/64 revived=0 lr=1.50e-05 elapsed=31016s
+[step   43700 | ep 29] recon=0.0190 vq=0.0067 perp=21.9 active=64/64 revived=0 lr=1.50e-05 elapsed=31045s
+[step   43750 | ep 29] recon=0.0170 vq=0.0070 perp=22.3 active=64/64 revived=0 lr=1.50e-05 elapsed=31072s
+[step   43800 | ep 29] recon=0.0169 vq=0.0066 perp=20.4 active=64/64 revived=0 lr=1.50e-05 elapsed=31102s
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch029.pt
+  ✔ saved checkpoint → /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/checkpoint_epoch029.pt
+wandb: - 0.104 MB of 0.104 MB uploadedwandb:                                                                                
+wandb: 
+wandb: Run history:
+wandb:              epoch ▁▂▂▂▂▂▂▂▃▃▃▃▃▃▄▄▄▅▅▅▅▅▅▅▅▅▆▆▆▆▇▇▇▇▇▇▇▇▇█
+wandb:                 lr ▄█████████▇▇▇▇▇▇▇▇▇▆▆▆▆▆▅▅▅▄▄▄▃▃▃▃▂▂▂▂▁▁
+wandb: train/active_codes █████████████████▁████▁████████████▁████
+wandb:   train/perplexity █▅▆▄▆▃▂▁▂▃▂▂▂▂▂▂▁▂▃▁▃▁▁▂▁▂▂▁▁▃▂▄▁▂▄▂▂▁▂▂
+wandb:        train/recon ▇▅▄▃▃▅█▂▄▃▃▃▄▃▄▅▂▃▄▃▃▃▅▄▃▅▄▅▃▃▃▄▁▇▂▃▅▂▄▃
+wandb:      train/revived ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           train/vq ▇█▄▄▄▃▄▃▃▄▃▄▄▄▃▃▃▃▃▁▂▃▂▁▄▄▄▃▄▃▄▅▃▂▂▃▅▃▃▅
+wandb:         val/active █▆▆▆▅█▆▆▅▆▅█▅▅▄▅▄▃▃▁▄
+wandb:     val/perplexity █▆▃▂▂▅▂▁▁▂▁▂▂▁▁▁▃▃▃▂▂
+wandb:          val/recon ▄▂▂▂▂▂█▆▅▅▅▅▄▃▃▁▂▂▃▂▃
+wandb:             val/vq █▆▄▄▃▄▄▃▂▂▂▂▁▁▂▂▁▂▂▂▁
+wandb: 
+wandb: Run summary:
+wandb:              epoch 29
+wandb:                 lr 2e-05
+wandb: train/active_codes 64
+wandb:   train/perplexity 20.3822
+wandb:        train/recon 0.01686
+wandb:      train/revived 0
+wandb:           train/vq 0.00659
+wandb:         val/active 24.17241
+wandb:     val/perplexity 6.16752
+wandb:          val/recon 0.02214
+wandb:             val/vq 0.00876
+wandb: 
+wandb: 🚀 View run vqvae_f6_w16_k64_0504_1856 at: https://wandb.ai/liumail2023-peking-university/dex_mot_tactile_vqvae/runs/j469wwk8
+wandb: ⭐️ View project at: https://wandb.ai/liumail2023-peking-university/dex_mot_tactile_vqvae
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260504_185746-j469wwk8/logs
+[VQ-VAE] Done. Total wallclock: 31120s
+[rank0]:[W505 03:36:29.197208379 ProcessGroupNCCL.cpp:1496] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())

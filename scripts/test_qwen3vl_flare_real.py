@@ -442,6 +442,11 @@ class ParadigmCServer:
         self.attention_mask     = None
         self.n_action_in_cache  = 0
         self.chunk_id           = -1               # incremented per slow
+        # One residual-flow noise sample per chunk, reused across all fast
+        # refinements within the chunk window.  This kills the per-call random
+        # variation in Δa that would otherwise inject noise into successive
+        # refinements when tactile barely changes.  See _run_slow + _run_fast.
+        self.cached_residual_noise = None
 
     # -- internal: build slow embeddings, run action-only flow, cache state --
     def _run_slow(
@@ -532,6 +537,16 @@ class ParadigmCServer:
         self.n_action_in_cache = n_action_in_cache
         self.chunk_id         += 1
 
+        # Sample ONE residual-flow noise tensor for this chunk window.  All
+        # fast refinements that arrive within this chunk reuse it so successive
+        # Δa values differ only when tactile changes, not because we re-rolled
+        # the dice on the flow's initial point.
+        self.cached_residual_noise = (
+            torch.randn(1, args.action_chunk, args.action_dim,
+                        dtype=torch.bfloat16, device=device)
+            * args.tactile_refine_noise_scale
+        )
+
         norm_actions = a_hat[0].float().cpu().numpy()
         self.A_hat_denorm = _denormalize(
             norm_actions, statistic["action_mask"],
@@ -563,6 +578,7 @@ class ParadigmCServer:
             tactile_deform     = tac_deform_tensor,
             num_steps          = args.tactile_refine_flow_steps,
             noise_scale        = args.tactile_refine_noise_scale,
+            initial_noise      = self.cached_residual_noise,   # unified per chunk
         )
         a_refined_norm = (self.A_hat + delta_a)[0].float().cpu().numpy()
         a_refined = _denormalize(
@@ -631,8 +647,8 @@ def main(args):
     n_fast_cams = 2 if args.action_dim > 31 else 1
     dummy_fast  = [Image.new("RGB", (224, 224), color="black") for _ in range(n_fast_cams)]
     dummy_state = np.zeros(args.action_dim, dtype=np.float32) if args.use_robot_state else None
-    dummy_f6    = np.zeros((5, 6), dtype=np.float32) if args.use_tactile_vec else None
-    dummy_deform = np.zeros((5, 240, 240), dtype=np.float32) if args.use_tactile_deform else None
+    dummy_f6    = np.zeros((10, 6), dtype=np.float32) if args.use_tactile_vec else None
+    dummy_deform = np.zeros((10, 240, 240), dtype=np.float32) if args.use_tactile_deform else None
 
     refine_mode = bool(args.use_tactile_refine_flow)
     if refine_mode:

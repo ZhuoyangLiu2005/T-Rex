@@ -685,8 +685,8 @@ def main(args):
     n_fast_cams = 2 if args.action_dim > 31 else 1
     dummy_fast = [Image.new("RGB", (224, 224), color="black") for _ in range(n_fast_cams)]
     dummy_state = np.zeros(args.action_dim, dtype=np.float32) if args.use_robot_state else None
-    dummy_f6 = np.zeros((5, 6), dtype=np.float32) if args.use_tactile_vec else None
-    dummy_deform = np.zeros((5, 240, 240), dtype=np.float32) if args.use_tactile_deform else None
+    dummy_f6 = np.zeros((10, 6), dtype=np.float32) if args.use_tactile_vec else None
+    dummy_deform = np.zeros((10, 240, 240), dtype=np.float32) if args.use_tactile_deform else None
 
     dummy_out = model_predict(
         args, model, processor, statistic, action_tokenizer,

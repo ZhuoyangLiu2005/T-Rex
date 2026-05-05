@@ -10,5 +10,7 @@ vis_scripts
 rollouts
 test_results
 vis*
+wandb
 scripts/logs
+.vscode
 scripts/test_output*

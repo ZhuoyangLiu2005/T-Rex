@@ -13,7 +13,7 @@ model:
   bottleneck_channels: 256
   embed_dim: 256
   n_strided_blocks: 2
-  codebook_size: 1024
+  codebook_size: 256
   commitment_weight: 0.25
   decay: 0.99
   revive_freq: 200

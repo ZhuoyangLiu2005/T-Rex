@@ -740,6 +740,7 @@ class Qwen3VLVLAModel(nn.Module):
         tactile_deform: Optional[torch.Tensor] = None,
         num_steps: int = 4,
         noise_scale: float = 0.1,
+        initial_noise: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """Tactile-only Euler flow on the residual r ≈ A_demo − Â.
 
@@ -747,6 +748,15 @@ class Qwen3VLVLAModel(nn.Module):
 
         `cached_kv` is cloned (manual tensor.clone) so multiple async refreshes
         during a single action chunk can each start from the slow-path snapshot.
+
+        `initial_noise`, when provided, is used as the τ=1 starting point of the
+        flow instead of a fresh `randn`.  This is the recommended path at
+        inference: the caller (typically `ParadigmCServer`) generates one noise
+        sample per slow tick and reuses it across all fast refinements within
+        the chunk window, so successive Δa values differ *only* due to changes
+        in tactile, not due to per-call random noise.  Removes the dominant
+        source of in-chunk action jerk.  The tensor is expected to already be
+        scaled appropriately (caller multiplies by noise_scale themselves).
         """
         cache = self._clone_dynamic_cache(cached_kv)
         device = base_chunk.device
@@ -763,8 +773,14 @@ class Qwen3VLVLAModel(nn.Module):
             latent_position_ids, n_action_in_cache, n_tac_seq)
         tac_pos = extended_pos[..., -n_tac_seq:]
 
-        r = (torch.randn(B, n_chunk, action_dim, device=device) * noise_scale
-             ).to(dtype)
+        if initial_noise is not None:
+            r = initial_noise.to(device=device, dtype=dtype)
+            assert r.shape == (B, n_chunk, action_dim), (
+                f"initial_noise shape {tuple(r.shape)} != "
+                f"expected ({B}, {n_chunk}, {action_dim})")
+        else:
+            r = (torch.randn(B, n_chunk, action_dim, device=device) * noise_scale
+                 ).to(dtype)
         dt   = torch.tensor(-1.0 / num_steps, dtype=dtype, device=device)
         time = torch.tensor(1.0, dtype=dtype, device=device)
 

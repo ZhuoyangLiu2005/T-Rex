@@ -1,0 +1,409 @@
+ipex flag is deprecated, will be removed in Accelerate v1.10. From 2.7.0, PyTorch has all needed optimizations for Intel CPU and XPU.
+The following values were not passed to `accelerate launch` and had defaults used instead:
+		More than one GPU was found, enabling multi-GPU training.
+		If this was unintended please pass in `--num_processes=1`.
+	`--dynamo_backend` was set to a value of `'no'`
+To avoid this warning pass in values for each of the problematic parameters or run `accelerate config`.
+[rank0]:[W504 01:22:08.987564773 ProcessGroupNCCL.cpp:4561] [PG ID 0 PG GUID 0 Rank 0]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank7]:[W504 01:22:08.610079486 ProcessGroupNCCL.cpp:4561] [PG ID 0 PG GUID 0 Rank 7]  using GPU 7 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank1]:[W504 01:22:08.650097684 ProcessGroupNCCL.cpp:4561] [PG ID 0 PG GUID 0 Rank 1]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank4]:[W504 01:22:09.688731343 ProcessGroupNCCL.cpp:4561] [PG ID 0 PG GUID 0 Rank 4]  using GPU 4 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank6]:[W504 01:22:09.708502126 ProcessGroupNCCL.cpp:4561] [PG ID 0 PG GUID 0 Rank 6]  using GPU 6 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank3]:[W504 01:22:09.750528934 ProcessGroupNCCL.cpp:4561] [PG ID 0 PG GUID 0 Rank 3]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank2]:[W504 01:22:09.866306978 ProcessGroupNCCL.cpp:4561] [PG ID 0 PG GUID 0 Rank 2]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[rank5]:[W504 01:22:09.872870451 ProcessGroupNCCL.cpp:4561] [PG ID 0 PG GUID 0 Rank 5]  using GPU 5 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect. Specify device_ids in barrier() to force use of a particular device, or call init_process_group() with a device_id.
+[VQ-VAE] run_dir = /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k1024_0504_0121
+[VQ-VAE] device  = cuda:0, mixed_precision=bf16
+[VQ-VAE] Scanning /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/midtrain/merged for episodes …
+[VQ-VAE] tacf6_min[:6] = [-11.921875    -0.4597168   -0.4951172   -0.39526367  -0.09002686
+  -0.19238281], tacf6_max[:6] = [5.9453125e+00 1.8375000e+01 2.2440430e+01 8.9035034e-03 2.3315430e-02
+ 1.0499191e-01]
+[VQ-VAE] train: 5912 eps / 2993228 windows ; val: 121 eps / 59236 windows
+[VQ-VAE] config: {
+  "window": 16,
+  "in_channels": 30,
+  "hidden_channels": 128,
+  "bottleneck_channels": 256,
+  "embed_dim": 256,
+  "n_strided_blocks": 2,
+  "codebook_size": 1024,
+  "commitment_weight": 0.25,
+  "decay": 0.99,
+  "revive_freq": 200,
+  "revive_threshold": 1.0,
+  "use_magnitude_weight": true,
+  "weight_alpha": 2.0,
+  "weight_tau": 4.0,
+  "init_mode": "uniform"
+}
+[VQ-VAE] params: 0.93M
+[VQ-VAE] 30 epochs × 1461 steps = 43830 total optimizer steps (per rank)
+[step       0 | ep  0] recon=0.4934 vq=0.0188 perp=5.1 active=64/1024 revived=0 lr=6.00e-07 elapsed=9s
+[step      50 | ep  0] recon=0.1247 vq=0.0031 perp=2.1 active=8/1024 revived=0 lr=3.06e-05 elapsed=36s
+[step     100 | ep  0] recon=0.0605 vq=0.0051 perp=3.6 active=8/1024 revived=0 lr=6.06e-05 elapsed=65s
+[step     150 | ep  0] recon=0.0398 vq=0.0134 perp=4.8 active=8/1024 revived=0 lr=9.06e-05 elapsed=94s
+[rank6]: Traceback (most recent call last):
+[rank6]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+[rank6]:     return _run_code(code, main_globals, None,
+[rank6]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/runpy.py", line 86, in _run_code
+[rank6]:     exec(code, run_globals)
+[rank6]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/train.py", line 364, in <module>
+[rank6]:     main()
+[rank6]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/train.py", line 293, in main
+[rank6]:     out = model(batch["f6"], batch["magnitude"])
+[rank6]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank6]:     return self._call_impl(*args, **kwargs)
+[rank6]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank6]:     return forward_call(*args, **kwargs)
+[rank6]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+[rank6]:     else self._run_ddp_forward(*inputs, **kwargs)
+[rank6]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+[rank6]:     return self.module(*inputs, **kwargs)  # type: ignore[index]
+[rank6]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank6]:     return self._call_impl(*args, **kwargs)
+[rank6]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank6]:     return forward_call(*args, **kwargs)
+[rank6]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/utils/operations.py", line 818, in forward
+[rank6]:     return model_forward(*args, **kwargs)
+[rank6]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/utils/operations.py", line 806, in __call__
+[rank6]:     return convert_to_fp32(self.model_forward(*args, **kwargs))
+[rank6]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/amp/autocast_mode.py", line 44, in decorate_autocast
+[rank6]:     return func(*args, **kwargs)
+[rank6]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/tactile_vqvae.py", line 98, in forward
+[rank6]:     z_q, indices, vq_loss, qinfo = self.quantizer(z_e)            # [B, D], [B], scalar
+[rank6]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank6]:     return self._call_impl(*args, **kwargs)
+[rank6]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank6]:     return forward_call(*args, **kwargs)
+[rank6]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/quantizer.py", line 167, in forward
+[rank6]:     revived = self._revive_dead_codes(z_e.detach())
+[rank6]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+[rank6]:     return func(*args, **kwargs)
+[rank6]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/quantizer.py", line 131, in _revive_dead_codes
+[rank6]:     self.embed[dead_idx]      = replacements
+[rank6]: RuntimeError: Index put requires the source and destination dtypes match, got Float for the destination and BFloat16 for the source.
+[rank4]: Traceback (most recent call last):
+[rank4]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+[rank4]:     return _run_code(code, main_globals, None,
+[rank4]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/runpy.py", line 86, in _run_code
+[rank4]:     exec(code, run_globals)
+[rank4]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/train.py", line 364, in <module>
+[rank4]:     main()
+[rank4]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/train.py", line 293, in main
+[rank4]:     out = model(batch["f6"], batch["magnitude"])
+[rank4]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank4]:     return self._call_impl(*args, **kwargs)
+[rank4]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank4]:     return forward_call(*args, **kwargs)
+[rank4]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+[rank4]:     else self._run_ddp_forward(*inputs, **kwargs)
+[rank4]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+[rank4]:     return self.module(*inputs, **kwargs)  # type: ignore[index]
+[rank4]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank4]:     return self._call_impl(*args, **kwargs)
+[rank4]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank4]:     return forward_call(*args, **kwargs)
+[rank4]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/utils/operations.py", line 818, in forward
+[rank4]:     return model_forward(*args, **kwargs)
+[rank4]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/utils/operations.py", line 806, in __call__
+[rank4]:     return convert_to_fp32(self.model_forward(*args, **kwargs))
+[rank4]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/amp/autocast_mode.py", line 44, in decorate_autocast
+[rank4]:     return func(*args, **kwargs)
+[rank4]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/tactile_vqvae.py", line 98, in forward
+[rank4]:     z_q, indices, vq_loss, qinfo = self.quantizer(z_e)            # [B, D], [B], scalar
+[rank4]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank4]:     return self._call_impl(*args, **kwargs)
+[rank4]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank4]:     return forward_call(*args, **kwargs)
+[rank4]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/quantizer.py", line 167, in forward
+[rank4]:     revived = self._revive_dead_codes(z_e.detach())
+[rank4]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+[rank4]:     return func(*args, **kwargs)
+[rank4]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/quantizer.py", line 131, in _revive_dead_codes
+[rank4]:     self.embed[dead_idx]      = replacements
+[rank4]: RuntimeError: Index put requires the source and destination dtypes match, got Float for the destination and BFloat16 for the source.
+[rank5]: Traceback (most recent call last):
+[rank5]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+[rank5]:     return _run_code(code, main_globals, None,
+[rank5]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/runpy.py", line 86, in _run_code
+[rank5]:     exec(code, run_globals)
+[rank5]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/train.py", line 364, in <module>
+[rank5]:     main()
+[rank5]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/train.py", line 293, in main
+[rank5]:     out = model(batch["f6"], batch["magnitude"])
+[rank5]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank5]:     return self._call_impl(*args, **kwargs)
+[rank5]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank5]:     return forward_call(*args, **kwargs)
+[rank5]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+[rank5]:     else self._run_ddp_forward(*inputs, **kwargs)
+[rank5]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+[rank5]:     return self.module(*inputs, **kwargs)  # type: ignore[index]
+[rank5]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank5]:     return self._call_impl(*args, **kwargs)
+[rank5]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank5]:     return forward_call(*args, **kwargs)
+[rank5]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/utils/operations.py", line 818, in forward
+[rank5]:     return model_forward(*args, **kwargs)
+[rank5]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/utils/operations.py", line 806, in __call__
+[rank5]:     return convert_to_fp32(self.model_forward(*args, **kwargs))
+[rank5]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/amp/autocast_mode.py", line 44, in decorate_autocast
+[rank5]:     return func(*args, **kwargs)
+[rank5]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/tactile_vqvae.py", line 98, in forward
+[rank5]:     z_q, indices, vq_loss, qinfo = self.quantizer(z_e)            # [B, D], [B], scalar
+[rank5]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank5]:     return self._call_impl(*args, **kwargs)
+[rank5]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank5]:     return forward_call(*args, **kwargs)
+[rank5]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/quantizer.py", line 167, in forward
+[rank5]:     revived = self._revive_dead_codes(z_e.detach())
+[rank5]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+[rank5]:     return func(*args, **kwargs)
+[rank5]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/quantizer.py", line 131, in _revive_dead_codes
+[rank5]:     self.embed[dead_idx]      = replacements
+[rank5]: RuntimeError: Index put requires the source and destination dtypes match, got Float for the destination and BFloat16 for the source.
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+[rank0]:     return _run_code(code, main_globals, None,
+[rank0]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/runpy.py", line 86, in _run_code
+[rank0]:     exec(code, run_globals)
+[rank0]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/train.py", line 364, in <module>
+[rank0]:     main()
+[rank0]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/train.py", line 293, in main
+[rank0]:     out = model(batch["f6"], batch["magnitude"])
+[rank0]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+[rank0]:     else self._run_ddp_forward(*inputs, **kwargs)
+[rank0]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+[rank0]:     return self.module(*inputs, **kwargs)  # type: ignore[index]
+[rank0]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/utils/operations.py", line 818, in forward
+[rank0]:     return model_forward(*args, **kwargs)
+[rank0]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/utils/operations.py", line 806, in __call__
+[rank0]:     return convert_to_fp32(self.model_forward(*args, **kwargs))
+[rank0]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/amp/autocast_mode.py", line 44, in decorate_autocast
+[rank0]:     return func(*args, **kwargs)
+[rank0]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/tactile_vqvae.py", line 98, in forward
+[rank0]:     z_q, indices, vq_loss, qinfo = self.quantizer(z_e)            # [B, D], [B], scalar
+[rank0]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/quantizer.py", line 167, in forward
+[rank0]:     revived = self._revive_dead_codes(z_e.detach())
+[rank0]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+[rank0]:     return func(*args, **kwargs)
+[rank0]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/quantizer.py", line 131, in _revive_dead_codes
+[rank0]:     self.embed[dead_idx]      = replacements
+[rank0]: RuntimeError: Index put requires the source and destination dtypes match, got Float for the destination and BFloat16 for the source.
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+[rank1]:     return _run_code(code, main_globals, None,
+[rank1]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/runpy.py", line 86, in _run_code
+[rank1]:     exec(code, run_globals)
+[rank1]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/train.py", line 364, in <module>
+[rank1]:     main()
+[rank1]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/train.py", line 293, in main
+[rank1]:     out = model(batch["f6"], batch["magnitude"])
+[rank1]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank1]:     return self._call_impl(*args, **kwargs)
+[rank1]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank1]:     return forward_call(*args, **kwargs)
+[rank1]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+[rank1]:     else self._run_ddp_forward(*inputs, **kwargs)
+[rank1]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+[rank1]:     return self.module(*inputs, **kwargs)  # type: ignore[index]
+[rank1]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank1]:     return self._call_impl(*args, **kwargs)
+[rank1]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank1]:     return forward_call(*args, **kwargs)
+[rank1]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/utils/operations.py", line 818, in forward
+[rank1]:     return model_forward(*args, **kwargs)
+[rank1]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/utils/operations.py", line 806, in __call__
+[rank1]:     return convert_to_fp32(self.model_forward(*args, **kwargs))
+[rank1]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/amp/autocast_mode.py", line 44, in decorate_autocast
+[rank1]:     return func(*args, **kwargs)
+[rank1]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/tactile_vqvae.py", line 98, in forward
+[rank1]:     z_q, indices, vq_loss, qinfo = self.quantizer(z_e)            # [B, D], [B], scalar
+[rank1]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank1]:     return self._call_impl(*args, **kwargs)
+[rank1]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank1]:     return forward_call(*args, **kwargs)
+[rank1]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/quantizer.py", line 167, in forward
+[rank1]:     revived = self._revive_dead_codes(z_e.detach())
+[rank1]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+[rank1]:     return func(*args, **kwargs)
+[rank1]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/quantizer.py", line 131, in _revive_dead_codes
+[rank1]:     self.embed[dead_idx]      = replacements
+[rank1]: RuntimeError: Index put requires the source and destination dtypes match, got Float for the destination and BFloat16 for the source.
+[rank7]: Traceback (most recent call last):
+[rank7]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+[rank7]:     return _run_code(code, main_globals, None,
+[rank7]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/runpy.py", line 86, in _run_code
+[rank7]:     exec(code, run_globals)
+[rank7]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/train.py", line 364, in <module>
+[rank7]:     main()
+[rank7]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/train.py", line 293, in main
+[rank7]:     out = model(batch["f6"], batch["magnitude"])
+[rank7]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank7]:     return self._call_impl(*args, **kwargs)
+[rank7]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank7]:     return forward_call(*args, **kwargs)
+[rank7]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+[rank7]:     else self._run_ddp_forward(*inputs, **kwargs)
+[rank7]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+[rank7]:     return self.module(*inputs, **kwargs)  # type: ignore[index]
+[rank7]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank7]:     return self._call_impl(*args, **kwargs)
+[rank7]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank7]:     return forward_call(*args, **kwargs)
+[rank7]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/utils/operations.py", line 818, in forward
+[rank7]:     return model_forward(*args, **kwargs)
+[rank7]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/utils/operations.py", line 806, in __call__
+[rank7]:     return convert_to_fp32(self.model_forward(*args, **kwargs))
+[rank7]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/amp/autocast_mode.py", line 44, in decorate_autocast
+[rank7]:     return func(*args, **kwargs)
+[rank7]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/tactile_vqvae.py", line 98, in forward
+[rank7]:     z_q, indices, vq_loss, qinfo = self.quantizer(z_e)            # [B, D], [B], scalar
+[rank7]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank7]:     return self._call_impl(*args, **kwargs)
+[rank7]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank7]:     return forward_call(*args, **kwargs)
+[rank7]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/quantizer.py", line 167, in forward
+[rank7]:     revived = self._revive_dead_codes(z_e.detach())
+[rank7]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+[rank7]:     return func(*args, **kwargs)
+[rank7]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/quantizer.py", line 131, in _revive_dead_codes
+[rank7]:     self.embed[dead_idx]      = replacements
+[rank7]: RuntimeError: Index put requires the source and destination dtypes match, got Float for the destination and BFloat16 for the source.
+[rank3]: Traceback (most recent call last):
+[rank3]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+[rank3]:     return _run_code(code, main_globals, None,
+[rank3]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/runpy.py", line 86, in _run_code
+[rank3]:     exec(code, run_globals)
+[rank3]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/train.py", line 364, in <module>
+[rank3]:     main()
+[rank3]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/train.py", line 293, in main
+[rank3]:     out = model(batch["f6"], batch["magnitude"])
+[rank3]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank3]:     return self._call_impl(*args, **kwargs)
+[rank3]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank3]:     return forward_call(*args, **kwargs)
+[rank3]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+[rank3]:     else self._run_ddp_forward(*inputs, **kwargs)
+[rank3]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+[rank3]:     return self.module(*inputs, **kwargs)  # type: ignore[index]
+[rank3]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank3]:     return self._call_impl(*args, **kwargs)
+[rank3]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank3]:     return forward_call(*args, **kwargs)
+[rank3]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/utils/operations.py", line 818, in forward
+[rank3]:     return model_forward(*args, **kwargs)
+[rank3]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/utils/operations.py", line 806, in __call__
+[rank3]:     return convert_to_fp32(self.model_forward(*args, **kwargs))
+[rank3]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/amp/autocast_mode.py", line 44, in decorate_autocast
+[rank3]:     return func(*args, **kwargs)
+[rank3]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/tactile_vqvae.py", line 98, in forward
+[rank3]:     z_q, indices, vq_loss, qinfo = self.quantizer(z_e)            # [B, D], [B], scalar
+[rank3]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank3]:     return self._call_impl(*args, **kwargs)
+[rank3]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank3]:     return forward_call(*args, **kwargs)
+[rank3]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/quantizer.py", line 167, in forward
+[rank3]:     revived = self._revive_dead_codes(z_e.detach())
+[rank3]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+[rank3]:     return func(*args, **kwargs)
+[rank3]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/quantizer.py", line 131, in _revive_dead_codes
+[rank3]:     self.embed[dead_idx]      = replacements
+[rank3]: RuntimeError: Index put requires the source and destination dtypes match, got Float for the destination and BFloat16 for the source.
+[rank2]: Traceback (most recent call last):
+[rank2]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/runpy.py", line 196, in _run_module_as_main
+[rank2]:     return _run_code(code, main_globals, None,
+[rank2]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/runpy.py", line 86, in _run_code
+[rank2]:     exec(code, run_globals)
+[rank2]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/train.py", line 364, in <module>
+[rank2]:     main()
+[rank2]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/train.py", line 293, in main
+[rank2]:     out = model(batch["f6"], batch["magnitude"])
+[rank2]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank2]:     return self._call_impl(*args, **kwargs)
+[rank2]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank2]:     return forward_call(*args, **kwargs)
+[rank2]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+[rank2]:     else self._run_ddp_forward(*inputs, **kwargs)
+[rank2]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+[rank2]:     return self.module(*inputs, **kwargs)  # type: ignore[index]
+[rank2]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank2]:     return self._call_impl(*args, **kwargs)
+[rank2]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank2]:     return forward_call(*args, **kwargs)
+[rank2]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/utils/operations.py", line 818, in forward
+[rank2]:     return model_forward(*args, **kwargs)
+[rank2]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/utils/operations.py", line 806, in __call__
+[rank2]:     return convert_to_fp32(self.model_forward(*args, **kwargs))
+[rank2]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/amp/autocast_mode.py", line 44, in decorate_autocast
+[rank2]:     return func(*args, **kwargs)
+[rank2]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/tactile_vqvae.py", line 98, in forward
+[rank2]:     z_q, indices, vq_loss, qinfo = self.quantizer(z_e)            # [B, D], [B], scalar
+[rank2]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+[rank2]:     return self._call_impl(*args, **kwargs)
+[rank2]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+[rank2]:     return forward_call(*args, **kwargs)
+[rank2]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/quantizer.py", line 167, in forward
+[rank2]:     revived = self._revive_dead_codes(z_e.detach())
+[rank2]:   File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+[rank2]:     return func(*args, **kwargs)
+[rank2]:   File "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/tactile_vqvae/models/quantizer.py", line 131, in _revive_dead_codes
+[rank2]:     self.embed[dead_idx]      = replacements
+[rank2]: RuntimeError: Index put requires the source and destination dtypes match, got Float for the destination and BFloat16 for the source.
+[rank0]:[W504 01:24:46.426271694 ProcessGroupNCCL.cpp:1496] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+W0504 01:24:48.509000 1066917 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1067110 closing signal SIGTERM
+W0504 01:24:48.514000 1066917 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1067111 closing signal SIGTERM
+W0504 01:24:48.514000 1066917 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1067112 closing signal SIGTERM
+W0504 01:24:48.514000 1066917 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1067114 closing signal SIGTERM
+W0504 01:24:48.515000 1066917 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1067116 closing signal SIGTERM
+W0504 01:24:48.515000 1066917 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1067117 closing signal SIGTERM
+E0504 01:24:49.096000 1066917 site-packages/torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 3 (pid: 1067113) of binary: /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/bin/python3.10
+Traceback (most recent call last):
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/bin/accelerate", line 6, in <module>
+    sys.exit(main())
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/commands/accelerate_cli.py", line 50, in main
+    args.func(args)
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/commands/launch.py", line 1190, in launch_command
+    multi_gpu_launcher(args)
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/accelerate/commands/launch.py", line 815, in multi_gpu_launcher
+    distrib_run.run(args)
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/run.py", line 909, in run
+    elastic_launch(
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+tactile_vqvae.train FAILED
+------------------------------------------------------------
+Failures:
+[1]:
+  time      : 2026-05-04_01:24:48
+  host      : 42d79473eb5c426e-f1b85459f7eb4221
+  rank      : 5 (local_rank: 5)
+  exitcode  : 1 (pid: 1067115)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-05-04_01:24:48
+  host      : 42d79473eb5c426e-f1b85459f7eb4221
+  rank      : 3 (local_rank: 3)
+  exitcode  : 1 (pid: 1067113)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================

@@ -126,7 +126,7 @@ class VQEMAQuantizer(nn.Module):
         if _is_dist():
             dist.broadcast(sel, src=0)
 
-        replacements = pool[sel]                                      # [n_dead, D]
+        replacements = pool[sel].to(self.embed.dtype)                 # [n_dead, D]
         dead_idx = dead.nonzero(as_tuple=False).flatten()
         self.embed[dead_idx]      = replacements
         self.embed_avg[dead_idx]  = replacements

@@ -442,11 +442,6 @@ class ParadigmCServer:
         self.attention_mask     = None
         self.n_action_in_cache  = 0
         self.chunk_id           = -1               # incremented per slow
-        # One residual-flow noise sample per chunk, reused across all fast
-        # refinements within the chunk window.  This kills the per-call random
-        # variation in Δa that would otherwise inject noise into successive
-        # refinements when tactile barely changes.  See _run_slow + _run_fast.
-        # cached_residual_noise removed — see _run_fast for rationale
 
     # -- internal: build slow embeddings, run action-only flow, cache state --
     def _run_slow(
@@ -568,7 +563,6 @@ class ParadigmCServer:
             tactile_deform     = tac_deform_tensor,
             num_steps          = args.tactile_refine_flow_steps,
             noise_scale        = args.tactile_refine_noise_scale,
-            initial_noise      = None,   # fresh noise each fast tick — avoids between-chunk jumps
         )
         a_refined_norm = (self.A_hat + delta_a)[0].float().cpu().numpy()
         a_refined = _denormalize(
@@ -637,8 +631,8 @@ def main(args):
     n_fast_cams = 2 if args.action_dim > 31 else 1
     dummy_fast  = [Image.new("RGB", (224, 224), color="black") for _ in range(n_fast_cams)]
     dummy_state = np.zeros(args.action_dim, dtype=np.float32) if args.use_robot_state else None
-    dummy_f6    = np.zeros((10, 6), dtype=np.float32) if args.use_tactile_vec else None
-    dummy_deform = np.zeros((10, 240, 240), dtype=np.float32) if args.use_tactile_deform else None
+    dummy_f6    = np.zeros((5, 6), dtype=np.float32) if args.use_tactile_vec else None
+    dummy_deform = np.zeros((5, 240, 240), dtype=np.float32) if args.use_tactile_deform else None
 
     refine_mode = bool(args.use_tactile_refine_flow)
     if refine_mode:

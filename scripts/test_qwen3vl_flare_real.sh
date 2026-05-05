@@ -36,4 +36,4 @@ python test_qwen3vl_flare_real.py \
   --use_tactile_refine_flow 1 \
   --action_flow_eval_steps 10 \
   --tactile_refine_flow_steps 4 \
-  --tactile_refine_noise_scale 1.0
+  --tactile_refine_noise_scale 0.1

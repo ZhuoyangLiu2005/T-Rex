@@ -446,7 +446,7 @@ class ParadigmCServer:
         # refinements within the chunk window.  This kills the per-call random
         # variation in Δa that would otherwise inject noise into successive
         # refinements when tactile barely changes.  See _run_slow + _run_fast.
-        self.cached_residual_noise = None
+        # cached_residual_noise removed — see _run_fast for rationale
 
     # -- internal: build slow embeddings, run action-only flow, cache state --
     def _run_slow(
@@ -537,16 +537,6 @@ class ParadigmCServer:
         self.n_action_in_cache = n_action_in_cache
         self.chunk_id         += 1
 
-        # Sample ONE residual-flow noise tensor for this chunk window.  All
-        # fast refinements that arrive within this chunk reuse it so successive
-        # Δa values differ only when tactile changes, not because we re-rolled
-        # the dice on the flow's initial point.
-        self.cached_residual_noise = (
-            torch.randn(1, args.action_chunk, args.action_dim,
-                        dtype=torch.bfloat16, device=device)
-            * args.tactile_refine_noise_scale
-        )
-
         norm_actions = a_hat[0].float().cpu().numpy()
         self.A_hat_denorm = _denormalize(
             norm_actions, statistic["action_mask"],
@@ -578,7 +568,7 @@ class ParadigmCServer:
             tactile_deform     = tac_deform_tensor,
             num_steps          = args.tactile_refine_flow_steps,
             noise_scale        = args.tactile_refine_noise_scale,
-            initial_noise      = self.cached_residual_noise,   # unified per chunk
+            initial_noise      = None,   # fresh noise each fast tick — avoids between-chunk jumps
         )
         a_refined_norm = (self.A_hat + delta_a)[0].float().cpu().numpy()
         a_refined = _denormalize(

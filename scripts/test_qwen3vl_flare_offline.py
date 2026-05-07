@@ -90,6 +90,8 @@ def _build_qwen3vl_from_config(config_path, args):
         tactile_intermediate_size = tac_isize,
         n_flare_tokens_per_frame = n_flare_tpf,
         n_flare_steps            = n_flare_steps,
+        use_tactile_code        = bool(getattr(args, "use_tactile_code", 0)),
+        vqvae_codebook_size     = getattr(args, "vqvae_codebook_size", 64),
     )
 
     vis_cfg_dict = full_cfg.get("vision_config", {})
@@ -156,7 +158,9 @@ def model_load(args):
         for key, default in [("tactile_intermediate_size", 0),
                              ("n_flare_tokens_per_frame", 0),
                              ("n_flare_steps", 0),
-                             ("flare_layer_index", -1)]:
+                             ("flare_layer_index", -1),
+                             ("use_tactile_code", 0),
+                             ("vqvae_codebook_size", 64)]:
             saved = ta.get(key, default)
             cli_val = getattr(args, key, default)
             if saved != default and cli_val == default:
@@ -186,6 +190,8 @@ def model_load(args):
             tactile_intermediate_size=tac_isize,
             n_flare_tokens_per_frame=n_flare_tpf,
             n_flare_steps=n_flare_steps,
+            use_tactile_code=bool(getattr(args, "use_tactile_code", 0)),
+            vqvae_codebook_size=getattr(args, "vqvae_codebook_size", 64),
         )
     elif os.path.exists(ckpt_config):
         model = _build_qwen3vl_from_config(ckpt_config, args)
@@ -206,6 +212,8 @@ def model_load(args):
             tactile_intermediate_size=tac_isize,
             n_flare_tokens_per_frame=n_flare_tpf,
             n_flare_steps=n_flare_steps,
+            use_tactile_code=bool(getattr(args, "use_tactile_code", 0)),
+            vqvae_codebook_size=getattr(args, "vqvae_codebook_size", 64),
         )
 
     ckpt_file = os.path.join(ckpt, "model.pt")
@@ -263,6 +271,7 @@ def model_predict(
     args, model, processor, statistic, action_tokenizer,
     task_description, slow_images, fast_images,
     tactile_f6_input=None, tactile_deform_input=None, state_fast=None,
+    tactile_codes_input=None,
 ):
     device = f"cuda:{args.cuda}"
     model = model.to(device).eval()
@@ -383,6 +392,12 @@ def model_predict(
                 refresh_clean_kv= True,
             )
             if (tac_f6_tensor is not None) or (tac_deform_tensor is not None):
+                tac_codes_tensor = None
+                if (getattr(args, "use_tactile_code", 0)
+                        and tactile_codes_input is not None):
+                    tac_codes_tensor = torch.tensor(
+                        np.asarray(tactile_codes_input, dtype=np.int64),
+                        dtype=torch.long, device=device).reshape(1, -1)
                 delta_a = model.tactile_residual_flow(
                     cached_kv          = cached_kv,
                     latent_position_ids= position_ids,
@@ -392,6 +407,7 @@ def model_predict(
                     tactile_deform     = tac_deform_tensor,
                     num_steps          = getattr(args, "tactile_refine_flow_steps", 4),
                     noise_scale        = getattr(args, "tactile_refine_noise_scale", 0.1),
+                    tactile_codes      = tac_codes_tensor,
                 )
                 samples = a_hat + delta_a
             else:
@@ -723,11 +739,14 @@ def main(args):
                                   for p in sample.get("tactile_image_deform", [])]
                 state_fast = np.array(sample["state_fast"], dtype=np.float32) if args.use_robot_state else None
                 gt_action = np.array(sample["action"], dtype=np.float32)
+                tac_codes = (sample.get("tactile_codes")
+                             if getattr(args, "use_tactile_code", 0) else None)
 
                 pred = np.array(model_predict(
                     args, model, processor, statistic, action_tokenizer,
                     sample["input_prompt"], slow_images, fast_images,
-                    tac_f6, tac_deform, state_fast))
+                    tac_f6, tac_deform, state_fast,
+                    tactile_codes_input=tac_codes))
 
                 all_pred.append(pred[0] if pred.ndim > 1 else pred)
                 all_gt.append(gt_action[0] if gt_action.ndim > 1 else gt_action)
@@ -827,11 +846,14 @@ def main(args):
 
             tac_f6 = payload.get("tactile_f6") if args.use_tactile_vec else None
             tac_deform = payload.get("tactile_deform", payload.get("tactile_image_deform")) if args.use_tactile_deform else None
+            tac_codes = (payload.get("tactile_codes")
+                         if getattr(args, "use_tactile_code", 0) else None)
 
             actions = model_predict(
                 args, model, processor, statistic, action_tokenizer,
                 payload["task_description"], [slow_img], fast_list,
-                tac_f6, tac_deform, payload.get("state_fast"))
+                tac_f6, tac_deform, payload.get("state_fast"),
+                tactile_codes_input=tac_codes)
 
             socket.send(pickle.dumps({"status": "success", "actions": actions}))
             step_counter += 1
@@ -864,6 +886,15 @@ if __name__ == "__main__":
     parser.add_argument("--cuda", type=str, default="0")
     parser.add_argument("--port", type=int, default=5555)
     parser.add_argument("--image_size", type=int, nargs=2, default=None, metavar=("W", "H"))
+
+    # VQ-VAE tactile code tokens (fast-path only).  When 0 (default) the model
+    # graph and behavior are identical to the pre-feature version — flip to
+    # revert.  When 1, samples must have `tactile_codes: [c_left, c_right]`.
+    parser.add_argument("--use_tactile_code", type=int, default=0,
+                        help="1: pass tactile_codes from JSON / payload into "
+                             "tactile_residual_flow.")
+    parser.add_argument("--vqvae_codebook_size", type=int, default=64,
+                        help="Codebook size of the VQ-VAE that produced tactile_codes.")
 
     # Paradigm C
     parser.add_argument("--use_tactile_refine_flow", type=int, default=0,

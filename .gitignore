@@ -12,5 +12,7 @@ test_results
 vis*
 wandb
 scripts/logs
-.vscode
 scripts/test_output*
+tactile_vqvae/logs
+tactile_vqvae/plots
+.vscode

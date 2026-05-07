@@ -99,6 +99,8 @@ def _build_qwen3vl_from_config(config_path, args):
         tactile_intermediate_size = tac_isize,
         n_flare_tokens_per_frame = n_flare_tpf,
         n_flare_steps            = n_flare_steps,
+        use_tactile_code         = bool(getattr(args, "use_tactile_code", 0)),
+        vqvae_codebook_size      = getattr(args, "vqvae_codebook_size", 64),
     )
 
     vis_cfg_dict = full_cfg.get("vision_config", {})
@@ -164,7 +166,9 @@ def model_load(args):
             ta = json.load(f)
         for key, default in [("tactile_intermediate_size", 0),
                              ("n_flare_tokens_per_frame", 0),
-                             ("n_flare_steps", 0)]:
+                             ("n_flare_steps", 0),
+                             ("use_tactile_code", 0),
+                             ("vqvae_codebook_size", 64)]:
             saved = ta.get(key, default)
             cli_val = getattr(args, key, default)
             if saved and cli_val == default:
@@ -194,6 +198,8 @@ def model_load(args):
             tactile_intermediate_size=tac_isize,
             n_flare_tokens_per_frame=n_flare_tpf,
             n_flare_steps=n_flare_steps,
+            use_tactile_code=bool(getattr(args, "use_tactile_code", 0)),
+            vqvae_codebook_size=getattr(args, "vqvae_codebook_size", 64),
         )
     elif os.path.exists(ckpt_config):
         model = _build_qwen3vl_from_config(ckpt_config, args)
@@ -214,6 +220,8 @@ def model_load(args):
             tactile_intermediate_size=tac_isize,
             n_flare_tokens_per_frame=n_flare_tpf,
             n_flare_steps=n_flare_steps,
+            use_tactile_code=bool(getattr(args, "use_tactile_code", 0)),
+            vqvae_codebook_size=getattr(args, "vqvae_codebook_size", 64),
         )
 
     ckpt_file = os.path.join(ckpt, "model.pt")
@@ -443,6 +451,60 @@ class ParadigmCServer:
         self.n_action_in_cache  = 0
         self.chunk_id           = -1               # incremented per slow
 
+        # VQ-VAE tactile-code encoder (optional, server-side).  Maintains a
+        # rolling F6 buffer so each fast tick can encode the historical
+        # 16-frame window — same alignment as offline JSON encoding.
+        self.vqvae_model    = None
+        self.vqvae_stats    = None
+        self.vqvae_window   = 16
+        self.f6_buffer: list = []                  # list of [10, 6] np arrays
+        if bool(getattr(args, "use_tactile_code", 0)):
+            from tactile_vqvae.models.tactile_vqvae import (
+                TactileVQVAE, TactileVQVAEConfig)
+            from tactile_vqvae.data.stats import TacF6Stats
+            blob = torch.load(args.vqvae_ckpt, map_location="cpu",
+                              weights_only=False)
+            cfg = TactileVQVAEConfig.from_dict(blob["config"])
+            self.vqvae_model = TactileVQVAE(cfg)
+            self.vqvae_model.load_state_dict(blob["model_state"])
+            self.vqvae_model.eval().to(self.device)
+            self.vqvae_stats  = TacF6Stats.from_dict(blob["stats"])
+            self.vqvae_window = int(cfg.window)
+            print(f">>> VQ-VAE loaded for tactile codes "
+                  f"(K={cfg.codebook_size}, W={self.vqvae_window})")
+
+    def _push_f6_and_encode(self, tactile_f6_input):
+        """Append current F6 to rolling buffer and return [1, 2] int64 codes
+        (left, right) on `self.device`.  Returns None when VQ-VAE is disabled
+        or the input is missing.
+
+        Window is left-edge-padded with the first available frame until the
+        buffer fills, matching the offline encoder's alignment.
+        """
+        if self.vqvae_model is None or tactile_f6_input is None:
+            return None
+        f6 = np.asarray(tactile_f6_input, dtype=np.float32).reshape(10, 6)
+        self.f6_buffer.append(f6)
+        if len(self.f6_buffer) > self.vqvae_window:
+            self.f6_buffer = self.f6_buffer[-self.vqvae_window:]
+
+        w = self.vqvae_window
+        if len(self.f6_buffer) < w:
+            head = [self.f6_buffer[0]] * (w - len(self.f6_buffer))
+            arr = np.stack(head + self.f6_buffer, axis=0)        # [W, 10, 6]
+        else:
+            arr = np.stack(self.f6_buffer, axis=0)
+        arr_n = self.vqvae_stats.normalize(arr).astype(np.float32, copy=False)
+
+        codes = np.zeros(2, dtype=np.int64)
+        for hand in (0, 1):
+            wh = arr_n[:, hand * 5: (hand + 1) * 5, :]           # [W, 5, 6]
+            t = torch.from_numpy(wh).unsqueeze(0).to(self.device)
+            with torch.no_grad():
+                codes[hand] = int(self.vqvae_model.encode(t).item())
+        return torch.tensor(codes, dtype=torch.long,
+                            device=self.device).unsqueeze(0)     # [1, 2]
+
     # -- internal: build slow embeddings, run action-only flow, cache state --
     def _run_slow(
         self, task_description, slow_images, fast_images,
@@ -553,6 +615,7 @@ class ParadigmCServer:
             statistic, device)
         tac_deform_tensor = _encode_tactile_deform(
             tactile_deform_input if args.use_tactile_deform else None, device)
+        tac_codes_tensor  = self._push_f6_and_encode(tactile_f6_input)
 
         delta_a = model.tactile_residual_flow(
             cached_kv          = self.cached_kv,
@@ -563,6 +626,7 @@ class ParadigmCServer:
             tactile_deform     = tac_deform_tensor,
             num_steps          = args.tactile_refine_flow_steps,
             noise_scale        = args.tactile_refine_noise_scale,
+            tactile_codes      = tac_codes_tensor,
         )
         a_refined_norm = (self.A_hat + delta_a)[0].float().cpu().numpy()
         a_refined = _denormalize(
@@ -756,6 +820,22 @@ if __name__ == "__main__":
     parser.add_argument("--tactile_refine_noise_scale", type=float, default=0.1,
                         help="Initial noise magnitude for the residual flow at τ=1.")
 
+    # VQ-VAE tactile code tokens (fast-path only).  When 0 (default) the model
+    # graph and behavior are identical to the pre-feature version — flip the
+    # flag to revert.  When 1, --vqvae_ckpt must be a TactileVQVAE latest.pt.
+    # Server maintains a rolling 16-frame F6 buffer and encodes per-hand on
+    # each fast tick.
+    parser.add_argument("--use_tactile_code", type=int, default=0,
+                        help="1: server-side VQ-VAE encodes a rolling F6 "
+                             "window into 2 codes per fast tick.")
+    parser.add_argument("--vqvae_codebook_size", type=int, default=64,
+                        help="Codebook size of the VQ-VAE that produces the codes.")
+    parser.add_argument("--vqvae_ckpt", type=str, default="",
+                        help="Path to TactileVQVAE checkpoint (latest.pt). "
+                             "Required when --use_tactile_code 1.")
+
     args = parser.parse_args()
+    if bool(args.use_tactile_code) and not args.vqvae_ckpt:
+        parser.error("--vqvae_ckpt must be set when --use_tactile_code 1")
     main(args)
 

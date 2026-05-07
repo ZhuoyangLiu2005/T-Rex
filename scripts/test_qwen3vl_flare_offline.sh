@@ -16,8 +16,8 @@ export CUDA_VISIBLE_DEVICES=0
 # ACTION_CHUNK=16
 
 # --- Dual-arm: remove_card (bimanual, 2 wrist cameras: right + left) ---
-MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mot_expert/qwen3vl_2b_mot[3]_pretrain[egodex0407]_midtrain[none]_task[fold_shorts_0426]_traj[100]_view[3]_tac[force+deform]_state[wo]_stride[1]_flare[tpf4step8stride4]_0429/checkpoint-74-60975"
-DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/fold_shorts_0426_deltabase_axis_eef_lr_bimanual_crop_stride1_train.json"
+MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mot_expert/qwen3vl_2b_mot[3]_pretrain[egodex0407]_midtrain[none]_task[wipe_plate_0427+0429]_traj[100]_view[3]_tac[force+deform]_state[wo]_stride[1]_flare[tpf4step8stride4]_vae[64]_0506/checkpoint-49-25900"
+DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/wipe_plate_0427+0429_deltabase_axis_eef_lr_bimanual_crop_stride1_train_vqvae_k64.json"
 ACTION_DIM=62
 ACTION_CHUNK=16
 
@@ -41,6 +41,8 @@ python test_qwen3vl_flare_offline.py \
   --use_tactile_refine_flow 1 \
   --action_flow_eval_steps 10 \
   --tactile_refine_flow_steps 4 \
-  --tactile_refine_noise_scale 0.1 \
+  --tactile_refine_noise_scale 1.0 \
+  --use_tactile_code 1 \
+  --vqvae_codebook_size 64 \
 
 

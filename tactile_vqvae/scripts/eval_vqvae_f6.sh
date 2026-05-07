@@ -23,7 +23,7 @@ DATA_ROOT="${DATA_ROOT:-/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_a
 
 # Auto-pick the most recently modified run dir if CHECKPOINT is not set.
 if [ -z "${CHECKPOINT}" ]; then
-    RUN_DIR=$(ls -td "${CKPT_ROOT}"/vqvae_f6_w16_k256_* 2>/dev/null | head -1)
+    RUN_DIR=$(ls -td "${CKPT_ROOT}"/vqvae_f6_w16_k64_* 2>/dev/null | head -1)
     if [ -z "${RUN_DIR}" ]; then
         echo "ERROR: no run dir found under ${CKPT_ROOT}" >&2; exit 1
     fi

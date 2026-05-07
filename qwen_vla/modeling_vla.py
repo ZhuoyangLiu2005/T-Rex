@@ -64,6 +64,8 @@ class Qwen3VLVLAModel(nn.Module):
         n_flare_tokens_per_frame: int = 0,
         n_flare_steps:           int = 0,
         flare_layer_index:       int = -1,
+        use_tactile_code:        bool = False,
+        vqvae_codebook_size:     int  = 64,
     ):
         super().__init__()
         self.config             = config
@@ -78,6 +80,8 @@ class Qwen3VLVLAModel(nn.Module):
         self.n_flare_steps            = n_flare_steps
         self.n_flare_tokens           = n_flare_tokens_per_frame * n_flare_steps
         self.flare_layer_index        = flare_layer_index
+        self.use_tactile_code         = use_tactile_code
+        self.vqvae_codebook_size      = vqvae_codebook_size
 
         self.visual = None
 
@@ -93,6 +97,12 @@ class Qwen3VLVLAModel(nn.Module):
         if use_tactile_deform:
             self.deform_encoder = DeformEncoder()
             self.deform_proj    = ActionEmbedder(28800, H) # 128 * 15 * 15
+
+        # VQ-VAE tactile code embedder (one code per hand → 2 tokens).
+        # Created only when explicitly enabled so toggling --use_tactile_code 0
+        # gives a graph identical to the pre-feature checkpoint.
+        if use_tactile_code:
+            self.tactile_code_embedder = nn.Embedding(vqvae_codebook_size, H)
 
         if use_robot_state:
             self.state_embedder = ActionEmbedder(action_dim, H)
@@ -123,6 +133,8 @@ class Qwen3VLVLAModel(nn.Module):
         n_flare_tokens_per_frame: int = 0,
         n_flare_steps:            int = 0,
         flare_layer_index:        int = -1,
+        use_tactile_code:         bool = False,
+        vqvae_codebook_size:      int  = 64,
     ) -> "Qwen3VLVLAModel":
         """
         Build a Qwen3VLVLAModel by:
@@ -164,6 +176,8 @@ class Qwen3VLVLAModel(nn.Module):
             n_flare_tokens_per_frame = n_flare_tokens_per_frame,
             n_flare_steps = n_flare_steps,
             flare_layer_index = flare_layer_index,
+            use_tactile_code = use_tactile_code,
+            vqvae_codebook_size = vqvae_codebook_size,
         )
         # Capture only the get_rope_index function — do NOT store the full
         # base model as an attribute, because nn.Module.__setattr__ would
@@ -275,6 +289,8 @@ class Qwen3VLVLAModel(nn.Module):
                     nn.init.xavier_uniform_(mm.weight)
                     if mm.bias is not None:
                         nn.init.zeros_(mm.bias)
+        if self.use_tactile_code:
+            nn.init.normal_(self.tactile_code_embedder.weight, mean=0.0, std=0.02)
         # Zero-init action expert's output head so v_act starts at zero (will
         # be overwritten by the pretrained checkpoint when resuming).
         nn.init.zeros_(self.final_layer.mlp.fc2.weight)
@@ -635,9 +651,19 @@ class Qwen3VLVLAModel(nn.Module):
         tactile_deform: Optional[torch.Tensor],
         device: torch.device,
         dtype: torch.dtype,
+        tactile_codes: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
-        """Build [B, n_obs, H] tactile observation embedding (vec + deform)."""
+        """Build [B, n_obs, H] tactile observation embedding (codes + vec + deform).
+
+        When `tactile_codes` is provided ([B, 2] int64) and the model has the
+        embedder, two code tokens are prepended to the f6 / deform tokens.
+        """
         tac_parts = []
+        if (tactile_codes is not None
+                and self.use_tactile_code
+                and tactile_codes.shape[1] > 0):
+            code_emb = self.tactile_code_embedder(tactile_codes.to(device).long())
+            tac_parts.append(code_emb.to(dtype))
         if tactile_f6 is not None and tactile_f6.shape[1] > 0:
             tac_parts.append(self.tacf6_embedder(tactile_f6.to(dtype)))
         if (tactile_deform is not None
@@ -662,6 +688,7 @@ class Qwen3VLVLAModel(nn.Module):
         tactile_deform: Optional[torch.Tensor] = None,
         r_tau: torch.Tensor = None,             # [B, n_chunk, action_dim]  noisy residual
         tau: torch.Tensor = None,               # [B] flow time scalars
+        tactile_codes: Optional[torch.Tensor] = None,    # [B, 2] int64
     ) -> torch.Tensor:
         """Single tactile-only forward at (r_τ, τ).
 
@@ -675,7 +702,8 @@ class Qwen3VLVLAModel(nn.Module):
         n_chunk = base_chunk.shape[1]
 
         tac_obs = self._embed_tactile_observations(
-            tactile_f6, tactile_deform, device, dtype)
+            tactile_f6, tactile_deform, device, dtype,
+            tactile_codes=tactile_codes)
         n_obs = tac_obs.shape[1]
 
         tau_emb = self.t_embedder(tau.to(dtype)).unsqueeze(1)            # [B, 1, H]
@@ -741,6 +769,7 @@ class Qwen3VLVLAModel(nn.Module):
         num_steps: int = 4,
         noise_scale: float = 0.1,
         initial_noise: Optional[torch.Tensor] = None,
+        tactile_codes: Optional[torch.Tensor] = None,    # [B, 2] int64
     ) -> torch.Tensor:
         """Tactile-only Euler flow on the residual r ≈ A_demo − Â.
 
@@ -765,7 +794,8 @@ class Qwen3VLVLAModel(nn.Module):
         n_chunk, action_dim = base_chunk.shape[1], base_chunk.shape[2]
 
         tac_obs = self._embed_tactile_observations(
-            tactile_f6, tactile_deform, device, dtype)
+            tactile_f6, tactile_deform, device, dtype,
+            tactile_codes=tactile_codes)
         n_obs = tac_obs.shape[1]
         n_tac_seq = n_obs + 1 + n_chunk
 

@@ -277,6 +277,12 @@ class SftDataset(Dataset):
                 deforms.append(imgs)
             deforms_tensor = torch.tensor(np.array(deforms)).unsqueeze(2)
 
+        tactile_codes_tensor = None
+        if getattr(cfg, "use_tactile_code", 0):
+            codes = np.array(
+                [x["tactile_codes"] for x in batch], dtype=np.int64)   # [B, 2]
+            tactile_codes_tensor = torch.from_numpy(codes)
+
         state_raw_list = []
         if cfg.use_robot_state:
             for x in batch:
@@ -384,6 +390,7 @@ class SftDataset(Dataset):
             "tactile_deforms": deforms_tensor,
             "tactile_f6s_delayed": norm_tacf6,       # same as current (delay_k=0)
             "tactile_deforms_delayed": deforms_tensor,
+            "tactile_codes": tactile_codes_tensor,   # [B, 2] int64 or None
             "time_r": time_r,
             "eps_r": eps_r,
             "state_raw": state_raw,
@@ -426,6 +433,8 @@ def save_checkpoint(model, processor, accelerator, args, epoch, global_step, sta
                 "n_flare_tokens_per_frame": args.n_flare_tokens_per_frame,
                 "n_flare_steps": args.n_flare_steps,
                 "flare_layer_index": args.flare_layer_index,
+                "use_tactile_code": getattr(args, "use_tactile_code", 0),
+                "vqvae_codebook_size": getattr(args, "vqvae_codebook_size", 64),
             }, f, indent=2)
 
         with open(os.path.join(save_dir, "stats_data.json"), "w") as f:
@@ -590,6 +599,7 @@ def run_validation(model, val_dataloader, accelerator, args,
                 tactile_deform=batch.get("tactile_deforms_delayed"),
                 r_tau=r_tau,
                 tau=tau_r,
+                tactile_codes=batch.get("tactile_codes"),
             )
             loss_tac = nn.MSELoss()(v_pred_r, v_target_r)
         elif is_stage1 or not has_any_tac:
@@ -701,6 +711,8 @@ def train(args):
         n_flare_tokens_per_frame=args.n_flare_tokens_per_frame if args.use_flare else 0,
         n_flare_steps=args.n_flare_steps if args.use_flare else 0,
         flare_layer_index=args.flare_layer_index,
+        use_tactile_code=bool(args.use_tactile_code),
+        vqvae_codebook_size=args.vqvae_codebook_size,
     )
     if args.use_tactile_deform:
         model.load_deform_encoder_weights(args.deform_encoder_ckpt)
@@ -973,6 +985,7 @@ def train(args):
                             tactile_deform=batch.get("tactile_deforms_delayed"),
                             r_tau=r_tau,
                             tau=tau_r,
+                            tactile_codes=batch.get("tactile_codes"),
                         ),
                         v_target_r,
                     )
@@ -1248,6 +1261,17 @@ if __name__ == "__main__":
                              "Â ≈ A_demo. 0.05 (5%% of normalized range) is a good "
                              "starting point if the refine/r_target_norm metric is "
                              "trending toward 0. 0 (default) disables.")
+
+    # VQ-VAE tactile code tokens (fast-path only; pre-baked into the JSON via
+    # utils/encode_vqvae_codes_to_json.py).  When 0 (default), no tactile_code
+    # embedder is created and the model graph is identical to the pre-feature
+    # version — flip the flag to revert.
+    parser.add_argument("--use_tactile_code", type=int, default=0,
+                        help="1: read tactile_codes [B, 2] from JSON and add 2 "
+                             "code tokens to the tactile expert's observation "
+                             "in the fast/residual path.  Slow path unchanged.")
+    parser.add_argument("--vqvae_codebook_size", type=int, default=64,
+                        help="Codebook size of the VQ-VAE that produced tactile_codes.")
 
     # Flare
     parser.add_argument("--use_flare", type=int, default=1, help="Enable flare visual prediction for latent expert.")

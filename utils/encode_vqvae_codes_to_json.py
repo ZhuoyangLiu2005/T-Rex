@@ -83,15 +83,29 @@ def _encode_per_hand(
     device: torch.device,
     batch_size: int,
 ) -> np.ndarray:
-    """Encode each hand separately. Returns [N, 2] int32 (left, right)."""
+    """Encode each hand separately.
+
+    Returns
+    -------
+    codes : np.ndarray
+        Hand-mode VQ-VAE  → shape [N, 2]            (left, right code)
+        Finger-mode VQ-VAE → shape [N, 2, 5]        (left[5], right[5])
+    """
+    is_per_finger = getattr(model.cfg, "granularity", "hand") == "finger"
+    n_fingers = int(getattr(model.cfg, "n_fingers", 5)) if is_per_finger else 1
     n = windows.shape[0]
-    codes = np.zeros((n, 2), dtype=np.int32)
+    if is_per_finger:
+        codes = np.zeros((n, 2, n_fingers), dtype=np.int32)
+    else:
+        codes = np.zeros((n, 2), dtype=np.int32)
+
     for hand in (0, 1):
         wh = windows[:, :, hand * 5: (hand + 1) * 5, :]         # [N, W, 5, 6]
         for i in range(0, n, batch_size):
             batch = torch.from_numpy(wh[i: i + batch_size]).to(device)
             with torch.no_grad():
                 idx = model.encode(batch).cpu().numpy().astype(np.int32)
+            # idx shape: [B] (hand) or [B, F] (finger)
             codes[i: i + batch.shape[0], hand] = idx
     return codes
 
@@ -132,9 +146,13 @@ def main():
         raw_windows  = _build_windows(ordered, window)          # [N, W, 10, 6]
         norm_windows = stats.normalize(raw_windows).astype(np.float32, copy=False)
         codes = _encode_per_hand(norm_windows, model, device, args.batch_size)
+        # codes shape: [N, 2] (hand) or [N, 2, 5] (finger)
 
-        for (_, orig_idx, _), (cl, cr) in zip(items, codes):
-            samples[orig_idx]["tactile_codes"] = [int(cl), int(cr)]
+        for k, (_, orig_idx, _) in enumerate(items):
+            # Flatten to a 1-D list:
+            #   hand mode   → [c_left, c_right]                          (2 ints)
+            #   finger mode → [L_thumb, L_index, ..., R_thumb, ...]      (10 ints)
+            samples[orig_idx]["tactile_codes"] = [int(v) for v in codes[k].reshape(-1).tolist()]
 
     os.makedirs(os.path.dirname(args.output_json) or ".", exist_ok=True)
     # indent=2 matches the original JSON's pretty-printed format.  The newlines
@@ -154,3 +172,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

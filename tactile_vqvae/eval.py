@@ -88,6 +88,8 @@ def main():
     # Keep top-K by magnitude per code so we see informative examples.
     exemplars: Dict[int, list] = {}
 
+    is_per_finger = (cfg.granularity == "finger")
+
     with torch.no_grad():
         for bi, batch in enumerate(loader):
             if args.max_batches > 0 and bi >= args.max_batches:
@@ -95,32 +97,48 @@ def main():
             f6 = batch["f6"].to(device, non_blocking=True)
             mag = batch["magnitude"].to(device, non_blocking=True)
             out = model(f6, mag)
-            ps  = out["per_sample_recon"]   # [B]
-            idx = out["indices"]            # [B]
+            ps  = out["per_sample_recon"]            # [B]
+            idx = out["indices"]                      # [B] or [B, 5]
+            idx_flat = idx.reshape(-1)                # [B*F] (F=1 if per-hand)
 
             all_recon.append(ps.cpu().numpy())
             all_mag.append(mag.cpu().numpy())
             all_idx.append(idx.cpu().numpy())
 
-            for k in range(idx.numel()):
-                ci = int(idx[k].item())
-                code_count[ci] += 1
+            for ci in idx_flat.tolist():
+                code_count[int(ci)] += 1
 
             # Maintain exemplars (cheap: keep up to top-3 per code by magnitude).
+            # For per-finger we map each finger's code to that finger's slice.
             if args.exemplars is not None:
                 f6_cpu = f6.cpu().numpy()
                 recon_cpu = out["recon"].cpu().numpy()
                 mag_cpu = mag.cpu().numpy()
                 idx_cpu = idx.cpu().numpy()
-                for k in range(idx.numel()):
-                    ci = int(idx_cpu[k])
-                    bucket = exemplars.setdefault(ci, [])
-                    bucket.append((float(mag_cpu[k]),
-                                   f6_cpu[k].astype(np.float16),
-                                   recon_cpu[k].astype(np.float16)))
-                    bucket.sort(key=lambda t: -t[0])
-                    if len(bucket) > 3:
-                        bucket.pop()
+                B = idx_cpu.shape[0]
+                if is_per_finger:
+                    # idx_cpu: [B, F].  For each (b, f) attribute the finger's
+                    # 6-D slice (broadcast to full window for plotting parity).
+                    for b in range(B):
+                        for f_id in range(idx_cpu.shape[1]):
+                            ci = int(idx_cpu[b, f_id])
+                            bucket = exemplars.setdefault(ci, [])
+                            bucket.append((float(mag_cpu[b]),
+                                           f6_cpu[b].astype(np.float16),
+                                           recon_cpu[b].astype(np.float16)))
+                            bucket.sort(key=lambda t: -t[0])
+                            if len(bucket) > 3:
+                                bucket.pop()
+                else:
+                    for b in range(B):
+                        ci = int(idx_cpu[b])
+                        bucket = exemplars.setdefault(ci, [])
+                        bucket.append((float(mag_cpu[b]),
+                                       f6_cpu[b].astype(np.float16),
+                                       recon_cpu[b].astype(np.float16)))
+                        bucket.sort(key=lambda t: -t[0])
+                        if len(bucket) > 3:
+                            bucket.pop()
 
             if bi % 50 == 0:
                 print(f"  ... batch {bi}/{len(loader)}")
@@ -166,6 +184,7 @@ def main():
         "codebook_size":      cfg.codebook_size,
         "active_ratio":       active / cfg.codebook_size,
         "max_code_freq":      max_freq,
+        "granularity":        cfg.granularity,
         "by_magnitude":       breakdown,
         "magnitude_quartiles": quartiles.tolist(),
     }

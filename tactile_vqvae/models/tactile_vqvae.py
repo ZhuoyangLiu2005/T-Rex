@@ -8,15 +8,15 @@ from typing import Dict, Optional, Tuple
 import torch
 import torch.nn as nn
 
-from .encoder import F6Encoder
-from .decoder import F6Decoder
+from .encoder import F6Encoder, F6PerFingerEncoder
+from .decoder import F6Decoder, F6PerFingerDecoder
 from .quantizer import VQEMAQuantizer
 
 
 @dataclass
 class TactileVQVAEConfig:
     window: int = 16
-    in_channels: int = 30                 # 5 fingers × 6 dims
+    in_channels: int = 30                 # 5 fingers × 6 dims (per-hand mode)
     hidden_channels: int = 128
     bottleneck_channels: int = 256
     embed_dim: int = 256
@@ -30,6 +30,11 @@ class TactileVQVAEConfig:
     use_magnitude_weight: bool = True
     weight_alpha: float = 2.0             # max extra weight on top of 1.0
     weight_tau: float = 4.0               # F6 magnitude scale (≈sqrt(T*5*6) for unit-norm)
+    # Granularity: "hand" → 1 code per (hand, window); "finger" → 5 codes per
+    # (hand, window).  Existing checkpoints default to "hand" via from_dict.
+    granularity: str = "hand"
+    n_fingers: int = 5
+    per_finger_dim: int = 6
     # Misc
     init_mode: str = "uniform"
 
@@ -45,14 +50,48 @@ class TactileVQVAE(nn.Module):
     def __init__(self, cfg: TactileVQVAEConfig):
         super().__init__()
         self.cfg = cfg
-        self.encoder = F6Encoder(
-            window=cfg.window,
-            in_channels=cfg.in_channels,
-            hidden_channels=cfg.hidden_channels,
-            bottleneck_channels=cfg.bottleneck_channels,
-            embed_dim=cfg.embed_dim,
-            n_strided_blocks=cfg.n_strided_blocks,
-        )
+        if cfg.granularity not in ("hand", "finger"):
+            raise ValueError(
+                f"Unknown granularity {cfg.granularity!r}; expected 'hand' or 'finger'.")
+        self.is_per_finger = (cfg.granularity == "finger")
+
+        if self.is_per_finger:
+            self.encoder = F6PerFingerEncoder(
+                window=cfg.window,
+                per_finger_dim=cfg.per_finger_dim,
+                n_fingers=cfg.n_fingers,
+                hidden_channels=cfg.hidden_channels,
+                bottleneck_channels=cfg.bottleneck_channels,
+                embed_dim=cfg.embed_dim,
+                n_strided_blocks=cfg.n_strided_blocks,
+            )
+            self.decoder = F6PerFingerDecoder(
+                window=cfg.window,
+                per_finger_dim=cfg.per_finger_dim,
+                n_fingers=cfg.n_fingers,
+                hidden_channels=cfg.hidden_channels,
+                bottleneck_channels=cfg.bottleneck_channels,
+                embed_dim=cfg.embed_dim,
+                n_strided_blocks=cfg.n_strided_blocks,
+            )
+        else:
+            self.encoder = F6Encoder(
+                window=cfg.window,
+                in_channels=cfg.in_channels,
+                hidden_channels=cfg.hidden_channels,
+                bottleneck_channels=cfg.bottleneck_channels,
+                embed_dim=cfg.embed_dim,
+                n_strided_blocks=cfg.n_strided_blocks,
+            )
+            self.decoder = F6Decoder(
+                window=cfg.window,
+                out_channels=cfg.in_channels,
+                hidden_channels=cfg.hidden_channels,
+                bottleneck_channels=cfg.bottleneck_channels,
+                embed_dim=cfg.embed_dim,
+                n_strided_blocks=cfg.n_strided_blocks,
+            )
+
         self.quantizer = VQEMAQuantizer(
             codebook_size=cfg.codebook_size,
             embed_dim=cfg.embed_dim,
@@ -61,14 +100,6 @@ class TactileVQVAE(nn.Module):
             revive_freq=cfg.revive_freq,
             revive_threshold=cfg.revive_threshold,
             init_mode=cfg.init_mode,
-        )
-        self.decoder = F6Decoder(
-            window=cfg.window,
-            out_channels=cfg.in_channels,
-            hidden_channels=cfg.hidden_channels,
-            bottleneck_channels=cfg.bottleneck_channels,
-            embed_dim=cfg.embed_dim,
-            n_strided_blocks=cfg.n_strided_blocks,
         )
 
     def _recon_weight(self, magnitude: torch.Tensor) -> torch.Tensor:
@@ -93,9 +124,20 @@ class TactileVQVAE(nn.Module):
 
         Returns dict:
             recon, indices, recon_loss, vq_loss, total_loss, plus quantizer info.
+
+        Indices shape:
+            - granularity="hand"   → [B]
+            - granularity="finger" → [B, F=5]
         """
-        z_e = self.encoder(f6)                                        # [B, D]
-        z_q, indices, vq_loss, qinfo = self.quantizer(z_e)            # [B, D], [B], scalar
+        z_e = self.encoder(f6)                                        # [B, D] or [B, F, D]
+        if self.is_per_finger:
+            B, F, D = z_e.shape
+            z_e_flat = z_e.reshape(B * F, D)
+            z_q_flat, idx_flat, vq_loss, qinfo = self.quantizer(z_e_flat)
+            z_q = z_q_flat.reshape(B, F, D)
+            indices = idx_flat.reshape(B, F)
+        else:
+            z_q, indices, vq_loss, qinfo = self.quantizer(z_e)
         recon = self.decoder(z_q)                                     # [B, T, 5, 6]
 
         per_sample = (recon - f6).pow(2).mean(dim=[1, 2, 3])          # [B]
@@ -121,12 +163,25 @@ class TactileVQVAE(nn.Module):
 
     @torch.no_grad()
     def encode(self, f6: torch.Tensor) -> torch.Tensor:
-        """Inference: f6 [B, T, 5, 6] → indices [B]."""
+        """Inference helper.
+        Hand   mode: f6 [B, T, 5, 6] → indices [B].
+        Finger mode: f6 [B, T, 5, 6] → indices [B, 5].
+        """
         z_e = self.encoder(f6)
+        if self.is_per_finger:
+            B, F, D = z_e.shape
+            idx = self.quantizer.encode_only(z_e.reshape(B * F, D))
+            return idx.reshape(B, F)
         return self.quantizer.encode_only(z_e)
 
     @torch.no_grad()
     def decode_indices(self, indices: torch.Tensor) -> torch.Tensor:
-        """indices [B] → recon [B, T, 5, 6]."""
-        z_q = self.quantizer.embed[indices]
+        """Hand   mode: indices [B]      → recon [B, T, 5, 6].
+        Finger mode: indices [B, 5]   → recon [B, T, 5, 6].
+        """
+        if self.is_per_finger:
+            B, F = indices.shape
+            z_q = self.quantizer.embed[indices.reshape(-1)].reshape(B, F, -1)
+        else:
+            z_q = self.quantizer.embed[indices]
         return self.decoder(z_q)

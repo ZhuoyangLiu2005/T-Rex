@@ -17,15 +17,16 @@ N_GPUS=$(echo "${CUDA_VISIBLE_DEVICES}" | tr ',' '\n' | wc -l)
 
 DATA_ROOT="${DATA_ROOT:-/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/midtrain/merged}"
 OUTPUT_DIR="${OUTPUT_DIR:-/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae}"
-RUN_NAME="${RUN_NAME:-vqvae_f6_w16_k64_$(date +%m%d_%H%M)}"
+RUN_NAME="${RUN_NAME:-vqvae_f6_w16_k64_finger_$(date +%m%d_%H%M)}"
 
-WINDOW=${WINDOW:-16}
-STRIDE=${STRIDE:-4}
-CODEBOOK=${CODEBOOK:-64}
-EMBED=${EMBED:-256}
-EPOCHS=${EPOCHS:-30}
-BATCH=${BATCH:-256}
-LR=${LR:-3e-4}
+WINDOW=16
+STRIDE=4
+CODEBOOK=64
+EMBED=256
+EPOCHS=30
+BATCH=256
+LR=3e-4
+GRANULARITY=finger    # hand | finger
 
 # Logging
 USE_WANDB=1
@@ -57,6 +58,7 @@ accelerate launch \
     --num_workers      4 \
     --val_every        2000 \
     --use_wandb        ${USE_WANDB} \
+    --granularity      ${GRANULARITY} \
     2>&1 | tee -a "${LOCAL_LOG_FILE}"
 
 echo ">>> Done. Checkpoint: ${OUTPUT_DIR}/${RUN_NAME}/latest.pt"

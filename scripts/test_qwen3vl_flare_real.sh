@@ -39,4 +39,9 @@ python test_qwen3vl_flare_real.py \
   --tactile_refine_noise_scale 1.0 \
   --use_tactile_code 0 \
   --vqvae_codebook_size 64 \
-  --vqvae_ckpt /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_0504_1856/latest.pt
+  --vqvae_ckpt /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_finger_0507_0939/latest.pt
+# To toggle:
+#   --use_tactile_code 0 → server skips VQ-VAE encoding (back to F6+deform only).
+#   --use_tactile_code 1 → server runs VQ-VAE on a rolling 16-frame F6 buffer
+#     and feeds 2 (hand) or 10 (finger) code tokens to the tactile expert.
+#     Granularity is auto-detected from the ckpt's config.

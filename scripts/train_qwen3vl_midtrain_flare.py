@@ -400,6 +400,7 @@ class MidtrainTacFlareDataset(Dataset):
         self._cache_ep_idx = ep_idx
         self._cache_h5 = None
         self._cache_tac = None
+        self._cache_codes = None
         self._cache_videos = {"head": None, "wrist_l": None, "wrist_r": None}
 
         ph5 = os.path.join(ep_dir, "pretrain.hdf5")
@@ -414,6 +415,36 @@ class MidtrainTacFlareDataset(Dataset):
                     }
             except Exception:
                 pass
+
+        # tactile_codes from a sibling HDF5 produced by tactile_vqvae.extract_codes
+        # — only load when the model actually uses them.
+        if getattr(self.config, "use_tactile_code", 0):
+            codes_h5 = os.path.join(
+                ep_dir,
+                getattr(self.config, "vqvae_codes_h5_name", "tactile_codes.h5"))
+            if os.path.isfile(codes_h5):
+                try:
+                    with h5py.File(codes_h5, "r") as f:
+                        # codes_per_frame shape: [N, 2] (hand) or [N, 2, 5] (finger)
+                        self._cache_codes = f["codes_per_frame"][:]
+                        # Warn once per worker if alignment != historical, since
+                        # post-train and real-world inference both use historical
+                        # rolling windows; chunk alignment introduces a train/
+                        # test signal mismatch.
+                        align = f.attrs.get("alignment", "chunk")
+                        if isinstance(align, bytes):
+                            align = align.decode("utf-8", "ignore")
+                        if (align != "historical"
+                                and not getattr(self, "_warned_alignment", False)):
+                            print(f"[Midtrain WARNING] tactile_codes.h5 was "
+                                  f"extracted with alignment={align!r}; "
+                                  f"post-train and inference both use "
+                                  f"'historical'.  Re-run extract_codes with "
+                                  f"--alignment historical for matched signals.",
+                                  flush=True)
+                            self._warned_alignment = True
+                except Exception:
+                    self._cache_codes = None
 
         # tactile_deform from raw.h5 — only load when the model actually uses it.
         if self.config.use_tactile_deform:
@@ -447,9 +478,15 @@ class MidtrainTacFlareDataset(Dataset):
         fb_frame = np.zeros((288, 384, 3), dtype=np.uint8)
         fb_def = np.zeros((10, 240, 240), dtype=np.uint8)
         fb_f6 = np.zeros((10, 6), dtype=np.float32)
+        fb_codes_len = (2 * int(getattr(self.config, "n_fingers", 5))
+                        if getattr(self.config, "tactile_code_per_finger", 0)
+                        else 2)
+        fb_codes = (np.zeros(fb_codes_len, dtype=np.int64)
+                    if getattr(self.config, "use_tactile_code", 0) else None)
         fallback = {
             "head": fb_frame, "wrist_l": fb_frame.copy(), "wrist_r": fb_frame.copy(),
             "state": np.zeros(self.config.action_dim, dtype=np.float32),
+            "tactile_codes": fb_codes,
             "action_chunk": np.zeros(
                 (self.config.action_chunk, self.config.action_dim), dtype=np.float32),
             "tactile_f6": fb_f6, "tactile_deform": fb_def,
@@ -497,6 +534,22 @@ class MidtrainTacFlareDataset(Dataset):
         tactile_deform_delayed = (self._cache_tac[delayed_t_def]
                                   if ep_len_tac_def > 0 else fb_def)
 
+        # tactile_codes at the delayed frame — flatten across (hand[, finger]).
+        tactile_codes = None
+        if getattr(self.config, "use_tactile_code", 0):
+            if self._cache_codes is not None:
+                t_clamp = min(delayed_t_f6, self._cache_codes.shape[0] - 1)
+                tactile_codes = self._cache_codes[t_clamp].reshape(-1).astype(
+                    np.int64, copy=False)
+            else:
+                # Fallback: zeros of the expected length.  Length is 2 (hand)
+                # or 2*n_fingers (finger).  We don't know granularity here, so
+                # use the configured codebook layout; default is 2.
+                expected = (2 * int(getattr(self.config, "n_fingers", 5))
+                            if getattr(self.config, "tactile_code_per_finger", 0)
+                            else 2)
+                tactile_codes = np.zeros(expected, dtype=np.int64)
+
         head_frames    = self._cache_videos.get("head")    or []
         wrist_l_frames = self._cache_videos.get("wrist_l") or []
         wrist_r_frames = self._cache_videos.get("wrist_r") or []
@@ -533,6 +586,7 @@ class MidtrainTacFlareDataset(Dataset):
             "tactile_deform": tactile_deform,
             "tactile_f6_delayed": tactile_f6_delayed,
             "tactile_deform_delayed": tactile_deform_delayed,
+            "tactile_codes": tactile_codes,        # None or [K] int64
             "delay_k": delay_k,
             "language": language,
             "flare_frames": flare_frames,
@@ -683,6 +737,14 @@ class MidtrainTacFlareDataset(Dataset):
         image_grid_thw = (torch.cat(all_grid_thw, dim=0)
                           if all_grid_thw else None)
 
+        # Tactile VQ-VAE codes — stack to [B, K] int64 (K=2 hand or K=10 finger).
+        tactile_codes_tensor = None
+        if getattr(cfg, "use_tactile_code", 0):
+            codes_list = [x.get("tactile_codes") for x in batch]
+            if all(c is not None for c in codes_list):
+                tactile_codes_tensor = torch.from_numpy(
+                    np.stack(codes_list, axis=0).astype(np.int64))
+
         return {
             "input_ids": input_ids,
             "attention_mask": attention_mask,
@@ -697,6 +759,7 @@ class MidtrainTacFlareDataset(Dataset):
             "tactile_deforms": deforms_tensor,
             "tactile_f6s_delayed": norm_tacf6_delayed,
             "tactile_deforms_delayed": deforms_delayed_tensor,
+            "tactile_codes": tactile_codes_tensor,
             "delay_k": delay_k_tensor,
             "time_r": time_r,                    # τ_r ∈ (0,1] for residual flow
             "eps_r": eps_r,                      # ε_r noise for residual flow
@@ -740,6 +803,9 @@ def save_checkpoint(model, processor, accelerator, args, epoch, global_step, sta
                 "n_flare_tokens_per_frame": args.n_flare_tokens_per_frame,
                 "n_flare_steps": args.n_flare_steps,
                 "flare_layer_index": args.flare_layer_index,
+                "use_tactile_code": getattr(args, "use_tactile_code", 0),
+                "vqvae_codebook_size": getattr(args, "vqvae_codebook_size", 64),
+                "tactile_code_per_finger": getattr(args, "tactile_code_per_finger", 0),
             }, f, indent=2)
 
         with open(os.path.join(save_dir, "stats_data.json"), "w") as f:
@@ -905,6 +971,7 @@ def run_validation(model, val_dataloader, accelerator, args,
                 tactile_deform=batch.get("tactile_deforms_delayed"),
                 r_tau=r_tau,
                 tau=tau_r,
+                tactile_codes=batch.get("tactile_codes"),
             )
             loss_tac = nn.MSELoss()(v_pred_r, v_target_r)
         elif is_stage1 or not has_any_tac:
@@ -1022,6 +1089,8 @@ def train(args):
         n_flare_tokens_per_frame=args.n_flare_tokens_per_frame if args.use_flare else 0,
         n_flare_steps=args.n_flare_steps if args.use_flare else 0,
         flare_layer_index=args.flare_layer_index,
+        use_tactile_code=bool(getattr(args, "use_tactile_code", 0)),
+        vqvae_codebook_size=getattr(args, "vqvae_codebook_size", 64),
     )
     if args.use_tactile_deform:
         model.load_deform_encoder_weights(args.deform_encoder_ckpt)
@@ -1347,6 +1416,7 @@ def train(args):
                             tactile_deform=batch.get("tactile_deforms_delayed"),
                             r_tau=r_tau,
                             tau=tau_r,
+                            tactile_codes=batch.get("tactile_codes"),
                         ),
                         v_target_r,
                     )
@@ -1641,6 +1711,29 @@ if __name__ == "__main__":
                         default=[0, 4, 8, 12],
                         help="Delay offsets (frames) sampled uniformly when reading "
                              "tactile observations for L_refine.")
+
+    # VQ-VAE tactile code tokens (fast-path only).  When 0 (default) the model
+    # graph and dataloader are identical to the pre-feature version — flip
+    # --use_tactile_code 1 and run extract_codes.py first to drop a
+    # tactile_codes.h5 next to each pretrain.hdf5.
+    parser.add_argument("--use_tactile_code", type=int, default=0,
+                        help="1: read codes_per_frame from per-episode "
+                             "tactile_codes.h5 and add VQ-VAE code tokens to "
+                             "the tactile expert's residual-flow context.")
+    parser.add_argument("--vqvae_codebook_size", type=int, default=64,
+                        help="Codebook size of the VQ-VAE that produced the codes.")
+    parser.add_argument("--vqvae_codes_h5_name", type=str,
+                        default="tactile_codes.h5",
+                        help="Filename of the per-episode codes HDF5 produced "
+                             "by tactile_vqvae.extract_codes.")
+    parser.add_argument("--tactile_code_per_finger", type=int, default=0,
+                        help="1 if the VQ-VAE was trained with granularity="
+                             "'finger' (so codes_per_frame has shape [N, 2, 5] "
+                             "instead of [N, 2]).  Used only to size the "
+                             "fallback zero codes.")
+    parser.add_argument("--n_fingers", type=int, default=5,
+                        help="Number of fingers per hand (used for the finger-"
+                             "mode fallback length).")
 
     # Flare
     parser.add_argument("--use_flare", type=int, default=1, help="Enable flare visual prediction for latent expert.")

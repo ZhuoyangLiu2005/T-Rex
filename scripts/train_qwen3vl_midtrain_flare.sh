@@ -9,6 +9,17 @@
 #   • nvidia  — no crop (head video symlinked as ego_view.mp4)
 #   • berkeley — cropped re-encode (matches the BKL fine-tune crop)
 # 62D bimanual actions, tactile vec + deform on, FLARE on, robot state on.
+#
+# To enable VQ-VAE tactile-code conditioning on the tactile expert (fast path):
+#   1) Train a VQ-VAE: bash tactile_vqvae/scripts/train_vqvae_f6.sh
+#      (set GRANULARITY=finger for the 5-codes-per-hand variant.)
+#   2) Pre-extract codes per episode (default --alignment historical, which
+#      matches post-train and real-world rolling-buffer inference):
+#        python -m tactile_vqvae.extract_codes \
+#          --checkpoint /path/to/latest.pt --data_root ${MERGED_DATA_ROOT}
+#      This drops a tactile_codes.h5 next to each pretrain.hdf5.
+#   3) Below, set --use_tactile_code 1 (and --tactile_code_per_finger 1 if
+#      using the per-finger VQ-VAE).
 
 set -e
 set -o pipefail
@@ -161,6 +172,10 @@ accelerate launch \
     --action_flow_eval_steps 10 \
     --tactile_delay_offsets 0 4 8 12 \
     --tactile_residual_jitter 0.0 \
+    --use_tactile_code 0 \
+    --vqvae_codebook_size 64 \
+    --vqvae_codes_h5_name tactile_codes.h5 \
+    --tactile_code_per_finger 0 \
     --resume_checkpoint "${RESUME_CHECKPOINT}" \
     --use_flare 1 \
     --n_flare_tokens_per_frame 4 \

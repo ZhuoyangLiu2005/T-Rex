@@ -496,14 +496,28 @@ class ParadigmCServer:
             arr = np.stack(self.f6_buffer, axis=0)
         arr_n = self.vqvae_stats.normalize(arr).astype(np.float32, copy=False)
 
-        codes = np.zeros(2, dtype=np.int64)
+        is_per_finger = getattr(self.vqvae_model.cfg, "granularity", "hand") == "finger"
+        n_fingers = int(getattr(self.vqvae_model.cfg, "n_fingers", 5)) if is_per_finger else 1
+
+        if is_per_finger:
+            codes = np.zeros((2, n_fingers), dtype=np.int64)     # [2, 5]
+        else:
+            codes = np.zeros(2, dtype=np.int64)                  # [2]
+
         for hand in (0, 1):
             wh = arr_n[:, hand * 5: (hand + 1) * 5, :]           # [W, 5, 6]
             t = torch.from_numpy(wh).unsqueeze(0).to(self.device)
             with torch.no_grad():
-                codes[hand] = int(self.vqvae_model.encode(t).item())
-        return torch.tensor(codes, dtype=torch.long,
-                            device=self.device).unsqueeze(0)     # [1, 2]
+                idx = self.vqvae_model.encode(t).cpu().numpy()   # [1] or [1, 5]
+            if is_per_finger:
+                codes[hand] = idx.reshape(-1)
+            else:
+                codes[hand] = int(idx.item())
+
+        # Flatten and add batch dim → [1, 2] (hand) or [1, 10] (finger).
+        flat = codes.reshape(-1)
+        return torch.tensor(flat, dtype=torch.long,
+                            device=self.device).unsqueeze(0)
 
     # -- internal: build slow embeddings, run action-only flow, cache state --
     def _run_slow(

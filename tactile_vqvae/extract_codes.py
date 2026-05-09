@@ -57,6 +57,13 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--overwrite",  type=int, default=0,
                    help="If 0, skip episodes that already have tactile_codes.h5")
     p.add_argument("--out_name",   type=str, default="tactile_codes.h5")
+    p.add_argument("--alignment",  type=str, default="historical",
+                   choices=["historical", "chunk"],
+                   help="historical: per-frame codes encode window [t-W+1..t] "
+                        "(left-edge-padded) — matches post-training and real-"
+                        "world rolling-buffer inference.  chunk: legacy non-"
+                        "overlapping block alignment, frame t inherits the "
+                        "code of chunk floor(t/W).")
     return p.parse_args()
 
 
@@ -74,9 +81,9 @@ def _scan_episodes(data_root: str) -> List[Tuple[str, int]]:
 
 
 def _build_windows(f6: np.ndarray, window: int, hand: int) -> Tuple[np.ndarray, int]:
-    """f6: [N, 10, 6] raw → [(M, T, 5, 6), M]. M is number of chunks (ceil(N/W)).
-
-    Last chunk is right-padded by edge replication if N % window != 0."""
+    """Chunk alignment: f6 [N, 10, 6] → [M, T, 5, 6] where M = ceil(N/W)
+    non-overlapping blocks (legacy).
+    """
     n = f6.shape[0]
     if n == 0:
         return np.zeros((0, window, 5, 6), dtype=np.float32), 0
@@ -92,6 +99,32 @@ def _build_windows(f6: np.ndarray, window: int, hand: int) -> Tuple[np.ndarray, 
     return windows, n_chunks
 
 
+def _build_historical_windows(
+    f6: np.ndarray, window: int, hand: int
+) -> np.ndarray:
+    """Historical alignment: for each frame t, window covers
+    f6[max(0, t-W+1) .. t] left-edge-padded with f6[0] when t < W-1.
+
+    Returns [N, W, 5, 6] for one hand.  Same alignment as
+    utils/encode_vqvae_codes_to_json.py and the real-world server's
+    rolling F6 buffer.
+    """
+    n = f6.shape[0]
+    if n == 0:
+        return np.zeros((0, window, 5, 6), dtype=np.float32)
+    f6_h = f6[:, hand * 5: (hand + 1) * 5, :]                 # [N, 5, 6]
+    out = np.empty((n, window, 5, 6), dtype=np.float32)
+    for t in range(n):
+        start = t - (window - 1)
+        if start >= 0:
+            out[t] = f6_h[start: t + 1]
+        else:
+            pad = -start
+            head = np.repeat(f6_h[:1], pad, axis=0)            # [pad, 5, 6]
+            out[t] = np.concatenate([head, f6_h[: t + 1]], axis=0)
+    return out
+
+
 def _process_episode(
     ep_dir: str,
     n_frames: int,
@@ -102,6 +135,7 @@ def _process_episode(
     batch_size: int,
     out_name: str,
     overwrite: bool,
+    alignment: str = "historical",
 ) -> str:
     out_path = os.path.join(ep_dir, out_name)
     if (not overwrite) and os.path.isfile(out_path):
@@ -125,32 +159,70 @@ def _process_episode(
 
     f6_norm_full = stats.normalize(f6).astype(np.float32, copy=False)
 
-    codes_per_chunk = np.zeros((0, 2), dtype=np.int32)   # filled below
-    chunk_codes = []
+    is_per_finger = getattr(model.cfg, "granularity", "hand") == "finger"
+    n_fingers = int(getattr(model.cfg, "n_fingers", 5)) if is_per_finger else 1
 
-    for hand in (0, 1):
-        windows, n_chunks = _build_windows(f6_norm_full, window, hand)
-        if n_chunks == 0:
-            chunk_codes.append(np.zeros((0,), dtype=np.int32))
-            continue
+    if alignment == "historical":
+        # Encode one window per frame (length N) per hand.  This matches
+        # post-training (encode_vqvae_codes_to_json.py) and the real-world
+        # rolling-buffer inference, so the policy sees the same conditioning
+        # signal across all three pipelines.
+        per_hand = []
+        for hand in (0, 1):
+            windows = _build_historical_windows(f6_norm_full, window, hand)
+            if is_per_finger:
+                all_indices = np.zeros((n, n_fingers), dtype=np.int32)
+            else:
+                all_indices = np.zeros((n,), dtype=np.int32)
+            for i in range(0, n, batch_size):
+                batch = torch.from_numpy(windows[i: i + batch_size]).to(device)
+                with torch.no_grad():
+                    idx = model.encode(batch).cpu().numpy().astype(np.int32)
+                all_indices[i: i + batch.shape[0]] = idx
+            per_hand.append(all_indices)
 
-        all_indices = np.zeros((n_chunks,), dtype=np.int32)
-        for i in range(0, n_chunks, batch_size):
-            batch = torch.from_numpy(windows[i: i + batch_size]).to(device)
-            with torch.no_grad():
-                idx = model.encode(batch).cpu().numpy().astype(np.int32)
-            all_indices[i: i + batch.shape[0]] = idx
-        chunk_codes.append(all_indices)
+        codes_per_frame = np.stack(per_hand, axis=1)
+        # Shape: [N, 2] (hand) or [N, 2, F] (finger).
 
-    n_chunks = max(len(chunk_codes[0]), len(chunk_codes[1]))
-    codes_per_chunk = np.stack([
-        chunk_codes[0] if len(chunk_codes[0]) == n_chunks else np.zeros(n_chunks, dtype=np.int32),
-        chunk_codes[1] if len(chunk_codes[1]) == n_chunks else np.zeros(n_chunks, dtype=np.int32),
-    ], axis=1)                                            # [M, 2]
+        # Also save chunk-level codes (downsample frames every W) for
+        # diagnostics / backward compat readers.
+        chunk_starts = np.arange(0, n, window)
+        codes_per_chunk = codes_per_frame[chunk_starts]
+        n_chunks = codes_per_chunk.shape[0]
 
-    # Per-frame broadcast: frame t gets the code of chunk (t // window).
-    chunk_idx_per_frame = np.minimum(np.arange(n) // window, n_chunks - 1)
-    codes_per_frame = codes_per_chunk[chunk_idx_per_frame]   # [N, 2]
+    else:  # alignment == "chunk" — legacy non-overlapping blocks
+        chunk_codes = []
+        for hand in (0, 1):
+            windows, n_chunks = _build_windows(f6_norm_full, window, hand)
+            if n_chunks == 0:
+                shape = (0, n_fingers) if is_per_finger else (0,)
+                chunk_codes.append(np.zeros(shape, dtype=np.int32))
+                continue
+
+            if is_per_finger:
+                all_indices = np.zeros((n_chunks, n_fingers), dtype=np.int32)
+            else:
+                all_indices = np.zeros((n_chunks,), dtype=np.int32)
+            for i in range(0, n_chunks, batch_size):
+                batch = torch.from_numpy(windows[i: i + batch_size]).to(device)
+                with torch.no_grad():
+                    idx = model.encode(batch).cpu().numpy().astype(np.int32)
+                all_indices[i: i + batch.shape[0]] = idx
+            chunk_codes.append(all_indices)
+
+        n_chunks = max(chunk_codes[0].shape[0], chunk_codes[1].shape[0])
+
+        def _pad(c: np.ndarray) -> np.ndarray:
+            if c.shape[0] == n_chunks:
+                return c
+            pad_shape = (n_chunks - c.shape[0],) + c.shape[1:]
+            return np.concatenate(
+                [c, np.zeros(pad_shape, dtype=np.int32)], axis=0)
+
+        codes_per_chunk = np.stack(
+            [_pad(chunk_codes[0]), _pad(chunk_codes[1])], axis=1)
+        chunk_idx_per_frame = np.minimum(np.arange(n) // window, n_chunks - 1)
+        codes_per_frame = codes_per_chunk[chunk_idx_per_frame]
 
     tmp = out_path + ".tmp"
     try:
@@ -162,6 +234,10 @@ def _process_episode(
             fout.attrs["window"] = int(window)
             fout.attrs["n_frames"] = int(n)
             fout.attrs["n_chunks"] = int(n_chunks)
+            fout.attrs["granularity"] = getattr(model.cfg, "granularity", "hand")
+            fout.attrs["alignment"] = alignment
+            if is_per_finger:
+                fout.attrs["n_fingers"] = n_fingers
         os.replace(tmp, out_path)
     finally:
         if os.path.exists(tmp):
@@ -201,6 +277,7 @@ def _worker(rank: int, world: int, args, ep_list: List[Tuple[str, int]]):
             batch_size=args.batch_size,
             out_name=args.out_name,
             overwrite=bool(args.overwrite),
+            alignment=args.alignment,
         )
         # Append checkpoint path attr post-hoc (avoid passing through helper).
         out_path = os.path.join(ep_dir, args.out_name)

@@ -66,6 +66,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--use_magnitude_weight", type=int, default=1)
     p.add_argument("--weight_alpha", type=float, default=2.0)
     p.add_argument("--weight_tau", type=float, default=4.0)
+    p.add_argument("--granularity", type=str, default="hand",
+                   choices=["hand", "finger"],
+                   help="hand: 1 code per (hand, window).  finger: 5 codes per "
+                        "(hand, window) — encoder/decoder process each finger "
+                        "with shared weights + finger ID embedding.")
 
     # Training
     p.add_argument("--output_dir", type=str, required=True)
@@ -123,6 +128,7 @@ def _build_config(args) -> TactileVQVAEConfig:
         use_magnitude_weight=bool(args.use_magnitude_weight),
         weight_alpha=args.weight_alpha,
         weight_tau=args.weight_tau,
+        granularity=args.granularity,
     )
 
 

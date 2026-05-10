@@ -100,6 +100,12 @@ TACTILE_BUFFER_SHAPES = {
 }
 TACTILE_FETCH_HZ = 30.0
 
+# Length of the per-hand rolling F6 history sent to the server.  Must match
+# the VQ-VAE training window so the server can run encode() directly without
+# rebuilding its own buffer.  Sampled at TACTILE_FETCH_HZ regardless of
+# inference cadence — closes the train/test temporal-density mismatch.
+F6_HISTORY_LEN = 16
+
 CHUNK_SIZE = 16
 MAX_STEPS = 10000
 INFERENCE_HZ = 5
@@ -471,12 +477,17 @@ def _tactile_fetch_loop(
     left_hand: SharpaWave,
     right_hand: SharpaWave,
     fetch_hz: float = 30.0,
+    left_f6_history: Optional[deque] = None,
+    right_f6_history: Optional[deque] = None,
 ):
     """
     Separate thread to fetch tactile data without blocking main control loop.
     Matches main_teleop.py pattern for timing consistency.
 
-    Runs at specified frequency and updates tactile buffers.
+    Runs at specified frequency and updates tactile buffers.  When the optional
+    `left_f6_history` / `right_f6_history` deques are provided, also appends
+    each fetched F6 frame to them so a dense rolling window can be sent to the
+    VLA server (matches VQ-VAE training-time temporal density).
     """
     limiter = RateLimiter(frequency=fetch_hz, name="tactile_fetch_limiter", warn=False)
     logger.info(f"[Tactile] Fetching thread started at {fetch_hz} Hz")
@@ -496,10 +507,53 @@ def _tactile_fetch_loop(
                         np.copyto(left_tactile_buffers[ttype_lower], left_tactile_data[ttype_lower])
                     if right_tactile_data[ttype_lower] is not None:
                         np.copyto(right_tactile_buffers[ttype_lower], right_tactile_data[ttype_lower])
+
+                # Rolling F6 history for the VQ-VAE window.  Copy() so the
+                # consumer sees the values at fetch time, not later overwrites.
+                if (left_f6_history is not None
+                        and left_tactile_data["f6"] is not None):
+                    left_f6_history.append(left_tactile_data["f6"].copy())
+                if (right_f6_history is not None
+                        and right_tactile_data["f6"] is not None):
+                    right_f6_history.append(right_tactile_data["f6"].copy())
         except Exception as e:
             logger.warning(f"[Tactile] Fetch error: {e}")
 
     logger.info("[Tactile] Fetching thread stopped")
+
+
+def _snapshot_f6_window(
+    buf_lock: threading.Lock,
+    left_f6_history: deque,
+    right_f6_history: deque,
+    dual_arm: bool,
+) -> np.ndarray:
+    """Snapshot the rolling F6 history into a `[F6_HISTORY_LEN, n_fingers, 6]`
+    window left-edge-padded with the oldest available frame.
+
+    Returns
+    -------
+    np.ndarray
+        Dual-arm: shape `[F6_HISTORY_LEN, 10, 6]` (left ⊕ right fingers).
+        Single-arm: shape `[F6_HISTORY_LEN, 5, 6]` (right hand only).
+    """
+    with buf_lock:
+        lh = list(left_f6_history)
+        rh = list(right_f6_history)
+
+    def _pad(hist: list) -> np.ndarray:
+        if not hist:
+            return np.zeros((F6_HISTORY_LEN, 5, 6), dtype=np.float32)
+        if len(hist) < F6_HISTORY_LEN:
+            head = [hist[0]] * (F6_HISTORY_LEN - len(hist))
+            hist = head + hist
+        return np.stack(hist, axis=0).astype(np.float32, copy=False)
+
+    l_arr = _pad(lh)                                   # [W, 5, 6]
+    r_arr = _pad(rh)                                   # [W, 5, 6]
+    if dual_arm:
+        return np.concatenate([l_arr, r_arr], axis=1)  # [W, 10, 6]
+    return r_arr                                       # [W, 5, 6]
 
 
 # =============================================================================
@@ -1006,6 +1060,12 @@ def main():
         left_tactile_buffers[ttype_lower] = np.zeros(shape, dtype=dtype)
         right_tactile_buffers[ttype_lower] = np.zeros(shape, dtype=dtype)
 
+    # Rolling F6 history (one entry per tactile fetch tick) so the VLA server
+    # receives a dense [F6_HISTORY_LEN, n_fingers, 6] window matching the
+    # VQ-VAE training-time temporal density.
+    left_f6_history: deque = deque(maxlen=F6_HISTORY_LEN)
+    right_f6_history: deque = deque(maxlen=F6_HISTORY_LEN)
+
     tactile_terminate_event = threading.Event()
     tactile_thread = threading.Thread(
         target=_tactile_fetch_loop,
@@ -1018,6 +1078,8 @@ def main():
             left_hand,
             right_hand,
             TACTILE_FETCH_HZ,
+            left_f6_history,
+            right_f6_history,
         ),
         daemon=True
     )
@@ -1171,6 +1233,13 @@ def main():
                     else:
                         tactile_f6 = right_tactile_buffers['f6'].copy()
                         tactile_deform = right_tactile_buffers['deform'].copy()
+                # Dense temporal F6 window for the server (matches VQ-VAE
+                # training window length).  Server takes the last frame for
+                # the single-frame tacf6_embedder and uses the full window for
+                # VQ-VAE encoding.
+                tactile_f6_window = _snapshot_f6_window(
+                    tactile_buf_lock, left_f6_history, right_f6_history,
+                    dual_arm=DUAL_ARM)
 
                 # Visualize inputs before JPEG encoding overwrites the images dict
                 visualize_inference_inputs(
@@ -1207,7 +1276,7 @@ def main():
                     "image_wrist_right": images["right_wrist"],
                     "state_fast": proprio,
                     "state_slow": proprio,
-                    "tactile_f6": tactile_f6,
+                    "tactile_f6": tactile_f6_window,    # dense [W, 10, 6] window
                     "tactile_deform": tactile_deform,
                 }
                 if DUAL_ARM:
@@ -1349,15 +1418,16 @@ def main():
                     if USE_TACTILE_REFINE and action_idx in REFINE_OFFSETS:
                         with tactile_buf_lock:
                             if DUAL_ARM:
-                                _tac_f6 = np.concatenate(
-                                    [left_tactile_buffers['f6'],
-                                     right_tactile_buffers['f6']], axis=0)
                                 _tac_def = np.concatenate(
                                     [left_tactile_buffers['deform'],
                                      right_tactile_buffers['deform']], axis=0)
                             else:
-                                _tac_f6 = right_tactile_buffers['f6'].copy()
                                 _tac_def = right_tactile_buffers['deform'].copy()
+                        # Dense F6 window — server uses last frame for the
+                        # tacf6_embedder and the full window for VQ-VAE.
+                        _tac_f6 = _snapshot_f6_window(
+                            tactile_buf_lock, left_f6_history, right_f6_history,
+                            dual_arm=DUAL_ARM)
                         fast_payload = {
                             "mode": "fast",
                             "tactile_f6": _tac_f6,

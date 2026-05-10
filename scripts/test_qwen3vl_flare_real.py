@@ -274,9 +274,22 @@ def model_load(args):
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _encode_tactile_f6(tactile_f6_input, statistic, device):
+    """Encode F6 for the single-frame tacf6_embedder.
+
+    Accepts either:
+      * `[n_fingers, 6]`           — single current frame (legacy clients).
+      * `[T, n_fingers, 6]`        — dense rolling window (new clients send
+                                     the full VQ-VAE window).  We take the
+                                     last frame here for the per-frame
+                                     embedder; the full window is consumed
+                                     separately by `_push_f6_and_encode`.
+    """
     if tactile_f6_input is None:
         return None
-    tacf6 = np.array(tactile_f6_input, dtype=np.float32).reshape(-1)
+    arr = np.asarray(tactile_f6_input, dtype=np.float32)
+    if arr.ndim == 3:
+        arr = arr[-1]                    # most recent frame
+    tacf6 = arr.reshape(-1)
     norm_tacf6 = _normalize(tacf6, statistic["tacf6_mask"],
                             statistic["tacf6_min"], statistic["tacf6_max"])
     return (torch.tensor(norm_tacf6.reshape(-1, 6), dtype=torch.bfloat16)
@@ -474,26 +487,48 @@ class ParadigmCServer:
                   f"(K={cfg.codebook_size}, W={self.vqvae_window})")
 
     def _push_f6_and_encode(self, tactile_f6_input):
-        """Append current F6 to rolling buffer and return [1, 2] int64 codes
-        (left, right) on `self.device`.  Returns None when VQ-VAE is disabled
-        or the input is missing.
+        """Encode an F6 history window into per-hand VQ-VAE codes.
 
-        Window is left-edge-padded with the first available frame until the
-        buffer fills, matching the offline encoder's alignment.
+        Accepted inputs:
+          * `[10, 6]`         — single current frame.  We append it to a
+                                server-side rolling buffer and encode the
+                                last `window` frames.  Used by legacy clients
+                                that don't track tactile history themselves.
+          * `[T, 10, 6]`      — dense rolling window from a client that
+                                already maintains the F6 history at fetch-
+                                rate (e.g. eval_dexmot.py with the F6_HISTORY
+                                deque).  We use the window directly — this
+                                matches VQ-VAE training-time temporal density.
+
+        Returns `[1, K]` int64 codes (K=2 hand or K=10 finger) on `self.device`,
+        or None when VQ-VAE is disabled / input is missing.
         """
         if self.vqvae_model is None or tactile_f6_input is None:
             return None
-        f6 = np.asarray(tactile_f6_input, dtype=np.float32).reshape(10, 6)
-        self.f6_buffer.append(f6)
-        if len(self.f6_buffer) > self.vqvae_window:
-            self.f6_buffer = self.f6_buffer[-self.vqvae_window:]
-
+        arr = np.asarray(tactile_f6_input, dtype=np.float32)
         w = self.vqvae_window
-        if len(self.f6_buffer) < w:
-            head = [self.f6_buffer[0]] * (w - len(self.f6_buffer))
-            arr = np.stack(head + self.f6_buffer, axis=0)        # [W, 10, 6]
+
+        if arr.ndim == 3:
+            # Client-supplied dense window — bypass the rolling buffer.
+            # Trim or left-edge-pad to exactly `w` frames so we always
+            # encode the same window length the VQ-VAE was trained on.
+            if arr.shape[0] >= w:
+                arr = arr[-w:]
+            else:
+                head = np.repeat(arr[:1], w - arr.shape[0], axis=0)
+                arr = np.concatenate([head, arr], axis=0)
         else:
-            arr = np.stack(self.f6_buffer, axis=0)
+            # Single frame — fall back to server-side rolling buffer.
+            f6 = arr.reshape(10, 6)
+            self.f6_buffer.append(f6)
+            if len(self.f6_buffer) > w:
+                self.f6_buffer = self.f6_buffer[-w:]
+            if len(self.f6_buffer) < w:
+                head = [self.f6_buffer[0]] * (w - len(self.f6_buffer))
+                arr = np.stack(head + self.f6_buffer, axis=0)
+            else:
+                arr = np.stack(self.f6_buffer, axis=0)
+
         arr_n = self.vqvae_stats.normalize(arr).astype(np.float32, copy=False)
 
         is_per_finger = getattr(self.vqvae_model.cfg, "granularity", "hand") == "finger"
@@ -631,6 +666,15 @@ class ParadigmCServer:
             tactile_deform_input if args.use_tactile_deform else None, device)
         tac_codes_tensor  = self._push_f6_and_encode(tactile_f6_input)
 
+        # Deterministic τ=1 starting point removes the per-fast-tick random
+        # component that was the dominant source of inter-tick disagreement
+        # (verified offline: splice jumps cut ~85%, jerk_l2 cut ~43%).
+        init_noise = None
+        if bool(getattr(args, "tactile_zero_init_noise", 0)):
+            init_noise = torch.zeros(
+                1, args.action_chunk, args.action_dim,
+                dtype=torch.bfloat16, device=device)
+
         delta_a = model.tactile_residual_flow(
             cached_kv          = self.cached_kv,
             latent_position_ids= self.position_ids,
@@ -641,6 +685,7 @@ class ParadigmCServer:
             num_steps          = args.tactile_refine_flow_steps,
             noise_scale        = args.tactile_refine_noise_scale,
             tactile_codes      = tac_codes_tensor,
+            initial_noise      = init_noise,
         )
         a_refined_norm = (self.A_hat + delta_a)[0].float().cpu().numpy()
         a_refined = _denormalize(
@@ -833,6 +878,13 @@ if __name__ == "__main__":
                         help="Number of Euler steps for the tactile residual flow at fast tick.")
     parser.add_argument("--tactile_refine_noise_scale", type=float, default=0.1,
                         help="Initial noise magnitude for the residual flow at τ=1.")
+    parser.add_argument("--tactile_zero_init_noise", type=int, default=0,
+                        help="1: pass zeros as the τ=1 starting point of the "
+                             "tactile residual flow.  Makes Δa deterministic "
+                             "given (cached_kv, tactile) — kills per-fast-tick "
+                             "noise that caused inter-tick disagreement.  "
+                             "Strongly recommended; offline confirms ~85%% "
+                             "reduction in splice jumps.")
 
     # VQ-VAE tactile code tokens (fast-path only).  When 0 (default) the model
     # graph and behavior are identical to the pre-feature version — flip the

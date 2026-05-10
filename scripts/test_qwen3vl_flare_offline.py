@@ -53,6 +53,132 @@ def _denormalize(norm_values, mask, vmin, vmax):
     )
 
 
+def _smoothness_metrics(chunk: np.ndarray) -> dict:
+    """Within-chunk smoothness of a `[T, action_dim]` predicted action chunk.
+
+    All metrics are taken on the denormalized chunk (so units = same as the
+    robot command space).  Lower = smoother.
+
+    step_l2 : mean ‖a[t+1] − a[t]‖₂                          (1st-order velocity)
+    accel_l2: mean ‖a[t+1] − 2·a[t] + a[t-1]‖₂                (2nd-order accel)
+    jerk_l2 : mean ‖third-order finite difference‖₂            (3rd-order jerk)
+    per_step_l2: list[T-1]  step magnitudes — useful to spot
+                  late-chunk degradation.
+    """
+    chunk = np.asarray(chunk, dtype=np.float64)
+    T = chunk.shape[0]
+    out = {"step_l2": 0.0, "accel_l2": 0.0, "jerk_l2": 0.0,
+           "per_step_l2": []}
+    if T < 2:
+        return out
+    d1 = np.diff(chunk, axis=0)
+    out["step_l2"]    = float(np.linalg.norm(d1, axis=-1).mean())
+    out["per_step_l2"] = np.linalg.norm(d1, axis=-1).tolist()
+    if T >= 3:
+        d2 = np.diff(chunk, n=2, axis=0)
+        out["accel_l2"] = float(np.linalg.norm(d2, axis=-1).mean())
+    if T >= 4:
+        d3 = np.diff(chunk, n=3, axis=0)
+        out["jerk_l2"] = float(np.linalg.norm(d3, axis=-1).mean())
+    return out
+
+
+def _splice_chunks(refined_per_tick: list, refine_offsets: list, T: int) -> np.ndarray:
+    """Build the action stream the robot would actually execute under the
+    splice strategy (no temporal aggregation): step k uses the latest fast
+    tick whose offset ≤ k.
+    """
+    spliced = refined_per_tick[0].copy()
+    for i, off in enumerate(refine_offsets):
+        end = refine_offsets[i + 1] if i + 1 < len(refine_offsets) else T
+        end = min(end, T)
+        if off >= T:
+            break
+        spliced[off:end] = refined_per_tick[i][off:end]
+    return spliced
+
+
+def _async_metrics(
+    a_hat: np.ndarray,
+    refined_per_tick: list,
+    delta_a_per_tick: list,
+    refine_offsets: list,
+) -> dict:
+    """Per-sample async-consistency metrics."""
+    T = a_hat.shape[0]
+
+    # 1) Splice jumps: at each new fast tick boundary k, how much does the
+    #    *executed* action change vs the previous tick's prediction at k?
+    #       jump@k = ‖refined[i][k] − refined[i-1][k]‖₂
+    splice_jumps = []
+    for i in range(1, len(refine_offsets)):
+        off = refine_offsets[i]
+        if off >= T:
+            continue
+        prev = refined_per_tick[i - 1][off]
+        curr = refined_per_tick[i][off]
+        splice_jumps.append({"offset": int(off),
+                             "jump_l2": float(np.linalg.norm(curr - prev))})
+
+    # 2) Per-index disagreement across all fast ticks that "cover" index k
+    #    (i.e. offset[i] ≤ k).  std over those predictions.  Higher = more
+    #    inter-tick disagreement.
+    per_idx_disagree = np.zeros(T, dtype=np.float64)
+    n_live = np.zeros(T, dtype=np.int64)
+    for k in range(T):
+        live = [refined_per_tick[i][k]
+                for i in range(len(refine_offsets))
+                if refine_offsets[i] <= k]
+        if len(live) >= 2:
+            stack = np.stack(live, axis=0)        # [n_live, D]
+            per_idx_disagree[k] = float(np.linalg.norm(stack.std(axis=0)))
+            n_live[k] = len(live)
+
+    # 3) Smoothness of executed (spliced) chunk vs no-async baseline
+    spliced = _splice_chunks(refined_per_tick, refine_offsets, T)
+    smooth_spliced  = _smoothness_metrics(spliced)
+    smooth_no_async = _smoothness_metrics(refined_per_tick[0])
+    smooth_a_hat    = _smoothness_metrics(a_hat)
+
+    # 4) Magnitude of Δa per tick (stack of [T, D] → [N, T])
+    da_norm = np.stack(
+        [np.linalg.norm(d, axis=-1) for d in delta_a_per_tick], axis=0)
+
+    return {
+        "splice_jumps":      splice_jumps,
+        "per_idx_disagree":  per_idx_disagree.tolist(),
+        "n_live_per_idx":    n_live.tolist(),
+        "smooth_spliced":    smooth_spliced,
+        "smooth_no_async":   smooth_no_async,
+        "smooth_a_hat":      smooth_a_hat,
+        "delta_a_norm":      da_norm.tolist(),     # [N_ticks, T]
+    }
+
+
+def _aggregate_smoothness(per_sample: list, T: int, label: str) -> dict:
+    """Aggregate a list of per-sample _smoothness_metrics dicts into mean
+    scalars + per-index step-norm vector.  Returns a flat dict for JSON.
+    """
+    if not per_sample:
+        return {f"{label}/n": 0}
+    step_l2  = np.array([s["step_l2"]  for s in per_sample])
+    accel_l2 = np.array([s["accel_l2"] for s in per_sample])
+    jerk_l2  = np.array([s["jerk_l2"]  for s in per_sample])
+    # Per-step matrix [N, T-1]; pad short ones with zeros (shouldn't happen).
+    per_step = np.zeros((len(per_sample), max(T - 1, 0)), dtype=np.float64)
+    for i, s in enumerate(per_sample):
+        v = s["per_step_l2"]
+        per_step[i, :len(v)] = v
+    return {
+        f"{label}/n":              int(len(per_sample)),
+        f"{label}/step_l2_mean":   float(step_l2.mean()),
+        f"{label}/step_l2_std":    float(step_l2.std()),
+        f"{label}/accel_l2_mean":  float(accel_l2.mean()),
+        f"{label}/jerk_l2_mean":   float(jerk_l2.mean()),
+        f"{label}/per_step_mean":  per_step.mean(axis=0).tolist(),
+    }
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Build model from config.json
 # ─────────────────────────────────────────────────────────────────────────────
@@ -272,7 +398,21 @@ def model_predict(
     task_description, slow_images, fast_images,
     tactile_f6_input=None, tactile_deform_input=None, state_fast=None,
     tactile_codes_input=None,
+    return_info: bool = False,
 ):
+    """Run a single inference.
+
+    Returns
+    -------
+    actions : list[np.ndarray]   denormalized refined chunk (legacy default).
+    (actions, info) : tuple      when `return_info=True`.  `info` is a dict
+                                  with denormalized arrays:
+        a_hat   : [T, action_dim]   action-expert-only base chunk (Paradigm C);
+                                    None when use_tactile_refine_flow is off
+                                    or no tactile was supplied.
+        samples : [T, action_dim]   final returned chunk (= a_hat + Δa for C).
+        delta_a : [T, action_dim]   samples − a_hat in *denormalized* units.
+    """
     device = f"cuda:{args.cuda}"
     model = model.to(device).eval()
 
@@ -379,6 +519,7 @@ def model_predict(
         noise = torch.randn(1, args.action_chunk, args.action_dim,
                             dtype=torch.bfloat16, device=device)
 
+        a_hat_denorm = None        # set only in Paradigm C
         if getattr(args, "use_tactile_refine_flow", 0):
             # Paradigm C: action-only slow flow → Â, then tactile residual flow → Δa
             a_hat, cached_kv, n_action_in_cache = model.forward_flow_action_only(
@@ -391,6 +532,12 @@ def model_predict(
                 num_steps       = getattr(args, "action_flow_eval_steps", 10),
                 refresh_clean_kv= True,
             )
+            # Capture base Â (denormalized) for smoothness diagnostics.
+            a_hat_denorm = _denormalize(
+                a_hat[0].float().cpu().numpy(),
+                statistic["action_mask"],
+                statistic["action_min"], statistic["action_max"])
+
             if (tac_f6_tensor is not None) or (tac_deform_tensor is not None):
                 tac_codes_tensor = None
                 if (getattr(args, "use_tactile_code", 0)
@@ -398,6 +545,11 @@ def model_predict(
                     tac_codes_tensor = torch.tensor(
                         np.asarray(tactile_codes_input, dtype=np.int64),
                         dtype=torch.long, device=device).reshape(1, -1)
+                init_noise = None
+                if bool(getattr(args, "tactile_zero_init_noise", 0)):
+                    init_noise = torch.zeros(
+                        1, args.action_chunk, args.action_dim,
+                        dtype=torch.bfloat16, device=device)
                 delta_a = model.tactile_residual_flow(
                     cached_kv          = cached_kv,
                     latent_position_ids= position_ids,
@@ -408,6 +560,7 @@ def model_predict(
                     num_steps          = getattr(args, "tactile_refine_flow_steps", 4),
                     noise_scale        = getattr(args, "tactile_refine_noise_scale", 0.1),
                     tactile_codes      = tac_codes_tensor,
+                    initial_noise      = init_noise,
                 )
                 samples = a_hat + delta_a
             else:
@@ -430,7 +583,192 @@ def model_predict(
             norm_actions, statistic["action_mask"],
             statistic["action_min"], statistic["action_max"])
 
+    if return_info:
+        info = {
+            "a_hat":   a_hat_denorm,                                 # [T, D] or None
+            "samples": np.asarray(actions),                          # [T, D]
+            "delta_a": (np.asarray(actions) - a_hat_denorm
+                        if a_hat_denorm is not None else None),
+        }
+        return list(actions), info
     return list(actions)
+
+
+def model_predict_multi_fast(
+    args, model, processor, statistic,
+    task_description, slow_images, fast_images,
+    state_fast,
+    tactile_inputs_per_tick,    # list of dict(f6, deform, codes); one per fast tick
+):
+    """Simulate the Paradigm C async loop: 1 slow tick + N fast ticks.
+
+    All N fast ticks reuse the same `cached_kv` from the slow tick — this is
+    what the real-world server does inside one chunk window.  The visual
+    tower / prompt processing is run only once.
+
+    Returns
+    -------
+    a_hat_denorm : np.ndarray  [T, action_dim]
+        Action-expert-only chunk Â (denormalized).
+    refined_per_tick : list[np.ndarray]  N entries of [T, action_dim]
+        A_refined_k = Â + Δa_k for each tick (denormalized).
+    delta_a_per_tick : list[np.ndarray]  N entries of [T, action_dim]
+        Δa_k in *denormalized* units (= refined_k − a_hat).
+    """
+    device = f"cuda:{args.cuda}"
+    model = model.to(device).eval()
+
+    with torch.inference_mode():
+
+        if args.image_size:
+            _sz = tuple(args.image_size)
+            slow_images = [img.resize(_sz, Image.LANCZOS) for img in slow_images]
+            fast_images = [img.resize(_sz, Image.LANCZOS) for img in fast_images]
+
+        # State
+        state_embeds = None
+        if args.use_robot_state and state_fast is not None:
+            norm_state = _normalize(
+                np.array(state_fast, dtype=np.float32),
+                statistic["state_mask"], statistic["state_min"], statistic["state_max"])
+            state_vec = torch.tensor(norm_state, dtype=torch.bfloat16).unsqueeze(0).to(device)
+            state_embeds = model.state_embedder(state_vec).unsqueeze(1)
+
+        # Visual / prompt
+        n_slow = len(slow_images)
+        all_pil = slow_images + fast_images
+        content = [{"type": "image"} for _ in slow_images]
+        content.append({"type": "text", "text": task_description})
+        content += [{"type": "image"} for _ in fast_images]
+        messages = [{"role": "user", "content": content}]
+        text = processor.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True)
+        inp = processor(text=text, images=all_pil if all_pil else None,
+                        return_tensors="pt", padding=False)
+
+        input_ids = inp.input_ids.to(device)
+        attention_mask = inp.attention_mask.to(device)
+        pixel_values = (inp.pixel_values.to(device, dtype=torch.bfloat16)
+                        if getattr(inp, "pixel_values", None) is not None else None)
+        image_grid_thw = (inp.image_grid_thw.to(device)
+                          if getattr(inp, "image_grid_thw", None) is not None else None)
+
+        inputs_embeds = model.prepare_inputs_embeds(
+            input_ids=input_ids, pixel_values=pixel_values,
+            image_grid_thw=image_grid_thw)
+
+        fast_embeds = None
+        if image_grid_thw is not None and fast_images:
+            merge = getattr(model.visual, "spatial_merge_size",
+                            getattr(processor.image_processor, "merge_size", 2))
+            n_slow_img_tokens = sum(
+                int(g[0] * (g[1] // merge) * (g[2] // merge))
+                for g in image_grid_thw[:n_slow])
+            slow_embeds, fast_embeds = split_slow_fast_embeds(
+                inputs_embeds, input_ids,
+                model.image_token_id, n_slow_img_tokens)
+        else:
+            slow_embeds = inputs_embeds
+
+        position_ids, _ = model.get_rope_index(
+            input_ids=input_ids, image_grid_thw=image_grid_thw,
+            attention_mask=attention_mask)
+        position_ids = position_ids[:, :, :slow_embeds.shape[1]]
+
+        if model.n_flare_tokens > 0:
+            flare_q = model.flare_queries.to(
+                device=slow_embeds.device, dtype=slow_embeds.dtype)
+            slow_embeds = torch.cat([slow_embeds, flare_q.expand(1, -1, -1)], dim=1)
+            position_ids = extend_position_ids_for_flare(
+                position_ids, model.n_flare_tokens)
+
+        # ── Slow tick (run once) ─────────────────────────────────────────
+        noise = torch.randn(1, args.action_chunk, args.action_dim,
+                            dtype=torch.bfloat16, device=device)
+        a_hat, cached_kv, n_action_in_cache = model.forward_flow_action_only(
+            inputs_embeds   = slow_embeds,
+            position_ids    = position_ids,
+            attention_mask  = attention_mask,
+            noise           = noise,
+            state_embeds    = state_embeds,
+            fast_embeds     = fast_embeds,
+            num_steps       = getattr(args, "action_flow_eval_steps", 10),
+            refresh_clean_kv= True,
+        )
+        a_hat_norm = a_hat[0].float().cpu().numpy()
+        a_hat_denorm = _denormalize(
+            a_hat_norm, statistic["action_mask"],
+            statistic["action_min"], statistic["action_max"])
+
+        # ── N fast ticks (reuse cached_kv; tactile_residual_flow clones it
+        #    internally so we can call it repeatedly) ──────────────────────
+        refined_per_tick: list = []
+        delta_a_per_tick: list = []
+        for tac in tactile_inputs_per_tick:
+            tac_f6_tensor = (
+                _encode_tactile_f6_helper(tac.get("f6"), statistic, device)
+                if args.use_tactile_vec else None)
+            tac_def_tensor = (
+                _encode_tactile_deform_helper(tac.get("deform"), device)
+                if args.use_tactile_deform else None)
+            tac_codes_tensor = None
+            if (getattr(args, "use_tactile_code", 0)
+                    and tac.get("codes") is not None):
+                tac_codes_tensor = torch.tensor(
+                    np.asarray(tac["codes"], dtype=np.int64),
+                    dtype=torch.long, device=device).reshape(1, -1)
+
+            init_noise = None
+            if bool(getattr(args, "tactile_zero_init_noise", 0)):
+                init_noise = torch.zeros(
+                    1, args.action_chunk, args.action_dim,
+                    dtype=torch.bfloat16, device=device)
+            delta_a = model.tactile_residual_flow(
+                cached_kv          = cached_kv,
+                latent_position_ids= position_ids,
+                n_action_in_cache  = n_action_in_cache,
+                base_chunk         = a_hat,
+                tactile_f6         = tac_f6_tensor,
+                tactile_deform     = tac_def_tensor,
+                num_steps          = getattr(args, "tactile_refine_flow_steps", 4),
+                noise_scale        = getattr(args, "tactile_refine_noise_scale", 0.1),
+                tactile_codes      = tac_codes_tensor,
+                initial_noise      = init_noise,
+            )
+            refined_norm = (a_hat + delta_a)[0].float().cpu().numpy()
+            refined_denorm = _denormalize(
+                refined_norm, statistic["action_mask"],
+                statistic["action_min"], statistic["action_max"])
+            refined_per_tick.append(refined_denorm)
+            delta_a_per_tick.append(refined_denorm - a_hat_denorm)
+
+    return a_hat_denorm, refined_per_tick, delta_a_per_tick
+
+
+def _encode_tactile_f6_helper(tac_f6_input, statistic, device):
+    """Wrapper used by model_predict_multi_fast — handles single-frame F6 only."""
+    if tac_f6_input is None:
+        return None
+    tacf6 = np.array(tac_f6_input, dtype=np.float32).reshape(-1)
+    norm_tacf6 = _normalize(tacf6, statistic["tacf6_mask"],
+                            statistic["tacf6_min"], statistic["tacf6_max"])
+    return (torch.tensor(norm_tacf6.reshape(-1, 6), dtype=torch.bfloat16)
+            .unsqueeze(0).to(device))
+
+
+def _encode_tactile_deform_helper(tac_def_input, device):
+    if tac_def_input is None:
+        return None
+    arr = np.array(tac_def_input, dtype=np.float32)
+    if arr.max() > 1.0:
+        arr = arr / 255.0
+    if arr.ndim == 3:
+        return (torch.tensor(arr).unsqueeze(0).unsqueeze(2)
+                .to(device, dtype=torch.bfloat16))
+    elif arr.ndim == 4:
+        return (torch.tensor(arr).unsqueeze(0)
+                .to(device, dtype=torch.bfloat16))
+    return None
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -726,6 +1064,13 @@ def main(args):
         flare_sim_sum, flare_n_valid = 0.0, 0
         all_per_step_sims = []  # list of per-step similarity arrays
 
+        # Smoothness accumulators (only used when --eval_smoothness 1).
+        smooth_eval = bool(getattr(args, "eval_smoothness", 0))
+        smooth_base    = []   # per-sample _smoothness_metrics on Â
+        smooth_refined = []   # per-sample _smoothness_metrics on Â + Δa
+        smooth_gt      = []   # per-sample on GT (reference baseline)
+        delta_a_norms  = []   # per-sample [T, action_dim] |Δa| arrays
+
         for step, sample in enumerate(tqdm(train_data, desc="Testing")):
             try:
                 slow_images = [Image.open(_abs(p)).convert("RGB")
@@ -742,11 +1087,21 @@ def main(args):
                 tac_codes = (sample.get("tactile_codes")
                              if getattr(args, "use_tactile_code", 0) else None)
 
-                pred = np.array(model_predict(
-                    args, model, processor, statistic, action_tokenizer,
-                    sample["input_prompt"], slow_images, fast_images,
-                    tac_f6, tac_deform, state_fast,
-                    tactile_codes_input=tac_codes))
+                if smooth_eval:
+                    pred_list, info = model_predict(
+                        args, model, processor, statistic, action_tokenizer,
+                        sample["input_prompt"], slow_images, fast_images,
+                        tac_f6, tac_deform, state_fast,
+                        tactile_codes_input=tac_codes,
+                        return_info=True)
+                    pred = np.array(pred_list)
+                else:
+                    pred = np.array(model_predict(
+                        args, model, processor, statistic, action_tokenizer,
+                        sample["input_prompt"], slow_images, fast_images,
+                        tac_f6, tac_deform, state_fast,
+                        tactile_codes_input=tac_codes))
+                    info = None
 
                 all_pred.append(pred[0] if pred.ndim > 1 else pred)
                 all_gt.append(gt_action[0] if gt_action.ndim > 1 else gt_action)
@@ -754,6 +1109,21 @@ def main(args):
                                gt_action[:min(len(pred), len(gt_action))]) ** 2)
                 error_sum += mse
                 n_valid += 1
+
+                # ── Smoothness diagnostics ─────────────────────────────
+                # Compares Â (action expert only) with Â + Δa (with tactile
+                # residual).  Lower step/accel/jerk = smoother.  Per-index
+                # step magnitudes show whether late chunk steps are jerkier.
+                if smooth_eval and info is not None:
+                    smooth_refined.append(_smoothness_metrics(info["samples"]))
+                    if info.get("a_hat") is not None:
+                        smooth_base.append(_smoothness_metrics(info["a_hat"]))
+                    if info.get("delta_a") is not None:
+                        delta_a_norms.append(
+                            np.linalg.norm(info["delta_a"], axis=-1))   # [T]
+                    # Reference: how smooth is the ground-truth chunk?
+                    if gt_action.ndim == 2:
+                        smooth_gt.append(_smoothness_metrics(gt_action))
 
                 # Flare similarity evaluation
                 if use_flare_eval:
@@ -783,6 +1153,214 @@ def main(args):
             print(f"=== Flare: {flare_n_valid} valid, mean cos_sim={avg_sim:.4f} ===")
             for s_i, s_val in enumerate(per_step_avg):
                 print(f"    step {s_i} (t+{(s_i+1)*args.flare_frame_stride}): cos_sim={s_val:.4f}")
+
+        # ── Smoothness summary ────────────────────────────────────────────
+        if smooth_eval and (smooth_refined or smooth_base):
+            T = args.action_chunk
+            agg = {}
+            agg.update(_aggregate_smoothness(smooth_base,    T, "base"))
+            agg.update(_aggregate_smoothness(smooth_refined, T, "refined"))
+            agg.update(_aggregate_smoothness(smooth_gt,      T, "gt"))
+
+            if delta_a_norms:
+                da = np.stack(delta_a_norms, axis=0)        # [N, T]
+                agg["delta_a/per_step_mean"] = da.mean(axis=0).tolist()
+                agg["delta_a/overall_mean"]  = float(da.mean())
+
+            print("\n─── Smoothness Summary ─────────────────────────────")
+            def _fmt(label):
+                if agg.get(f"{label}/n", 0) == 0:
+                    return None
+                return (f"  {label:8s}  step={agg[f'{label}/step_l2_mean']:.5f}  "
+                        f"accel={agg[f'{label}/accel_l2_mean']:.5f}  "
+                        f"jerk={agg[f'{label}/jerk_l2_mean']:.5f}  "
+                        f"(n={agg[f'{label}/n']})")
+            for lbl in ("base", "refined", "gt"):
+                line = _fmt(lbl)
+                if line is not None:
+                    print(line)
+            if (agg.get("base/n", 0) > 0 and agg.get("refined/n", 0) > 0):
+                ratio_step  = agg["refined/step_l2_mean"]  / max(agg["base/step_l2_mean"],  1e-12)
+                ratio_accel = agg["refined/accel_l2_mean"] / max(agg["base/accel_l2_mean"], 1e-12)
+                ratio_jerk  = agg["refined/jerk_l2_mean"]  / max(agg["base/jerk_l2_mean"],  1e-12)
+                print(f"  refined/base ratios:  step={ratio_step:.3f}  "
+                      f"accel={ratio_accel:.3f}  jerk={ratio_jerk:.3f}  "
+                      f"(>1 means tactile expert added jerk)")
+            if "delta_a/per_step_mean" in agg:
+                ps = agg["delta_a/per_step_mean"]
+                print("  Δa magnitude per chunk index (0..{}):".format(T - 1))
+                print("    " + " ".join(f"{v:.4f}" for v in ps))
+            if agg.get("refined/n", 0) > 0:
+                ps = agg["refined/per_step_mean"]
+                print("  refined per-step ‖Δa[t+1]−a[t]‖ (chunk indices 0..{}):".format(len(ps)-1))
+                print("    " + " ".join(f"{v:.4f}" for v in ps))
+            print("────────────────────────────────────────────────────")
+
+            os.makedirs(args.save_dir, exist_ok=True)
+            out_path = os.path.join(args.save_dir, "smoothness.json")
+            with open(out_path, "w") as f:
+                json.dump(agg, f, indent=2)
+            print(f"  Wrote {out_path}")
+
+        # ── Async consistency eval (1 slow + N fast ticks per anchor) ─────
+        if bool(getattr(args, "eval_async_consistency", 0)):
+            refine_offsets = list(getattr(args, "refine_offsets", [0, 4, 8, 12]))
+            refine_offsets = sorted(set(refine_offsets))
+            T = args.action_chunk
+            print(f"\n─── Async Consistency Eval ─────────────────────────")
+            print(f"    refine_offsets = {refine_offsets}, T = {T}")
+
+            # Build episode → frame index using tactile_image_deform paths
+            # (matches utils/encode_vqvae_codes_to_json.py).
+            import re as _re
+            _RE = _re.compile(r"(.+/episode_\d+)/image(\d+)_")
+            ep_idx_map: dict = {}
+            for s_idx, s in enumerate(train_data):
+                deforms = s.get("tactile_image_deform", [])
+                if not deforms:
+                    continue
+                m = _RE.search(deforms[0])
+                if not m:
+                    continue
+                ep_dir, frame = m.group(1), int(m.group(2))
+                ep_idx_map.setdefault(ep_dir, {})[frame] = s_idx
+            print(f"    indexed {sum(len(v) for v in ep_idx_map.values())} "
+                  f"samples across {len(ep_idx_map)} episodes")
+
+            async_records = []
+            n_async_skipped = 0
+            for sample in tqdm(train_data, desc="Async eval"):
+                deforms_anchor = sample.get("tactile_image_deform", [])
+                if not deforms_anchor:
+                    n_async_skipped += 1; continue
+                m = _RE.search(deforms_anchor[0])
+                if not m:
+                    n_async_skipped += 1; continue
+                ep_dir, frame_t = m.group(1), int(m.group(2))
+
+                # Find sibling sample for each delay offset.
+                tac_inputs = []
+                ok = True
+                for k in refine_offsets:
+                    sib_idx = ep_idx_map.get(ep_dir, {}).get(frame_t + k)
+                    if sib_idx is None:
+                        ok = False
+                        break
+                    sib = train_data[sib_idx]
+                    tac_def = None
+                    if args.use_tactile_deform:
+                        tac_def = [
+                            np.array(Image.open(_abs(p)).convert("L"),
+                                     dtype=np.float32) / 255.0
+                            for p in sib.get("tactile_image_deform", [])]
+                    tac_f6 = (np.array(sib["tactile_f6"], dtype=np.float32)
+                              if args.use_tactile_vec else None)
+                    tac_codes_sib = (sib.get("tactile_codes")
+                                     if getattr(args, "use_tactile_code", 0)
+                                     else None)
+                    tac_inputs.append({
+                        "f6": tac_f6, "deform": tac_def, "codes": tac_codes_sib,
+                    })
+                if not ok:
+                    n_async_skipped += 1; continue
+
+                try:
+                    slow_imgs = [Image.open(_abs(p)).convert("RGB")
+                                 for p in sample["input_image_slow"]]
+                    fast_imgs = [Image.open(_abs(p)).convert("RGB")
+                                 for p in sample["input_image_fast"]]
+                    state_fast = (np.array(sample["state_fast"], dtype=np.float32)
+                                  if args.use_robot_state else None)
+                except FileNotFoundError:
+                    n_async_skipped += 1; continue
+
+                a_hat, refined_pt, delta_a_pt = model_predict_multi_fast(
+                    args, model, processor, statistic,
+                    sample["input_prompt"], slow_imgs, fast_imgs,
+                    state_fast, tac_inputs)
+                async_records.append(_async_metrics(
+                    a_hat, refined_pt, delta_a_pt, refine_offsets))
+
+            n_eval = len(async_records)
+            if n_eval == 0:
+                print(f"    no eligible samples (need {refine_offsets[-1]} "
+                      f"frames of episode look-ahead) — skipped {n_async_skipped}")
+            else:
+                # Aggregate
+                # 1) Splice jump table: mean ‖Δ‖ at each offset boundary
+                jump_means = {}
+                for off in refine_offsets[1:]:
+                    js = [j["jump_l2"] for r in async_records
+                          for j in r["splice_jumps"] if j["offset"] == off]
+                    jump_means[off] = (float(np.mean(js)) if js else 0.0,
+                                       float(np.std(js))  if js else 0.0,
+                                       len(js))
+
+                # 2) Per-index disagreement (std across ticks at each idx)
+                disagree = np.array([r["per_idx_disagree"] for r in async_records])
+                # 3) Smoothness comparisons
+                def _stack(label, key):
+                    return np.array([r[key][label] for r in async_records
+                                     if r[key] is not None])
+                step_spliced  = _stack("step_l2",  "smooth_spliced")
+                step_no_async = _stack("step_l2",  "smooth_no_async")
+                step_a_hat    = _stack("step_l2",  "smooth_a_hat")
+                jerk_spliced  = _stack("jerk_l2",  "smooth_spliced")
+                jerk_no_async = _stack("jerk_l2",  "smooth_no_async")
+                # 4) Δa magnitude per (tick, chunk_idx)
+                da = np.array([r["delta_a_norm"] for r in async_records])  # [N, ticks, T]
+                da_per_tick_idx = da.mean(axis=0)                          # [ticks, T]
+
+                print(f"    n_eval = {n_eval}, skipped {n_async_skipped}")
+                print(f"    Splice jumps  ‖refined[i][k] − refined[i-1][k]‖₂  at boundary index k:")
+                for off, (mu, sd, n) in jump_means.items():
+                    print(f"        offset={off:2d}:  mean={mu:.5f}   std={sd:.5f}   (n={n})")
+                print(f"    Per-index disagreement (std across live ticks at idx k):")
+                for k in range(T):
+                    print(f"        idx {k:2d}:  {disagree[:, k].mean():.5f}")
+                print(f"    Smoothness comparison (step_l2 mean):")
+                if step_a_hat.size:
+                    print(f"        a_hat (no tactile)   = {step_a_hat.mean():.5f}")
+                if step_no_async.size:
+                    print(f"        single fast tick     = {step_no_async.mean():.5f}")
+                if step_spliced.size:
+                    print(f"        spliced async stream = {step_spliced.mean():.5f}")
+                if step_no_async.size and step_spliced.size:
+                    ratio = step_spliced.mean() / max(step_no_async.mean(), 1e-12)
+                    print(f"        spliced / single     = {ratio:.3f}  "
+                          f"(>1 → splice boundaries add jerk)")
+                if jerk_no_async.size and jerk_spliced.size:
+                    rj = jerk_spliced.mean() / max(jerk_no_async.mean(), 1e-12)
+                    print(f"        jerk_l2 spliced/single = {rj:.3f}")
+                print(f"    Δa magnitude per tick × chunk index (rows = ticks {refine_offsets}):")
+                for i, off in enumerate(refine_offsets):
+                    row = da_per_tick_idx[i]
+                    print(f"        tick@{off:2d}: " + " ".join(f"{v:.4f}" for v in row))
+                print("────────────────────────────────────────────────────")
+
+                os.makedirs(args.save_dir, exist_ok=True)
+                async_path = os.path.join(args.save_dir, "async_consistency.json")
+                payload = {
+                    "n_eval":          n_eval,
+                    "n_skipped":       n_async_skipped,
+                    "refine_offsets":  refine_offsets,
+                    "splice_jumps":    {str(o): {"mean": v[0], "std": v[1], "n": v[2]}
+                                        for o, v in jump_means.items()},
+                    "per_idx_disagree_mean": disagree.mean(axis=0).tolist(),
+                    "delta_a_per_tick_idx_mean": da_per_tick_idx.tolist(),
+                    "step_l2_mean": {
+                        "a_hat":    float(step_a_hat.mean())    if step_a_hat.size    else None,
+                        "no_async": float(step_no_async.mean()) if step_no_async.size else None,
+                        "spliced":  float(step_spliced.mean())  if step_spliced.size  else None,
+                    },
+                    "jerk_l2_mean": {
+                        "no_async": float(jerk_no_async.mean()) if jerk_no_async.size else None,
+                        "spliced":  float(jerk_spliced.mean())  if jerk_spliced.size  else None,
+                    },
+                }
+                with open(async_path, "w") as f:
+                    json.dump(payload, f, indent=2)
+                print(f"    Wrote {async_path}")
 
         if all_pred and args.save_dir:
             os.makedirs(args.save_dir, exist_ok=True)
@@ -895,6 +1473,30 @@ if __name__ == "__main__":
                              "tactile_residual_flow.")
     parser.add_argument("--vqvae_codebook_size", type=int, default=64,
                         help="Codebook size of the VQ-VAE that produced tactile_codes.")
+
+    # Smoothness diagnostics — quantify per-chunk action smoothness for both
+    # the action-expert-only base Â and the tactile-refined Â+Δa.  Useful to
+    # see whether the tactile residual is adding jerk and whether late chunk
+    # indices are rougher than early ones.
+    parser.add_argument("--eval_smoothness", type=int, default=0,
+                        help="1: compute first/second/third-order action "
+                             "diffs per chunk and write smoothness.json.")
+
+    # Async consistency — simulate the Paradigm C inference loop within a
+    # single 16-step chunk: 1 slow tick + N fast ticks at refine_offsets,
+    # measure splice jumps and inter-tick disagreement.
+    parser.add_argument("--eval_async_consistency", type=int, default=0,
+                        help="1: run 1 slow + N fast ticks per anchor sample "
+                             "(using sibling JSON samples for delayed tactile) "
+                             "and report splice jumps at each refine offset.")
+    parser.add_argument("--refine_offsets", type=int, nargs="+",
+                        default=[0, 4, 8, 12],
+                        help="Chunk-index offsets at which fast ticks fire — "
+                             "must mirror eval_dexmot.py's REFINE_OFFSETS.")
+    parser.add_argument("--tactile_zero_init_noise", type=int, default=0,
+                        help="1: pass zeros as the τ=1 starting point of the "
+                             "tactile residual flow (deterministic).  "
+                             "0 (default): fresh randn × noise_scale each call.")
 
     # Paradigm C
     parser.add_argument("--use_tactile_refine_flow", type=int, default=0,

@@ -37,6 +37,7 @@ python test_qwen3vl_flare_real.py \
   --action_flow_eval_steps 10 \
   --tactile_refine_flow_steps 4 \
   --tactile_refine_noise_scale 1.0 \
+  --tactile_zero_init_noise 1 \
   --use_tactile_code 0 \
   --vqvae_codebook_size 64 \
   --vqvae_ckpt /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_finger_0507_0939/latest.pt

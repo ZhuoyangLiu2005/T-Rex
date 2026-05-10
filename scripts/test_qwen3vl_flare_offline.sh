@@ -16,10 +16,10 @@ export CUDA_VISIBLE_DEVICES=0
 # ACTION_CHUNK=16
 
 # --- Dual-arm: remove_card (bimanual, 2 wrist cameras: right + left) ---
-MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mot_expert/qwen3vl_2b_mot[3]_pretrain[egodex0407]_midtrain[none]_task[wipe_plate_0427+0429]_traj[100]_view[3]_tac[force+deform]_state[wo]_stride[1]_flare[tpf4step8stride4]_vae[64]_0506/checkpoint-49-25900"
+MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mot_expert/qwen3vl_2b_mot[3]_pretrain[mecka0507]_midtrain[none]_task[remove_card_0412+0413+0501]_traj[130]_view[3]_tac[force+deform]_state[wo]_stride[1]_flare[tpf4step8stride4]_vae[64]_0507/checkpoint-149-47550"
 # DATA_JSON is the *VQ-VAE encoded* JSON; tactile_codes length matches the
 # checkpoint that produced it (2 for per-hand, 10 for per-finger).
-DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/wipe_plate_0427+0429_deltabase_axis_eef_lr_bimanual_crop_stride1_train_vqvae_k64.json"
+DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/remove_card_0412+0413+0501_deltabase_axis_eef_lr_bimanual_crop_stride1_train_vqvae_k64.json"
 ACTION_DIM=62
 ACTION_CHUNK=16
 
@@ -46,5 +46,9 @@ python test_qwen3vl_flare_offline.py \
   --tactile_refine_noise_scale 1.0 \
   --use_tactile_code 1 \
   --vqvae_codebook_size 64 \
+  --eval_smoothness 1 \
+  --eval_async_consistency 1 \
+  --refine_offsets 0 4 8 12 \
+  --tactile_zero_init_noise 1 \
 
 

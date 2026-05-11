@@ -176,6 +176,11 @@ accelerate launch \
     --vqvae_codebook_size 64 \
     --vqvae_codes_h5_name tactile_codes.h5 \
     --tactile_code_per_finger 0 \
+    --paradigm residual \
+    --cascaded_total_steps 10 \
+    --cascaded_split_step 6 \
+    --cascaded_tactile_dropout 0.1 \
+    --cascaded_loss_weight 1.0 \
     --resume_checkpoint "${RESUME_CHECKPOINT}" \
     --use_flare 1 \
     --n_flare_tokens_per_frame 4 \

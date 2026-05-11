@@ -168,7 +168,10 @@ def model_load(args):
                              ("n_flare_tokens_per_frame", 0),
                              ("n_flare_steps", 0),
                              ("use_tactile_code", 0),
-                             ("vqvae_codebook_size", 64)]:
+                             ("vqvae_codebook_size", 64),
+                             ("paradigm", "residual"),
+                             ("cascaded_total_steps", 10),
+                             ("cascaded_split_step", 6)]:
             saved = ta.get(key, default)
             cli_val = getattr(args, key, default)
             if saved and cli_val == default:
@@ -458,7 +461,10 @@ class ParadigmCServer:
         # Slow-path snapshot
         self.cached_kv          = None
         self.A_hat              = None             # [B, n_chunk, action_dim] bf16
-        self.A_hat_denorm       = None             # numpy after denorm
+                                                   # residual: clean Â at τ=0
+                                                   # cascaded: x_split at τ=tau_split
+        self.A_hat_denorm       = None             # numpy after denorm (residual only)
+        self.tau_split          = None             # cascaded only
         self.position_ids       = None
         self.attention_mask     = None
         self.n_action_in_cache  = 0
@@ -625,29 +631,53 @@ class ParadigmCServer:
 
         noise = torch.randn(1, args.action_chunk, args.action_dim,
                             dtype=torch.bfloat16, device=device)
-        a_hat, cached_kv, n_action_in_cache = model.forward_flow_action_only(
-            inputs_embeds=slow_embeds,
-            position_ids=position_ids,
-            attention_mask=attention_mask,
-            noise=noise,
-            state_embeds=state_embeds,
-            fast_embeds=fast_embeds,
-            num_steps=args.action_flow_eval_steps,
-            refresh_clean_kv=True,
-        )
+        paradigm = getattr(args, "paradigm", "residual")
+        if paradigm == "cascaded":
+            x_split, cached_kv, n_action_in_cache, tau_split = (
+                model.forward_flow_action_partial(
+                    inputs_embeds=slow_embeds,
+                    position_ids=position_ids,
+                    attention_mask=attention_mask,
+                    noise=noise,
+                    state_embeds=state_embeds,
+                    fast_embeds=fast_embeds,
+                    num_steps_total=args.cascaded_total_steps,
+                    split_step=args.cascaded_split_step,
+                    refresh_clean_kv=True,
+                ))
+            self.A_hat       = x_split          # cached intermediate, NOT a clean action
+            self.tau_split   = tau_split
+            self.A_hat_denorm = None            # not a valid action in cascaded mode
+        else:
+            a_hat, cached_kv, n_action_in_cache = model.forward_flow_action_only(
+                inputs_embeds=slow_embeds,
+                position_ids=position_ids,
+                attention_mask=attention_mask,
+                noise=noise,
+                state_embeds=state_embeds,
+                fast_embeds=fast_embeds,
+                num_steps=args.action_flow_eval_steps,
+                refresh_clean_kv=True,
+            )
+            self.A_hat = a_hat
+            self.tau_split = None
+            self.A_hat_denorm = _denormalize(
+                a_hat[0].float().cpu().numpy(),
+                statistic["action_mask"],
+                statistic["action_min"], statistic["action_max"])
 
         self.cached_kv         = cached_kv
-        self.A_hat             = a_hat
         self.position_ids      = position_ids
         self.attention_mask    = attention_mask
         self.n_action_in_cache = n_action_in_cache
         self.chunk_id         += 1
 
-        norm_actions = a_hat[0].float().cpu().numpy()
-        self.A_hat_denorm = _denormalize(
-            norm_actions, statistic["action_mask"],
-            statistic["action_min"], statistic["action_max"])
-        return list(self.A_hat_denorm), self.chunk_id
+        # In residual mode the slow-tick reply is Â (a usable action).
+        # In cascaded mode there is no usable action without a fast tick;
+        # caller should always send 'slow_and_fast' so a_refined comes back.
+        if self.A_hat_denorm is not None:
+            return list(self.A_hat_denorm), self.chunk_id
+        return [], self.chunk_id
 
     # -- internal: run tactile residual flow on cached state --
     def _run_fast(self, tactile_f6_input=None, tactile_deform_input=None):
@@ -666,6 +696,29 @@ class ParadigmCServer:
             tactile_deform_input if args.use_tactile_deform else None, device)
         tac_codes_tensor  = self._push_f6_and_encode(tactile_f6_input)
 
+        paradigm = getattr(args, "paradigm", "residual")
+        if paradigm == "cascaded":
+            # Continue the action expert's flow with the tactile expert from
+            # x_split → τ=0; the result IS the clean action (no Â + Δa add).
+            refined = model.tactile_flow_continue(
+                cached_kv          = self.cached_kv,
+                latent_position_ids= self.position_ids,
+                n_action_in_cache  = self.n_action_in_cache,
+                x_split            = self.A_hat,         # cached intermediate
+                tau_split          = self.tau_split,
+                tactile_f6         = tac_f6_tensor,
+                tactile_deform     = tac_deform_tensor,
+                tactile_codes      = tac_codes_tensor,
+                num_steps_total    = args.cascaded_total_steps,
+                split_step         = args.cascaded_split_step,
+            )
+            a_refined_norm = refined[0].float().cpu().numpy()
+            a_refined = _denormalize(
+                a_refined_norm, statistic["action_mask"],
+                statistic["action_min"], statistic["action_max"])
+            return list(a_refined), self.chunk_id
+
+        # Residual paradigm (default).
         # Deterministic τ=1 starting point removes the per-fast-tick random
         # component that was the dominant source of inter-tick disagreement
         # (verified offline: splice jumps cut ~85%, jerk_l2 cut ~43%).
@@ -885,6 +938,13 @@ if __name__ == "__main__":
                              "noise that caused inter-tick disagreement.  "
                              "Strongly recommended; offline confirms ~85%% "
                              "reduction in splice jumps.")
+    parser.add_argument("--paradigm", type=str, default="residual",
+                        choices=["residual", "cascaded"],
+                        help="Auto-detected from training_args.json when "
+                             "available.  cascaded: action expert handles "
+                             "τ ∈ [τ_split, 1], tactile expert continues to 0.")
+    parser.add_argument("--cascaded_total_steps", type=int, default=10)
+    parser.add_argument("--cascaded_split_step",  type=int, default=6)
 
     # VQ-VAE tactile code tokens (fast-path only).  When 0 (default) the model
     # graph and behavior are identical to the pre-feature version — flip the

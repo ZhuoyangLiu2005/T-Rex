@@ -838,6 +838,263 @@ class Qwen3VLVLAModel(nn.Module):
 
         return r
 
+    # ──────────────────────────────────────────────────────────────────────
+    # Cascaded flow paradigm
+    #
+    # The action expert runs the *upper* part of the flow (τ ∈ [τ_split, 1]),
+    # the tactile expert runs the *lower* part (τ ∈ [0, τ_split]) — both
+    # predict velocity for the same action distribution u = ε − A_demo,
+    # NOT a residual.  At inference the tactile expert continues the flow
+    # from the action expert's intermediate state x_split, producing the
+    # final clean action directly (no Â + Δa addition).
+    #
+    # Co-exists with the residual paradigm: action expert is still trained
+    # on the full τ ∈ [0, 1] range so it can run standalone for graceful
+    # degradation.  Switching paradigms is purely an inference-side choice
+    # plus an extra tactile loss term at training.
+    # ──────────────────────────────────────────────────────────────────────
+
+    @torch.no_grad()
+    def forward_flow_action_partial(
+        self,
+        inputs_embeds: torch.Tensor,
+        position_ids: torch.Tensor,
+        noise: torch.Tensor,
+        attention_mask: Optional[torch.Tensor] = None,
+        state_embeds: Optional[torch.Tensor] = None,
+        fast_embeds: Optional[torch.Tensor] = None,
+        num_steps_total: int = 10,
+        split_step: int = 6,
+        refresh_clean_kv: bool = True,
+    ) -> Tuple[torch.Tensor, "DynamicCache", int, float]:
+        """Cascaded slow-tick: run the action expert for `split_step` of
+        `num_steps_total` Euler steps, stopping at τ = 1 − split_step/num_steps_total.
+
+        Returns
+        -------
+        x_split           : [B, n_chunk, action_dim]  partially-denoised chunk
+                                                       at τ = τ_split.
+        cached_kv         : DynamicCache with [latent KV | action KV at τ_split].
+        n_action_in_cache : int
+        tau_split         : float                      ∈ (0, 1)
+        """
+        if not (0 < split_step < num_steps_total):
+            raise ValueError(
+                f"split_step must be in (0, num_steps_total); got "
+                f"{split_step}/{num_steps_total}.")
+
+        device = noise.device
+        dtype  = torch.bfloat16
+        # Same dt as the full flow, so the cascaded trajectory is consistent
+        # with what a 10-step monolithic flow would integrate.
+        dt     = torch.tensor(-1.0 / num_steps_total, dtype=dtype, device=device)
+        x_t    = noise.to(dtype)
+        time   = torch.tensor(1.0, dtype=dtype, device=device)
+        n_chunk = noise.shape[1]
+        B      = inputs_embeds.shape[0]
+        H      = inputs_embeds.shape[2]
+
+        if fast_embeds is None:
+            fast_embeds = torch.empty((B, 0, H), device=device, dtype=dtype)
+        if state_embeds is None:
+            state_embeds = torch.empty((B, 0, H), device=device, dtype=dtype)
+        n_state = state_embeds.shape[1]
+        L_latent = inputs_embeds.shape[1]
+
+        past_kv = None
+        n_act = 0
+        for i in range(split_step):
+            timesteps = self.t_embedder(time.expand(B)).unsqueeze(1)
+            noisy_act = self.x_embedder(x_t)
+            act_parts = [fast_embeds]
+            if n_state > 0:
+                act_parts.append(state_embeds)
+            act_parts += [timesteps, noisy_act]
+            act_seq = torch.cat(act_parts, dim=1)
+            n_act = act_seq.shape[1]
+
+            if past_kv is None:
+                full_embeds = torch.cat([inputs_embeds, act_seq], dim=1)
+                outputs = self.model(
+                    inputs_embeds=full_embeds,
+                    position_ids=position_ids,
+                    attention_mask=attention_mask,
+                    past_key_values=past_kv,
+                    use_cache=True,
+                    latent_indexes=torch.arange(0, L_latent, device=device),
+                    action_indexes=torch.arange(L_latent, L_latent + n_act, device=device),
+                    tactile_indexes=torch.arange(0, 0, device=device),
+                )
+            else:
+                past_kv.crop(-n_act)
+                extended_pos = self.model._extend_position_ids(position_ids, n_act, 0)
+                act_pos = extended_pos[..., -n_act:]
+                outputs = self.model(
+                    inputs_embeds=act_seq,
+                    position_ids=act_pos,
+                    past_key_values=past_kv,
+                    use_cache=True,
+                    latent_indexes=torch.arange(0, 0, device=device),
+                    action_indexes=torch.arange(0, n_act, device=device),
+                    tactile_indexes=torch.arange(0, 0, device=device),
+                )
+
+            hidden = outputs.last_hidden_state
+            v_act  = self.final_layer(hidden[:, -n_chunk:, :])
+            x_t    = x_t + dt * v_act
+            time   = time + dt
+            past_kv = outputs.past_key_values
+
+        # `time` is now τ_split.  Refresh KV with the partially-denoised state
+        # at τ_split so the tactile expert attends to a coherent action context.
+        if refresh_clean_kv and past_kv is not None:
+            past_kv.crop(-n_act)
+            split_timesteps = self.t_embedder(
+                time.expand(B)
+            ).unsqueeze(1)
+            split_actions = self.x_embedder(x_t)
+            clean_parts = [fast_embeds]
+            if n_state > 0:
+                clean_parts.append(state_embeds)
+            clean_parts += [split_timesteps, split_actions]
+            clean_seq = torch.cat(clean_parts, dim=1)
+            n_act_final = clean_seq.shape[1]
+            extended_pos = self.model._extend_position_ids(position_ids, n_act_final, 0)
+            act_pos_final = extended_pos[..., -n_act_final:]
+            _ = self.model(
+                inputs_embeds=clean_seq,
+                position_ids=act_pos_final,
+                past_key_values=past_kv,
+                use_cache=True,
+                latent_indexes=torch.arange(0, 0, device=device),
+                action_indexes=torch.arange(0, n_act_final, device=device),
+                tactile_indexes=torch.arange(0, 0, device=device),
+            )
+            n_action_in_cache = n_act_final
+        else:
+            n_action_in_cache = n_act
+
+        tau_split = float(time.item())
+        return x_t, past_kv, n_action_in_cache, tau_split
+
+    @torch.no_grad()
+    def tactile_flow_continue(
+        self,
+        cached_kv,
+        latent_position_ids: torch.Tensor,
+        n_action_in_cache: int,
+        x_split: torch.Tensor,                  # [B, n_chunk, action_dim] at τ=τ_split
+        tau_split: float,
+        tactile_f6: Optional[torch.Tensor] = None,
+        tactile_deform: Optional[torch.Tensor] = None,
+        tactile_codes: Optional[torch.Tensor] = None,
+        num_steps_total: int = 10,
+        split_step: int = 6,
+    ) -> torch.Tensor:
+        """Cascaded fast-tick: continue the flow from x_split at τ=tau_split
+        down to τ=0 using the tactile expert.  Returns the final clean action
+        chunk (NOT a residual — the tactile expert here is a velocity predictor
+        for the action distribution itself, restricted to τ ∈ [0, τ_split]).
+
+        `cached_kv` is cloned so multiple fast ticks within one chunk window
+        each start from the same slow-tick snapshot.
+        """
+        cache = self._clone_dynamic_cache(cached_kv)
+        device = x_split.device
+        dtype  = torch.bfloat16
+        B      = x_split.shape[0]
+        n_chunk, action_dim = x_split.shape[1], x_split.shape[2]
+
+        tac_obs = self._embed_tactile_observations(
+            tactile_f6, tactile_deform, device, dtype,
+            tactile_codes=tactile_codes)
+        n_obs = tac_obs.shape[1]
+        n_tac_seq = n_obs + 1 + n_chunk
+
+        extended_pos = self.model._extend_position_ids(
+            latent_position_ids, n_action_in_cache, n_tac_seq)
+        tac_pos = extended_pos[..., -n_tac_seq:]
+
+        # Same dt as the action expert used in the slow tick — the cascaded
+        # trajectory's integration step matches what a monolithic 10-step flow
+        # would use.  `remaining` steps complete the integration.
+        dt   = torch.tensor(-1.0 / num_steps_total, dtype=dtype, device=device)
+        time = torch.tensor(tau_split, dtype=dtype, device=device)
+        remaining = num_steps_total - split_step
+        x = x_split.to(dtype)
+
+        for step in range(remaining):
+            tau_emb = self.t_embedder(time.expand(B)).unsqueeze(1)
+            x_emb   = self.x_embedder(x)
+            full_embeds = torch.cat([tac_obs, tau_emb, x_emb], dim=1)
+            if step > 0:
+                cache.crop(-n_tac_seq)
+            outputs = self.model(
+                inputs_embeds=full_embeds,
+                position_ids=tac_pos,
+                past_key_values=cache,
+                use_cache=True,
+                latent_indexes=torch.arange(0, 0, device=device),
+                action_indexes=torch.arange(0, 0, device=device),
+                tactile_indexes=torch.arange(0, n_tac_seq, device=device),
+            )
+            hidden = outputs.last_hidden_state
+            v = self.final_layer_tactile(hidden[:, -n_chunk:, :])
+            x    = x + dt * v
+            time = time + dt
+
+        return x
+
+    def tactile_flow_train_step(
+        self,
+        cached_kv,
+        latent_position_ids: torch.Tensor,
+        n_action_in_cache: int,
+        x_tau: torch.Tensor,                    # [B, n_chunk, action_dim], full action state
+        tau: torch.Tensor,                      # [B] flow times in [0, tau_split]
+        tactile_f6: Optional[torch.Tensor] = None,
+        tactile_deform: Optional[torch.Tensor] = None,
+        tactile_codes: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """Single tactile-only forward at (x_τ, τ) for cascaded training.
+
+        Returns predicted velocity v_pred [B, n_chunk, action_dim] suitable for
+        L_flow_tactile = MSE(v_pred, ε − A_demo).  Same target as the action
+        expert's L_flow loss — both experts are trained as velocity predictors
+        for the same flow trajectory, just on disjoint τ ranges.
+        """
+        device = x_tau.device
+        dtype  = torch.bfloat16
+        B      = x_tau.shape[0]
+        n_chunk = x_tau.shape[1]
+
+        tac_obs = self._embed_tactile_observations(
+            tactile_f6, tactile_deform, device, dtype,
+            tactile_codes=tactile_codes)
+        n_obs = tac_obs.shape[1]
+
+        tau_emb = self.t_embedder(tau.to(dtype)).unsqueeze(1)            # [B, 1, H]
+        x_emb   = self.x_embedder(x_tau.to(dtype))                       # [B, n_chunk, H]
+        full_embeds = torch.cat([tac_obs, tau_emb, x_emb], dim=1)
+        n_tac_seq = full_embeds.shape[1]
+
+        extended_pos = self.model._extend_position_ids(
+            latent_position_ids, n_action_in_cache, n_tac_seq)
+        tac_pos = extended_pos[..., -n_tac_seq:]
+
+        outputs = self.model(
+            inputs_embeds=full_embeds,
+            position_ids=tac_pos,
+            past_key_values=cached_kv,
+            use_cache=True,
+            latent_indexes=torch.arange(0, 0, device=device),
+            action_indexes=torch.arange(0, 0, device=device),
+            tactile_indexes=torch.arange(0, n_tac_seq, device=device),
+        )
+        hidden = outputs.last_hidden_state
+        v_pred = self.final_layer_tactile(hidden[:, -n_chunk:, :])
+        return v_pred
+
     def named_parameters(self, *args, **kwargs):
         return super().named_parameters(*args, **kwargs)
 

@@ -20,7 +20,7 @@ export PYTHONPATH=${PARENT_DIR}:${PYTHONPATH}
 
 export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
 
-INPUT_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/wipe_plate_0427+0429_deltabase_axis_eef_lr_bimanual_crop_stride1_train.json"
+INPUT_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/remove_card_0413_deltabase_axis_eef_lr_bimanual_crop_stride1_train.json"
 VQVAE_CKPT="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_finger_0507_0939/latest.pt"
 
 # Default output: alongside input with _vqvae_k<size> suffix derived from ckpt dir.

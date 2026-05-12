@@ -572,15 +572,17 @@ def run_validation(model, val_dataloader, accelerator, args,
             fe = fast_embeds if n_fast > 0 else None
             se = state_embeds if n_state > 0 else None
             ahat_noise = torch.randn_like(batch["noisy_actions"])
-            _, cached_kv, n_action_in_cache = (
-                raw_model.forward_flow_action_only(
+            # cached_kv at τ=tau_split (matches inference; see train branch).
+            _, cached_kv, n_action_in_cache, _ = (
+                raw_model.forward_flow_action_partial(
                     inputs_embeds=slow_embeds_ext,
                     position_ids=pos_ids,
                     noise=ahat_noise,
                     attention_mask=batch["attention_mask"],
                     state_embeds=se,
                     fast_embeds=fe,
-                    num_steps=args.action_flow_train_steps,
+                    num_steps_total=args.cascaded_total_steps,
+                    split_step=args.cascaded_split_step,
                     refresh_clean_kv=True,
                 ))
 
@@ -1006,25 +1008,26 @@ def train(args):
                 if has_any_tac:
                     fe = fast_embeds if n_fast > 0 else None
                     se = state_embeds if n_state > 0 else None
-                    # Use a no_grad action-flow rollout to obtain cached_kv that
-                    # the tactile expert will attend to.  We use the existing
-                    # forward_flow_action_only here (refresh_clean_kv at τ=0)
-                    # rather than forward_flow_action_partial to keep training
-                    # cost identical to the residual paradigm; this introduces
-                    # a mild train/test mismatch in cached_kv (training: τ=0,
-                    # inference: τ=tau_split) but the chunk content is similar
-                    # enough that it doesn't matter in practice.
+                    # cached_kv must summarize the action expert's state at
+                    # τ=τ_split (NOT τ=0) — that's exactly what the tactile
+                    # expert will attend to at inference.  Using
+                    # forward_flow_action_partial here makes the KV the tactile
+                    # head reads during training match what it reads during
+                    # inference.  (Using forward_flow_action_only with
+                    # refresh_clean_kv=True caches τ=0 keys, which is what the
+                    # tactile residual paradigm wants but NOT the cascaded one.)
                     ahat_noise = torch.randn_like(batch["noisy_actions"])
                     with torch.no_grad():
-                        _, cached_kv, n_action_in_cache = (
-                            raw_model.forward_flow_action_only(
+                        _, cached_kv, n_action_in_cache, _ = (
+                            raw_model.forward_flow_action_partial(
                                 inputs_embeds=slow_embeds_ext,
                                 position_ids=pos_ids,
                                 noise=ahat_noise,
                                 attention_mask=batch["attention_mask"],
                                 state_embeds=se,
                                 fast_embeds=fe,
-                                num_steps=args.action_flow_train_steps,
+                                num_steps_total=args.cascaded_total_steps,
+                                split_step=args.cascaded_split_step,
                                 refresh_clean_kv=True,
                             ))
 

@@ -268,8 +268,39 @@ class MidtrainTacFlareDataset(Dataset):
             self.tacf6_min = np.min(np.stack(all_tacf6_q01), axis=0)
             self.tacf6_max = np.max(np.stack(all_tacf6_q99), axis=0)
         else:
-            self.tacf6_min = np.full(60, -1.0, dtype=np.float32)
-            self.tacf6_max = np.full(60, +1.0, dtype=np.float32)
+            # Fallback: pull tactile_f6 q01/q99 from a VQ-VAE checkpoint when
+            # the source manifests don't include them.  Without this, the
+            # default [-1, 1] range would clip real F6 values (which reach
+            # ±20+) and the tactile expert would only see a near-binary
+            # contact / no-contact signal.
+            stats_loaded = False
+            ckpt_path = (getattr(config, "tactile_f6_stats_ckpt", "")
+                         or getattr(config, "vqvae_ckpt", ""))
+            if ckpt_path and os.path.isfile(ckpt_path):
+                try:
+                    import torch as _torch
+                    blob = _torch.load(ckpt_path, map_location="cpu",
+                                       weights_only=False)
+                    if isinstance(blob, dict) and "stats" in blob:
+                        st = blob["stats"]
+                        self.tacf6_min = np.asarray(st["tacf6_min"], dtype=np.float32)
+                        self.tacf6_max = np.asarray(st["tacf6_max"], dtype=np.float32)
+                        stats_loaded = True
+                        accelerator.print(
+                            f"[Midtrain] tactile_f6 stats loaded from VQ-VAE "
+                            f"ckpt: {ckpt_path}")
+                except Exception as e:
+                    accelerator.print(
+                        f"[Midtrain] WARN: failed to load tactile_f6 stats "
+                        f"from {ckpt_path}: {e}")
+            if not stats_loaded:
+                self.tacf6_min = np.full(60, -1.0, dtype=np.float32)
+                self.tacf6_max = np.full(60, +1.0, dtype=np.float32)
+                accelerator.print(
+                    "[Midtrain] WARN: no tactile_f6 stats in manifests AND no "
+                    "VQ-VAE ckpt provided — using default [-1, 1] which WILL "
+                    "saturate real F6 values.  Pass --tactile_f6_stats_ckpt "
+                    "or --vqvae_ckpt with a checkpoint that has stats baked in.")
 
         te_dim = (config.action_dim // 31) * 28
         if all_te_mean:
@@ -415,6 +446,27 @@ class MidtrainTacFlareDataset(Dataset):
                     }
             except Exception:
                 pass
+
+        # tactile_f6 fallback: newer in-lab data layout stores tactile in
+        # raw.h5 as separate per-hand keys (left_hand_tactile_f6 [N,5,6] +
+        # right_hand_tactile_f6 [N,5,6]) rather than as a concatenated
+        # tactile_f6 [N,10,6] in pretrain.hdf5.  If we didn't get it from
+        # pretrain.hdf5, build it from raw.h5 here — otherwise the trainer
+        # silently runs with all-zero tactile_f6.
+        if (self._cache_h5 is not None
+                and self._cache_h5.get("tactile_f6") is None):
+            rh5_for_f6 = os.path.join(ep_dir, "raw.h5")
+            if os.path.isfile(rh5_for_f6):
+                try:
+                    with h5py.File(rh5_for_f6, "r") as f:
+                        if ("left_hand_tactile_f6" in f
+                                and "right_hand_tactile_f6" in f):
+                            l = f["left_hand_tactile_f6"][:]    # [N, 5, 6]
+                            r = f["right_hand_tactile_f6"][:]
+                            self._cache_h5["tactile_f6"] = np.concatenate(
+                                [l, r], axis=1).astype(np.float32, copy=False)
+                except Exception:
+                    pass
 
         # tactile_codes from a sibling HDF5 produced by tactile_vqvae.extract_codes
         # — only load when the model actually uses them.
@@ -943,15 +995,17 @@ def run_validation(model, val_dataloader, accelerator, args,
             fe = fast_embeds if n_fast > 0 else None
             se = state_embeds if n_state > 0 else None
             ahat_noise = torch.randn_like(batch["noisy_actions"])
-            _, cached_kv, n_action_in_cache = (
-                raw_model.forward_flow_action_only(
+            # cached_kv at τ=tau_split (matches inference; see train branch).
+            _, cached_kv, n_action_in_cache, _ = (
+                raw_model.forward_flow_action_partial(
                     inputs_embeds=slow_embeds_ext,
                     position_ids=pos_ids,
                     noise=ahat_noise,
                     attention_mask=batch["attention_mask"],
                     state_embeds=se,
                     fast_embeds=fe,
-                    num_steps=args.action_flow_train_steps,
+                    num_steps_total=args.cascaded_total_steps,
+                    split_step=args.cascaded_split_step,
                     refresh_clean_kv=True,
                 ))
             norm_actions_gt = batch["norm_actions"].to(slow_embeds.dtype)
@@ -1428,16 +1482,21 @@ def train(args):
                     fe = fast_embeds if n_fast > 0 else None
                     se = state_embeds if n_state > 0 else None
                     ahat_noise = torch.randn_like(batch["noisy_actions"])
+                    # cached_kv at τ=tau_split (must match inference; using
+                    # forward_flow_action_only with refresh@τ=0 would create a
+                    # train/inference KV mismatch that produces imprecise
+                    # motion at deployment).
                     with torch.no_grad():
-                        _, cached_kv, n_action_in_cache = (
-                            raw_model.forward_flow_action_only(
+                        _, cached_kv, n_action_in_cache, _ = (
+                            raw_model.forward_flow_action_partial(
                                 inputs_embeds=slow_embeds_ext,
                                 position_ids=pos_ids,
                                 noise=ahat_noise,
                                 attention_mask=batch["attention_mask"],
                                 state_embeds=se,
                                 fast_embeds=fe,
-                                num_steps=args.action_flow_train_steps,
+                                num_steps_total=args.cascaded_total_steps,
+                                split_step=args.cascaded_split_step,
                                 refresh_clean_kv=True,
                             ))
 
@@ -1886,6 +1945,17 @@ if __name__ == "__main__":
     parser.add_argument("--n_fingers", type=int, default=5,
                         help="Number of fingers per hand (used for the finger-"
                              "mode fallback length).")
+    parser.add_argument("--vqvae_ckpt", type=str, default="",
+                        help="Path to a TactileVQVAE checkpoint (latest.pt).  "
+                             "When provided AND the data manifests don't "
+                             "include tactile_f6 q01/q99 statistics, the "
+                             "trainer loads tactile_f6 min/max from the "
+                             "checkpoint's baked-in stats.  Avoids the silent "
+                             "[-1, 1] saturation fallback.")
+    parser.add_argument("--tactile_f6_stats_ckpt", type=str, default="",
+                        help="Alias for --vqvae_ckpt purely for naming "
+                             "clarity when you want to reuse the stats "
+                             "without enabling tactile_codes.")
 
     # Flare
     parser.add_argument("--use_flare", type=int, default=1, help="Enable flare visual prediction for latent expert.")

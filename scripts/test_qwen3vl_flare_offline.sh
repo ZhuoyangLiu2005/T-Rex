@@ -16,7 +16,7 @@ export CUDA_VISIBLE_DEVICES=0
 # ACTION_CHUNK=16
 
 # --- Dual-arm: remove_card (bimanual, 2 wrist cameras: right + left) ---
-MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mot_expert/qwen3vl_2b_mot[3]_pretrain[mecka0507]_midtrain[none]_task[remove_card_0412+0413+0501]_traj[130]_view[3]_tac[force+deform]_state[wo]_stride[1]_flare[tpf4step8stride4]_vae[64]_0507/checkpoint-149-47550"
+MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mot_expert/qwen3vl_2b_mot[3]_pretrain[mecka0507]_midtrain[none]_task[remove_card_0412+0413+0501]_traj[130]_view[3]_tac[force+deform]_state[wo]_stride[1]_flare[tpf4step8stride4]_vae[64]_cascaded_0511/checkpoint-99-31700"
 # DATA_JSON is the *VQ-VAE encoded* JSON; tactile_codes length matches the
 # checkpoint that produced it (2 for per-hand, 10 for per-finger).
 DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/remove_card_0412+0413+0501_deltabase_axis_eef_lr_bimanual_crop_stride1_train_vqvae_k64.json"

@@ -25,7 +25,7 @@ import subprocess
 import signal
 import sys
 
-SCRIPT_DIR = "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_qwen/scripts"
+SCRIPT_DIR = "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/scripts"
 
 TRAIN_SCRIPTS = {
     "egodex":       f"{SCRIPT_DIR}/pretrain_egodex.sh",
@@ -251,11 +251,16 @@ def launch_on_nodes(ips, train_script, py_script, num_nodes=None,
     # Environment overrides passed to each node's script.
     # NCCL_SOCKET_IFNAME is set here to override the hardcoded eth0 in the
     # training scripts, preventing gradient corruption from wrong interface.
+    #
+    # SKIP_PREP=1 is forwarded when --skip_data_prep is set so the in-script
+    # prep block (which iterates raw.h5 across ~all episodes) also bypasses,
+    # not just the launcher's one-time pre-launch prep call.
     env_exports = (
         f"export MASTER_ADDR={master_addr}; "
         f"export MASTER_PORT={MASTER_PORT}; "
         f"export NUM_MACHINES={num_machines}; "
         f"export NCCL_SOCKET_IFNAME={nccl_ifname}; "
+        f"export SKIP_PREP={1 if skip_data_prep else 0}; "
         f"{extra_env}"
     )
 

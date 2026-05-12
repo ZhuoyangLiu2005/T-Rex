@@ -141,17 +141,37 @@ def _process_episode(
     if (not overwrite) and os.path.isfile(out_path):
         return f"skip   {ep_dir}"
 
+    # Try two data layouts:
+    #   (A) pretrain.hdf5 has tactile_f6 [N, 10, 6]  (legacy mecka 100h)
+    #   (B) raw.h5  has left_hand_tactile_f6 [N, 5, 6] + right_hand_tactile_f6
+    #       (newer inlab data; raw.h5 is a renamed symlink of episode_<id>.h5)
+    f6 = None
     ph5 = os.path.join(ep_dir, "pretrain.hdf5")
-    if not os.path.isfile(ph5):
-        return f"miss   {ep_dir}  (no pretrain.hdf5)"
+    if os.path.isfile(ph5):
+        try:
+            with h5py.File(ph5, "r") as f:
+                if "tactile_f6" in f:
+                    f6 = f["tactile_f6"][:].astype(np.float32, copy=False)
+        except Exception as e:
+            return f"err    {ep_dir}  (pretrain.hdf5: {e})"
 
-    try:
-        with h5py.File(ph5, "r") as f:
-            if "tactile_f6" not in f:
-                return f"miss   {ep_dir}  (no tactile_f6)"
-            f6 = f["tactile_f6"][:].astype(np.float32, copy=False)   # [N, 10, 6]
-    except Exception as e:
-        return f"err    {ep_dir}  ({e})"
+    if f6 is None:
+        rh5 = os.path.join(ep_dir, "raw.h5")
+        if not os.path.isfile(rh5):
+            return f"miss   {ep_dir}  (no tactile_f6 in pretrain.hdf5, no raw.h5)"
+        try:
+            with h5py.File(rh5, "r") as f:
+                has_l = "left_hand_tactile_f6" in f
+                has_r = "right_hand_tactile_f6" in f
+                if not (has_l and has_r):
+                    return f"miss   {ep_dir}  (raw.h5 missing left/right tactile_f6)"
+                l = f["left_hand_tactile_f6"][:].astype(np.float32, copy=False)
+                r = f["right_hand_tactile_f6"][:].astype(np.float32, copy=False)
+                # Each is [N, 5, 6]; concatenate fingers → [N, 10, 6] in the
+                # canonical (left first, then right) order used by the trainer.
+                f6 = np.concatenate([l, r], axis=1)
+        except Exception as e:
+            return f"err    {ep_dir}  (raw.h5: {e})"
 
     n = f6.shape[0]
     if n == 0:

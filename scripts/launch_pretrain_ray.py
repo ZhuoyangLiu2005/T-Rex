@@ -25,7 +25,7 @@ import subprocess
 import signal
 import sys
 
-SCRIPT_DIR = "/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/scripts"
+SCRIPT_DIR = "/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/code/dex_mot_expert/scripts"
 
 TRAIN_SCRIPTS = {
     "egodex":       f"{SCRIPT_DIR}/pretrain_egodex.sh",

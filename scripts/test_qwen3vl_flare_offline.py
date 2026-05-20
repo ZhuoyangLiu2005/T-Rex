@@ -1,10 +1,12 @@
 """
 Offline test + ZeroMQ inference server for the Qwen3-VL MoT VLA model
-with flare visual prediction tokens.
+with cascaded flow matching and flare visual prediction tokens.
 
-Identical to test_qwen3vl_offline.py except:
-  - Builds the model with n_flare_tokens_per_frame * n_flare_steps (auto-detected from training_args.json)
-  - Appends flare_queries to slow_embeds before calling forward_flow
+Identical to the earlier offline test except:
+  - Builds the model with n_flare_tokens_per_frame * n_flare_steps
+    (auto-detected from training_args.json)
+  - Appends flare_queries to slow_embeds before integrating the cascaded
+    action/tactile flow
   - Extends position_ids by total flare tokens
 """
 
@@ -285,9 +287,9 @@ def model_load(args):
                              ("n_flare_tokens_per_frame", 0),
                              ("n_flare_steps", 0),
                              ("flare_layer_index", -1),
+                             ("flare_frame_stride", 2),
                              ("use_tactile_code", 0),
                              ("vqvae_codebook_size", 64),
-                             ("paradigm", "residual"),
                              ("cascaded_total_steps", 10),
                              ("cascaded_split_step", 6)]:
             saved = ta.get(key, default)
@@ -407,13 +409,16 @@ def model_predict(
 
     Returns
     -------
-    actions : list[np.ndarray]   denormalized refined chunk (legacy default).
+    actions : list[np.ndarray]   denormalized action chunk (the tactile
+                                 expert's integrated output).
     (actions, info) : tuple      when `return_info=True`.  `info` is a dict
                                   with denormalized arrays:
-        a_hat   : [T, action_dim]   action-expert-only base chunk (Paradigm C);
-                                    None when use_tactile_refine_flow is off
-                                    or no tactile was supplied.
-        samples : [T, action_dim]   final returned chunk (= a_hat + Δa for C).
+        a_hat   : [T, action_dim]   tactile-free baseline (the action
+                                    expert's intermediate x_split,
+                                    denormalized — useful for smoothness
+                                    comparisons).
+        samples : [T, action_dim]   final returned chunk (= tactile-expert
+                                    flow continuation from x_split).
         delta_a : [T, action_dim]   samples − a_hat in *denormalized* units.
     """
     device = f"cuda:{args.cuda}"
@@ -521,119 +526,76 @@ def model_predict(
         # ── Flow-matching denoising ──────────────────────────────────────
         noise = torch.randn(1, args.action_chunk, args.action_dim,
                             dtype=torch.bfloat16, device=device)
+        total_steps = getattr(args, "cascaded_total_steps", 10)
+        split_step  = getattr(args, "cascaded_split_step", 6)
+        disable_tactile = bool(getattr(args, "disable_tactile", 0))
 
-        a_hat_denorm = None        # set only in Paradigm C / cascaded
-        paradigm = getattr(args, "paradigm", "residual")
-        if paradigm == "cascaded":
-            # Cascaded: action expert flows for split_step iters → x_split,
-            # tactile expert continues to τ=0 → final clean action.
-            total_steps = getattr(args, "cascaded_total_steps", 10)
-            split_step  = getattr(args, "cascaded_split_step", 6)
-            x_split, cached_kv, n_action_in_cache, tau_split = (
-                model.forward_flow_action_partial(
-                    inputs_embeds=slow_embeds,
-                    position_ids=position_ids,
-                    attention_mask=attention_mask,
-                    noise=noise,
-                    state_embeds=state_embeds,
-                    fast_embeds=fast_embeds,
-                    num_steps_total=total_steps,
-                    split_step=split_step,
-                    refresh_clean_kv=True,
-                ))
-            # Diagnostic baseline: action expert running standalone for the
-            # full 10 Euler steps (no tactile).  Used by the smoothness eval
-            # to compare "with-tactile" vs "without-tactile" trajectories.
-            ahat_full, _, _ = model.forward_flow_action_only(
-                inputs_embeds   = slow_embeds,
-                position_ids    = position_ids,
-                attention_mask  = attention_mask,
-                noise           = noise,
-                state_embeds    = state_embeds,
-                fast_embeds     = fast_embeds,
-                num_steps       = total_steps,
-                refresh_clean_kv= False,
+        if disable_tactile:
+            # Ablation: action expert integrates the full τ ∈ [0, 1] flow.
+            # No tactile expert is invoked; a_hat == samples.
+            samples = model.forward_flow_action_full(
+                inputs_embeds=slow_embeds,
+                position_ids=position_ids,
+                attention_mask=attention_mask,
+                noise=noise,
+                state_embeds=state_embeds,
+                fast_embeds=fast_embeds,
+                num_steps=total_steps,
             )
             a_hat_denorm = _denormalize(
-                ahat_full[0].float().cpu().numpy(),
+                samples[0].float().cpu().numpy(),
                 statistic["action_mask"],
                 statistic["action_min"], statistic["action_max"])
+            norm_actions = samples[0].float().cpu().numpy()
+            actions = a_hat_denorm
+            if return_info:
+                info = {
+                    "a_hat":   a_hat_denorm,
+                    "samples": np.asarray(actions),
+                    "delta_a": None,
+                }
+                return list(actions), info
+            return list(actions)
 
-            tac_codes_tensor = None
-            if (getattr(args, "use_tactile_code", 0)
-                    and tactile_codes_input is not None):
-                tac_codes_tensor = torch.tensor(
-                    np.asarray(tactile_codes_input, dtype=np.int64),
-                    dtype=torch.long, device=device).reshape(1, -1)
-            samples = model.tactile_flow_continue(
-                cached_kv=cached_kv,
-                latent_position_ids=position_ids,
-                n_action_in_cache=n_action_in_cache,
-                x_split=x_split,
-                tau_split=tau_split,
-                tactile_f6=tac_f6_tensor,
-                tactile_deform=tac_deform_tensor,
-                tactile_codes=tac_codes_tensor,
+        # Cascaded: action expert flows for split_step iters → x_split,
+        # tactile expert continues to τ=0 → final clean action.
+        x_split, cached_kv, n_action_in_cache, tau_split = (
+            model.forward_flow_action_partial(
+                inputs_embeds=slow_embeds,
+                position_ids=position_ids,
+                attention_mask=attention_mask,
+                noise=noise,
+                state_embeds=state_embeds,
+                fast_embeds=fast_embeds,
                 num_steps_total=total_steps,
                 split_step=split_step,
-            )
-        elif getattr(args, "use_tactile_refine_flow", 0):
-            # Paradigm C: action-only slow flow → Â, then tactile residual flow → Δa
-            a_hat, cached_kv, n_action_in_cache = model.forward_flow_action_only(
-                inputs_embeds   = slow_embeds,
-                position_ids    = position_ids,
-                attention_mask  = attention_mask,
-                noise           = noise,
-                state_embeds    = state_embeds,
-                fast_embeds     = fast_embeds,
-                num_steps       = getattr(args, "action_flow_eval_steps", 10),
-                refresh_clean_kv= True,
-            )
-            # Capture base Â (denormalized) for smoothness diagnostics.
-            a_hat_denorm = _denormalize(
-                a_hat[0].float().cpu().numpy(),
-                statistic["action_mask"],
-                statistic["action_min"], statistic["action_max"])
+                refresh_clean_kv=True,
+            ))
+        # Tactile-free baseline for the metrics: the action expert's
+        # intermediate state x_split, denormalized.
+        a_hat_denorm = _denormalize(
+            x_split[0].float().cpu().numpy(),
+            statistic["action_mask"],
+            statistic["action_min"], statistic["action_max"])
 
-            if (tac_f6_tensor is not None) or (tac_deform_tensor is not None):
-                tac_codes_tensor = None
-                if (getattr(args, "use_tactile_code", 0)
-                        and tactile_codes_input is not None):
-                    tac_codes_tensor = torch.tensor(
-                        np.asarray(tactile_codes_input, dtype=np.int64),
-                        dtype=torch.long, device=device).reshape(1, -1)
-                init_noise = None
-                if bool(getattr(args, "tactile_zero_init_noise", 0)):
-                    init_noise = torch.zeros(
-                        1, args.action_chunk, args.action_dim,
-                        dtype=torch.bfloat16, device=device)
-                delta_a = model.tactile_residual_flow(
-                    cached_kv          = cached_kv,
-                    latent_position_ids= position_ids,
-                    n_action_in_cache  = n_action_in_cache,
-                    base_chunk         = a_hat,
-                    tactile_f6         = tac_f6_tensor,
-                    tactile_deform     = tac_deform_tensor,
-                    num_steps          = getattr(args, "tactile_refine_flow_steps", 4),
-                    noise_scale        = getattr(args, "tactile_refine_noise_scale", 0.1),
-                    tactile_codes      = tac_codes_tensor,
-                    initial_noise      = init_noise,
-                )
-                samples = a_hat + delta_a
-            else:
-                samples = a_hat
-        else:
-            samples = model.forward_flow(
-                inputs_embeds  = slow_embeds,
-                position_ids   = position_ids,
-                attention_mask = attention_mask,
-                noise          = noise,
-                num_steps      = 10,
-                state_embeds   = state_embeds,
-                tactile_f6     = tac_f6_tensor,
-                tactile_deform = tac_deform_tensor,
-                fast_embeds    = fast_embeds,
-            )
+        tac_codes_tensor = None
+        if (getattr(args, "use_tactile_code", 0)
+                and tactile_codes_input is not None):
+            tac_codes_tensor = torch.tensor(
+                np.asarray(tactile_codes_input, dtype=np.int64),
+                dtype=torch.long, device=device).reshape(1, -1)
+        samples = model.tactile_flow_continue(
+            cached_kv=cached_kv,
+            latent_position_ids=position_ids,
+            n_action_in_cache=n_action_in_cache,
+            x_split=x_split,
+            tau_split=tau_split,
+            tactile_f6=tac_f6_tensor,
+            tactile_deform=tac_deform_tensor,
+            tactile_codes=tac_codes_tensor,
+            num_steps_total=total_steps,
+            split_step=split_step,
+        )
 
         norm_actions = samples[0].float().cpu().numpy()
         actions = _denormalize(
@@ -657,7 +619,7 @@ def model_predict_multi_fast(
     state_fast,
     tactile_inputs_per_tick,    # list of dict(f6, deform, codes); one per fast tick
 ):
-    """Simulate the Paradigm C async loop: 1 slow tick + N fast ticks.
+    """Simulate the cascaded async loop: 1 slow tick + N fast ticks.
 
     All N fast ticks reuse the same `cached_kv` from the slow tick — this is
     what the real-world server does inside one chunk window.  The visual
@@ -666,11 +628,12 @@ def model_predict_multi_fast(
     Returns
     -------
     a_hat_denorm : np.ndarray  [T, action_dim]
-        Action-expert-only chunk Â (denormalized).
+        Tactile-free baseline (x_split denormalized).
     refined_per_tick : list[np.ndarray]  N entries of [T, action_dim]
-        A_refined_k = Â + Δa_k for each tick (denormalized).
+        Final action chunk for each tick (denormalized), produced by the
+        tactile expert continuing the flow from x_split to τ=0.
     delta_a_per_tick : list[np.ndarray]  N entries of [T, action_dim]
-        Δa_k in *denormalized* units (= refined_k − a_hat).
+        refined_k − a_hat in *denormalized* units (tactile-driven correction).
     """
     device = f"cuda:{args.cuda}"
     model = model.to(device).eval()
@@ -742,49 +705,46 @@ def model_predict_multi_fast(
         # ── Slow tick (run once) ─────────────────────────────────────────
         noise = torch.randn(1, args.action_chunk, args.action_dim,
                             dtype=torch.bfloat16, device=device)
+        total_steps = getattr(args, "cascaded_total_steps", 10)
+        split_step  = getattr(args, "cascaded_split_step", 6)
+        disable_tactile = bool(getattr(args, "disable_tactile", 0))
 
-        paradigm = getattr(args, "paradigm", "residual")
-        if paradigm == "cascaded":
-            total_steps = getattr(args, "cascaded_total_steps", 10)
-            split_step  = getattr(args, "cascaded_split_step", 6)
-            x_split, cached_kv, n_action_in_cache, tau_split = (
-                model.forward_flow_action_partial(
-                    inputs_embeds=slow_embeds, position_ids=position_ids,
-                    attention_mask=attention_mask, noise=noise,
-                    state_embeds=state_embeds, fast_embeds=fast_embeds,
-                    num_steps_total=total_steps, split_step=split_step,
-                    refresh_clean_kv=True,
-                ))
-            # "a_hat" baseline for the metrics: action expert running
-            # standalone for all 10 steps without tactile.
-            ahat_full, _, _ = model.forward_flow_action_only(
-                inputs_embeds   = slow_embeds, position_ids = position_ids,
-                attention_mask  = attention_mask, noise = noise,
-                state_embeds    = state_embeds, fast_embeds = fast_embeds,
-                num_steps = total_steps, refresh_clean_kv = False,
+        if disable_tactile:
+            # Ablation: action-expert-only.  Run the full flow once and
+            # replay the same chunk across every fast tick.
+            full_chunk = model.forward_flow_action_full(
+                inputs_embeds=slow_embeds, position_ids=position_ids,
+                attention_mask=attention_mask, noise=noise,
+                state_embeds=state_embeds, fast_embeds=fast_embeds,
+                num_steps=total_steps,
             )
             a_hat_denorm = _denormalize(
-                ahat_full[0].float().cpu().numpy(),
+                full_chunk[0].float().cpu().numpy(),
                 statistic["action_mask"],
                 statistic["action_min"], statistic["action_max"])
-        else:
-            a_hat, cached_kv, n_action_in_cache = model.forward_flow_action_only(
-                inputs_embeds   = slow_embeds,
-                position_ids    = position_ids,
-                attention_mask  = attention_mask,
-                noise           = noise,
-                state_embeds    = state_embeds,
-                fast_embeds     = fast_embeds,
-                num_steps       = getattr(args, "action_flow_eval_steps", 10),
-                refresh_clean_kv= True,
-            )
-            a_hat_norm = a_hat[0].float().cpu().numpy()
-            a_hat_denorm = _denormalize(
-                a_hat_norm, statistic["action_mask"],
-                statistic["action_min"], statistic["action_max"])
+            refined_per_tick = [a_hat_denorm.copy()
+                                for _ in tactile_inputs_per_tick]
+            delta_a_per_tick = [np.zeros_like(a_hat_denorm)
+                                for _ in tactile_inputs_per_tick]
+            return a_hat_denorm, refined_per_tick, delta_a_per_tick
 
-        # ── N fast ticks (reuse cached_kv; both residual and cascaded paths
-        #    clone the cache internally so we can call repeatedly) ─────────
+        x_split, cached_kv, n_action_in_cache, tau_split = (
+            model.forward_flow_action_partial(
+                inputs_embeds=slow_embeds, position_ids=position_ids,
+                attention_mask=attention_mask, noise=noise,
+                state_embeds=state_embeds, fast_embeds=fast_embeds,
+                num_steps_total=total_steps, split_step=split_step,
+                refresh_clean_kv=True,
+            ))
+        # Tactile-free baseline for the metrics: the action expert's
+        # intermediate state x_split, denormalized.
+        a_hat_denorm = _denormalize(
+            x_split[0].float().cpu().numpy(),
+            statistic["action_mask"],
+            statistic["action_min"], statistic["action_max"])
+
+        # ── N fast ticks (reuse cached_kv; tactile_flow_continue clones
+        #    the cache internally so we can call repeatedly) ──────────────
         refined_per_tick: list = []
         delta_a_per_tick: list = []
         for tac in tactile_inputs_per_tick:
@@ -801,39 +761,19 @@ def model_predict_multi_fast(
                     np.asarray(tac["codes"], dtype=np.int64),
                     dtype=torch.long, device=device).reshape(1, -1)
 
-            if paradigm == "cascaded":
-                refined_x = model.tactile_flow_continue(
-                    cached_kv=cached_kv,
-                    latent_position_ids=position_ids,
-                    n_action_in_cache=n_action_in_cache,
-                    x_split=x_split,
-                    tau_split=tau_split,
-                    tactile_f6=tac_f6_tensor,
-                    tactile_deform=tac_def_tensor,
-                    tactile_codes=tac_codes_tensor,
-                    num_steps_total=total_steps,
-                    split_step=split_step,
-                )
-                refined_norm = refined_x[0].float().cpu().numpy()
-            else:
-                init_noise = None
-                if bool(getattr(args, "tactile_zero_init_noise", 0)):
-                    init_noise = torch.zeros(
-                        1, args.action_chunk, args.action_dim,
-                        dtype=torch.bfloat16, device=device)
-                delta_a = model.tactile_residual_flow(
-                    cached_kv          = cached_kv,
-                    latent_position_ids= position_ids,
-                    n_action_in_cache  = n_action_in_cache,
-                    base_chunk         = a_hat,
-                    tactile_f6         = tac_f6_tensor,
-                    tactile_deform     = tac_def_tensor,
-                    num_steps          = getattr(args, "tactile_refine_flow_steps", 4),
-                    noise_scale        = getattr(args, "tactile_refine_noise_scale", 0.1),
-                    tactile_codes      = tac_codes_tensor,
-                    initial_noise      = init_noise,
-                )
-                refined_norm = (a_hat + delta_a)[0].float().cpu().numpy()
+            refined_x = model.tactile_flow_continue(
+                cached_kv=cached_kv,
+                latent_position_ids=position_ids,
+                n_action_in_cache=n_action_in_cache,
+                x_split=x_split,
+                tau_split=tau_split,
+                tactile_f6=tac_f6_tensor,
+                tactile_deform=tac_def_tensor,
+                tactile_codes=tac_codes_tensor,
+                num_steps_total=total_steps,
+                split_step=split_step,
+            )
+            refined_norm = refined_x[0].float().cpu().numpy()
 
             refined_denorm = _denormalize(
                 refined_norm, statistic["action_mask"],
@@ -1569,7 +1509,7 @@ if __name__ == "__main__":
     # revert.  When 1, samples must have `tactile_codes: [c_left, c_right]`.
     parser.add_argument("--use_tactile_code", type=int, default=0,
                         help="1: pass tactile_codes from JSON / payload into "
-                             "tactile_residual_flow.")
+                             "tactile_flow_continue.")
     parser.add_argument("--vqvae_codebook_size", type=int, default=64,
                         help="Codebook size of the VQ-VAE that produced tactile_codes.")
 
@@ -1581,7 +1521,7 @@ if __name__ == "__main__":
                         help="1: compute first/second/third-order action "
                              "diffs per chunk and write smoothness.json.")
 
-    # Async consistency — simulate the Paradigm C inference loop within a
+    # Async consistency — simulate the cascaded inference loop within a
     # single 16-step chunk: 1 slow tick + N fast ticks at refine_offsets,
     # measure splice jumps and inter-tick disagreement.
     parser.add_argument("--eval_async_consistency", type=int, default=0,
@@ -1592,29 +1532,17 @@ if __name__ == "__main__":
                         default=[0, 4, 8, 12],
                         help="Chunk-index offsets at which fast ticks fire — "
                              "must mirror eval_dexmot.py's REFINE_OFFSETS.")
-    parser.add_argument("--tactile_zero_init_noise", type=int, default=0,
-                        help="1: pass zeros as the τ=1 starting point of the "
-                             "tactile residual flow (deterministic).  "
-                             "0 (default): fresh randn × noise_scale each call.")
-    parser.add_argument("--paradigm", type=str, default="residual",
-                        choices=["residual", "cascaded"],
-                        help="residual: Paradigm C with Δa residual.  "
-                             "cascaded: action expert handles τ ∈ [τ_split, 1], "
-                             "tactile expert handles [0, τ_split] of the same "
-                             "flow, returning the final action directly.  "
-                             "Auto-detected from training_args.json when present.")
+
+    # Cascaded flow matching schedule (auto-detected from training_args.json).
     parser.add_argument("--cascaded_total_steps", type=int, default=10)
     parser.add_argument("--cascaded_split_step",  type=int, default=6)
 
-    # Paradigm C
-    parser.add_argument("--use_tactile_refine_flow", type=int, default=0,
-                        help="1: action-only slow flow + tactile residual flow refinement.")
-    parser.add_argument("--action_flow_eval_steps", type=int, default=10,
-                        help="Number of Euler steps for the slow action-only flow.")
-    parser.add_argument("--tactile_refine_flow_steps", type=int, default=4,
-                        help="Number of Euler steps for the tactile residual flow.")
-    parser.add_argument("--tactile_refine_noise_scale", type=float, default=0.1,
-                        help="Initial noise magnitude for the residual flow at τ=1.")
+    # Ablation: action-expert-only inference (no tactile expert ever invoked).
+    parser.add_argument("--disable_tactile", type=int, default=0,
+                        help="1: skip the cascaded split.  Action expert "
+                             "integrates the full τ ∈ [0, 1] flow alone; "
+                             "tactile expert is never called.  Used to ablate "
+                             "the tactile-expert contribution at test time.")
 
     args = parser.parse_args()
     main(args)

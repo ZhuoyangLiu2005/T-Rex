@@ -16,7 +16,7 @@ Usage:
     future_head = FuturePredictionHead(hidden_size=2048, n_future_tokens=8)
 
     # Training: append queries to slow_embeds, extract predictions, compute loss
-    # Inference: append queries to slow_embeds, pass to forward_flow as-is
+    # Inference: append queries to slow_embeds, pass to the cascaded flow as-is
 """
 
 import torch

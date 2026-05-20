@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e
 
-cd /mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/scripts
+cd /mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_final/scripts
 source /mnt/amlfs-01/home/dniu/anaconda3/bin/activate /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot
 export PATH=/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/bin:$PATH
 export HF_HOME=/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/huggingface
-export PYTHONPATH=/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert:$PYTHONPATH
+export PYTHONPATH=/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_final:$PYTHONPATH
 
 export CUDA_VISIBLE_DEVICES=0
 
@@ -40,15 +40,10 @@ python test_qwen3vl_flare_offline.py \
   --n_flare_steps 8 \
   --flare_frame_stride 4 \
   --image_size 384 288 \
-  --use_tactile_refine_flow 1 \
-  --action_flow_eval_steps 10 \
-  --tactile_refine_flow_steps 4 \
-  --tactile_refine_noise_scale 1.0 \
   --use_tactile_code 1 \
   --vqvae_codebook_size 64 \
   --eval_smoothness 1 \
   --eval_async_consistency 1 \
   --refine_offsets 0 4 8 12 \
-  --tactile_zero_init_noise 1 \
 
 

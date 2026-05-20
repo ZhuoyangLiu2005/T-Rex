@@ -111,12 +111,12 @@ MAX_STEPS = 10000
 INFERENCE_HZ = 5
 EXECUTE_FIRST_FEW_IN_CHUNK = 16  # Number of steps to execute from each predicted chunk before fetching a new action chunk
 
-# ── Async tactile refinement (Paradigm C, server-side use_tactile_refine_flow=1) ──
+# ── Async tactile refinement (cascaded slow/fast) ──
 # When True, the slow VLA call sends mode='slow_and_fast' so the server caches
-# its (latent + action) KV state.  Then at each REFINE_OFFSETS within the chunk
-# we send a small mode='fast' payload (tactile only, no images) and the server
-# replies with a refined chunk that we splice onto the remaining waypoints.
-# Set False to fall back to a single chunk-rate inference (legacy behavior).
+# its (latent + action) KV state at τ_split.  Then at each REFINE_OFFSETS
+# within the chunk we send a small mode='fast' payload (tactile only, no
+# images) and the server replies with a refined chunk that we splice onto
+# the remaining waypoints.  Set False for single chunk-rate inference.
 USE_TACTILE_REFINE = True
 REFINE_OFFSETS = (4, 8, 12)      # within-chunk action_idx values at which to refine
 
@@ -1259,9 +1259,10 @@ def main():
 
                 # 3. VLA Inference (slow tick — full payload).
                 # When USE_TACTILE_REFINE is on, mode='slow_and_fast' tells the
-                # server to (a) run forward_flow_action_only → cache KV, and
-                # (b) immediately run the first tactile residual refinement.
-                # Subsequent in-chunk refinements (steps 4/8/12) reuse that KV.
+                # server to (a) run forward_flow_action_partial → cache KV at
+                # τ_split, and (b) immediately run the first tactile_flow_continue
+                # to produce a clean action chunk.  Subsequent in-chunk fast
+                # ticks (steps 4/8/12) reuse that cached KV.
                 payload = {
                     "mode": "slow_and_fast" if USE_TACTILE_REFINE else "slow",
                     "task_description": "A pair of gray shorts lay on the tabletop. Grasping them from underneath with both hands, fold them upward; then, using your right hand to hold down the right side, use your left hand to grasp the left side and fold them upward a second time.",

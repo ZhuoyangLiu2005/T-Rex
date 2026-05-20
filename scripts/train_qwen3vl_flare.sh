@@ -1,33 +1,33 @@
 #!/bin/bash
 set -e
 
-cd /mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/scripts
+cd /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/code/dex_mot_final/scripts
 
-source /mnt/amlfs-01/home/dniu/anaconda3/bin/activate /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot
-export PATH=/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/bin:$PATH
+source /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/code/miniconda3/bin/activate /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/code/miniconda3/envs/dex_mot
+export PATH=/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/code/miniconda3/envs/dex_mot/bin:$PATH
 export HF_HOME=/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/huggingface
-export PYTHONPATH=/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert:$PYTHONPATH
+export PYTHONPATH=/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/code/dex_mot_final:$PYTHONPATH
 
 export WANDB_MODE=online
 export WANDB_API_KEY=5bdc90c568050775a6d10650e64857fbbc76742e
 export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 
 ORIGIN_MODEL_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/Qwen3-VL-2B-Instruct"
-OUTPUT_ROOT_DIR="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp"
+OUTPUT_ROOT_DIR="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/exp"
 # DATA_JSON should be the *VQ-VAE encoded* JSON.  The encoder script auto-
 # detects per-hand vs per-finger from the VQ-VAE checkpoint config:
 #   per-hand   ckpt → tactile_codes:  [c_left, c_right]                  (len 2)
 #   per-finger ckpt → tactile_codes:  [L_thumb..L_pinky, R_thumb..R_pinky] (len 10)
 # To switch, re-run utils/encode_vqvae_codes_to_json.sh with the finger ckpt.
 DATA_JSON="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json/remove_card_0413_deltabase_axis_eef_lr_bimanual_crop_stride1_train_vqvae_k64.json"
-DEFORM_ENCODER_PATH="/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/bi-mot/janus/DeformEncoder/ckpt/sharpa_wave_deform_encoder.pth"
+DEFORM_ENCODER_PATH="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/deform/sharpa_wave_deform_encoder.pth"
 
 EXPERIMENT_NAME="qwen3vl_mot_expert"
-RUN_NAME="qwen3vl_2b_mot[3]_pretrain[mecka0507]_midtrain[none]_task[remove_card_0413]_traj[100]_view[3]_tac[force+deform]_state[wo]_stride[1]_flare[tpf4step8stride4]_vae[64]_cascaded_$(date +%m%d)"
-RESUME_CHECKPOINT="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_qwen/exp/qwen3vl_mecka_pretrain_flare/qwen3vl_2b_mecka20k_pretrain_bimanual_62d_stage1_flare_0430/checkpoint-0-610000"
-RESUME_SOURCE="pretrain"
+RUN_NAME="qwen3vl_2b_mot[3]_pretrain[mecka0507]_midtrain[bkl+nv100_0517]_task[remove_card_0413]_traj[100]_view[3]_tac[force+deform]_state[wo]_stride[1]_flare[tpf4step8stride4]_vae[wo]_cascaded_$(date +%m%d)"
+RESUME_CHECKPOINT="/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/exp/qwen3vl_midtrain_flare/qwen3vl_2b_midtrain_mecka0507_state[wo]_bimanual_62d_tac[force+deform]_flare_cascaded_fix_0515/checkpoint-5-48978"
+RESUME_SOURCE="midtrain"
 
-MASTER_ADDR=${MASTER_ADDR:-10.244.138.21}
+MASTER_ADDR=${MASTER_ADDR:-10.244.38.30}
 MASTER_PORT=${MASTER_PORT:-29500}
 NUM_MACHINES=${NUM_MACHINES:-3}
 MACHINE_RANK=${MACHINE_RANK:-2}
@@ -67,14 +67,8 @@ accelerate launch \
     --tactile_intermediate_size 1536 \
     --training_stage 2 \
     --tactile_loss_weight 1.0 \
-    --use_tactile_refine_flow 1 \
-    --tactile_refine_loss_weight 1.0 \
-    --tactile_refine_noise_scale 0.1 \
-    --action_flow_train_steps 10 \
-    --tactile_residual_jitter 0.0 \
-    --use_tactile_code 1 \
+    --use_tactile_code 0 \
     --vqvae_codebook_size 64 \
-    --paradigm residual \
     --cascaded_total_steps 10 \
     --cascaded_split_step 6 \
     --cascaded_tactile_dropout 0.1 \

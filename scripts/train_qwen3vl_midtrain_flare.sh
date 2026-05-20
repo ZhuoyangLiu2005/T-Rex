@@ -1,9 +1,7 @@
 #!/bin/bash
-# Mid-training launcher for the dex_mot_expert Qwen3-VL VLA on the new in-lab
-# mecka mix (NV inlab + BKL play + BKL task).  Mirrors the working
-# dex_mot_qwen/scripts/train_qwen3vl_midtrain_flare.sh data layout but launches
-# the dex_mot_expert codebase (Paradigm C residual + optional cascaded + VQ-VAE
-# tactile-code conditioning).
+# Mid-training launcher for the Qwen3-VL VLA on the new in-lab mecka mix
+# (NV inlab + BKL play + BKL task).  Cascaded flow matching with VQ-VAE
+# tactile-code conditioning.
 #
 # Three preprocessed sources are merged into a single data_root via
 # prepare_midtrain_merged.py (a Python helper that materializes per-episode
@@ -16,27 +14,27 @@
 #   • bkl_task — BKL in-lab task data, 30 episodes per task
 #
 # 62D bimanual actions, tactile vec + deform on, FLARE on, robot state off,
-# Paradigm C residual training (use_tactile_refine_flow=1, paradigm=residual).
+# cascaded flow matching (split 6/10).
 #
-# To enable VQ-VAE tactile-code conditioning later:
+# VQ-VAE tactile-code conditioning:
 #   1) Train a VQ-VAE: bash tactile_vqvae/scripts/train_vqvae_f6.sh
 #      (set GRANULARITY=finger for the 5-codes-per-hand variant).
 #   2) Pre-extract codes per episode (default --alignment historical):
 #        python -m tactile_vqvae.extract_codes \
 #          --checkpoint /path/to/latest.pt --data_root ${MERGED_DATA_ROOT}
 #      This drops a tactile_codes.h5 next to each pretrain.hdf5.
-#   3) Below, flip --use_tactile_code 1 (and --tactile_code_per_finger 1 for
-#      the per-finger VQ-VAE).
+#   3) Below, --use_tactile_code 1 (and --tactile_code_per_finger 1 for
+#      the per-finger VQ-VAE) is on by default.
 
 set -e
 set -o pipefail
 
-cd /mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert/scripts
+cd /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/code/dex_mot_final/scripts
 
-source /mnt/amlfs-01/home/dniu/anaconda3/bin/activate /mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot
-export PATH=/mnt/amlfs-01/home/dniu/anaconda3/envs/dex_mot/bin:$PATH
+source /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/code/miniconda3/bin/activate /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/code/miniconda3/envs/dex_mot
+export PATH=/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/code/miniconda3/envs/dex_mot/bin:$PATH
 export HF_HOME=/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/huggingface
-export PYTHONPATH=/mnt/amlfs-01/home/dniu/Project/dex-mot/mot/dex_mot_expert:$PYTHONPATH
+export PYTHONPATH=/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/code/dex_mot_final:$PYTHONPATH
 
 export WANDB_MODE=online
 export WANDB_API_KEY=5bdc90c568050775a6d10650e64857fbbc76742e
@@ -98,9 +96,9 @@ fi
 
 EXPERIMENT_NAME="qwen3vl_midtrain_flare"
 if [ "${FROM_VLM_SCRATCH}" = "1" ]; then
-    RUN_NAME="qwen3vl_2b_midtrain_vlmscratch_state[wo]_bimanual_62d_tac[force+deform]_flare_residual_$(date +%m%d)"
+    RUN_NAME="qwen3vl_2b_midtrain_vlmscratch_state[wo]_bimanual_62d_tac[force+deform]_flare_cascaded_fix_$(date +%m%d)"
 else
-    RUN_NAME="qwen3vl_2b_midtrain_mecka0507_state[wo]_bimanual_62d_tac[force+deform]_flare_residual_$(date +%m%d)"
+    RUN_NAME="qwen3vl_2b_midtrain_mecka0507_state[wo]_bimanual_62d_tac[force+deform]_flare_cascaded_fix_$(date +%m%d)"
 fi
 
 MASTER_ADDR=${MASTER_ADDR:-10.244.16.162}
@@ -161,7 +159,7 @@ accelerate launch \
     train_qwen3vl_midtrain_flare.py \
     --model_path ${ORIGIN_MODEL_PATH} \
     --data_root ${MERGED_DATA_ROOT} \
-    --n_epochs 10 \
+    --n_epochs 6 \
     --save_freq 2 \
     --action_dim 62 \
     --action_chunk 16 \
@@ -182,19 +180,12 @@ accelerate launch \
     --tactile_intermediate_size 1536 \
     --training_stage 2 \
     --tactile_loss_weight 1.0 \
-    --use_tactile_refine_flow 1 \
-    --tactile_refine_loss_weight 1.0 \
-    --tactile_refine_noise_scale 0.1 \
-    --action_flow_train_steps 10 \
-    --action_flow_eval_steps 10 \
     --tactile_delay_offsets 0 4 8 12 \
-    --tactile_residual_jitter 0.0 \
     --use_tactile_code 1 \
     --vqvae_codebook_size 64 \
     --vqvae_codes_h5_name tactile_codes.h5 \
     --tactile_code_per_finger 1 \
     --tactile_f6_stats_ckpt /mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/ckpts/dex_mot_expert/tactile_vqvae/vqvae_f6_w16_k64_finger_0507_0939/latest.pt \
-    --paradigm residual \
     --cascaded_total_steps 10 \
     --cascaded_split_step 6 \
     --cascaded_tactile_dropout 0.1 \

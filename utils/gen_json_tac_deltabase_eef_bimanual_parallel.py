@@ -5,11 +5,12 @@ import h5py
 import json
 import numpy as np
 import sys
+import random
 import multiprocessing
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 ACTION_CHUNK = 16
-FRAME_STRIDE = 2
+FRAME_STRIDE = 1
 
 IMAGE_VIEWS_SLOW = 'image_primary'
 IMAGE_VIEWS_FAST_L = 'image_wrist_left'
@@ -19,7 +20,9 @@ VIDEO_SLOW_SUFFIX = 'head_left_rgb.mp4'
 VIDEO_FAST_L_SUFFIX = 'left_wrist.mp4'
 VIDEO_FAST_R_SUFFIX = 'right_wrist.mp4'
 
-DEFAULT_INSTRUCTION = "  - Using the right thumb and index finger, pick up the egg from the green egg tray and place it into the yellow egg tray."
+CROP_BOX_SLOW = (0, 300, 140, 540)  # (y_min, y_max, x_min, x_max) or None to disable
+
+DEFAULT_INSTRUCTION = "I am T-Rex."
 
 # Bimanual: Left Arm(9D) + Left Hand(22D) + Right Arm(9D) + Right Hand(22D) = 62D
 ACTION_MASK = [True] * 62
@@ -83,7 +86,20 @@ def compute_bimanual_tracking_error(state_62d, target_62d):
     return np.concatenate([left_err, right_err])
 
 
-def extract_frames_from_video(video_path, save_dir, view_name):
+def is_video_readable(video_path):
+    """Return True only if the video exists, opens successfully, and yields at least one frame."""
+    if not os.path.exists(video_path):
+        return False
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        cap.release()
+        return False
+    ret, _ = cap.read()
+    cap.release()
+    return ret
+
+
+def extract_frames_from_video(video_path, save_dir, view_name, crop_box=None):
     if not os.path.exists(video_path):
         print(f"warning: video not exist {video_path}")
         return []
@@ -99,6 +115,10 @@ def extract_frames_from_video(video_path, save_dir, view_name):
         ret, frame = cap.read()
         if not ret:
             break
+
+        if crop_box is not None:
+            y_min, y_max, x_min, x_max = crop_box
+            frame = frame[y_min:y_max, x_min:x_max]
 
         img_filename = f'image{frame_idx}_{view_name}.png'
         img_path = os.path.join(save_dir, img_filename)
@@ -117,9 +137,10 @@ def process_single_episode_worker(args):
     Worker function for parallel processing.
     Returns (episode_name, list_of_episode_data_dicts) instead of writing directly.
     """
-    episode_dir, save_dir, task_name = args
+    episode_dir, save_dir, task_name, source_prefix = args
     episode_name = os.path.basename(episode_dir)
-    print(f"processing: {episode_name} ...", end=" ", flush=True)
+    episode_id = f"{source_prefix}/{episode_name}"
+    print(f"processing: {episode_id} ...", end=" ", flush=True)
 
     h5_path = os.path.join(episode_dir, f"{episode_name}.h5")
     video_slow_path = os.path.join(episode_dir, f"{episode_name}_{VIDEO_SLOW_SUFFIX}")
@@ -130,11 +151,18 @@ def process_single_episode_worker(args):
         print(f"skip: H5 file not found")
         return episode_name, []
 
-    episode_img_save_dir = os.path.join(save_dir, task_name, episode_name)
+    # Validate all videos before creating directories or reading the H5 file.
+    # "moov atom not found" means the recording was interrupted before the
+    # container was finalized — cap.isOpened() returns False in that case.
+    for vpath in [video_slow_path, video_fast_l_path, video_fast_r_path]:
+        if not is_video_readable(vpath):
+            print(f"skip: corrupted or missing video {os.path.basename(vpath)}", flush=True)
+            return episode_name, []
+
+    episode_img_save_dir = os.path.join(save_dir, task_name, source_prefix, episode_name)
     os.makedirs(episode_img_save_dir, exist_ok=True)
 
-    # Extract frames from all three views (no cropping)
-    slow_img_paths = extract_frames_from_video(video_slow_path, episode_img_save_dir, IMAGE_VIEWS_SLOW)
+    slow_img_paths = extract_frames_from_video(video_slow_path, episode_img_save_dir, IMAGE_VIEWS_SLOW, CROP_BOX_SLOW)
     fast_l_img_paths = extract_frames_from_video(video_fast_l_path, episode_img_save_dir, IMAGE_VIEWS_FAST_L)
     fast_r_img_paths = extract_frames_from_video(video_fast_r_path, episode_img_save_dir, IMAGE_VIEWS_FAST_R)
 
@@ -228,6 +256,7 @@ def process_single_episode_worker(args):
         current_abs_action = absolute_targets[target_idx_next].tolist()
 
         episode_data = {
+            'episode_id': episode_id,
             'image_old_slow': img_slow,
             'image_old_fast': img_fast_list,
             'action': action_chunk_list,
@@ -264,7 +293,7 @@ def jsonl_2_json(input_file, output_file):
     with open(output_file, 'w') as f:
         json.dump(output_data, f, indent=2)
 
-def cal_stats(jsonl_filename):
+def cal_stats(jsonl_filename, dataset_name="rlbench"):
     actions = []
     states = []
     tactiles = []
@@ -273,15 +302,19 @@ def cal_stats(jsonl_filename):
 
     with open(jsonl_filename, 'r') as f:
         current_ep_data = []
-        current_ep_num = -1
+        current_ep_id = None
 
         for line in f:
             data = json.loads(line)
-            match = re.search(r'episode_?(\d+)', data['image_old_slow'])
-            ep_num = int(match.group(1)) if match else -1
-            episode_numbers.add(ep_num)
+            # Prefer explicit episode_id; fall back to regex on image path for old files
+            if 'episode_id' in data:
+                ep_id = data['episode_id']
+            else:
+                match = re.search(r'episode_?(\d+)', data['image_old_slow'])
+                ep_id = match.group(0) if match else 'unknown'
+            episode_numbers.add(ep_id)
 
-            if ep_num != current_ep_num and len(current_ep_data) > 0:
+            if ep_id != current_ep_id and len(current_ep_data) > 0:
                 for t in range(1, len(current_ep_data)):
                     state_t = np.array(current_ep_data[t]['state'])
                     action_t_minus_1 = np.array(current_ep_data[t-1]['absolute_target_action'])
@@ -289,7 +322,7 @@ def cal_stats(jsonl_filename):
                     tracking_errors.append(err)
                 current_ep_data = []
 
-            current_ep_num = ep_num
+            current_ep_id = ep_id
             current_ep_data.append(data)
             actions.append(data['action'])
             states.append(data['state'])
@@ -340,7 +373,7 @@ def cal_stats(jsonl_filename):
         tracking_error_stats = {}
 
     result = {
-        "rlbench": {
+        dataset_name: {
             "action": action_stats,
             "state": state_stats,
             "tactile_f6": tactile_f6_stats,
@@ -356,38 +389,73 @@ def cal_stats(jsonl_filename):
     print(f"stat saved to: {output_path}")
 
 
-def process_dataset(data_root, img_save_root, json_save_root, json_name_base, task_name,
-                    num_workers=None):
+def process_dataset(data_roots, img_save_root, json_save_root, json_name_base, task_name,
+                    num_workers=None, num_trajectories=None, seed=42, dataset_name="rlbench"):
+    """
+    data_roots: a single path string or a list of path strings.
+    Each root must contain a 'success/' subdirectory with episode_* folders.
+    Episodes across roots are merged; image dirs are namespaced by the root's
+    basename to avoid collisions when the same episode numbers appear in multiple roots.
+    """
+    if isinstance(data_roots, str):
+        data_roots = [data_roots]
+
     if num_workers is None:
         num_workers = min(multiprocessing.cpu_count(), 32)
 
     os.makedirs(img_save_root, exist_ok=True)
     os.makedirs(json_save_root, exist_ok=True)
 
+    # Collect (source_prefix, episode_dir) from all roots, sorted for determinism
+    all_episode_entries = []
+    for data_root in data_roots:
+        source_prefix = os.path.basename(data_root.rstrip('/'))
+        episodes_root = os.path.join(data_root, 'success')
+        if not os.path.isdir(episodes_root):
+            print(f"Warning: {episodes_root} not found, skipping root {data_root}")
+            continue
+        ep_dirs = sorted([
+            os.path.join(episodes_root, item)
+            for item in sorted(os.listdir(episodes_root))
+            if os.path.isdir(os.path.join(episodes_root, item)) and item.startswith("episode_")
+        ])
+        for ep_dir in ep_dirs:
+            all_episode_entries.append((source_prefix, ep_dir))
+        print(f"  {source_prefix}: {len(ep_dirs)} episodes")
+
+    total_episodes = len(all_episode_entries)
+
+    # --- Few-shot subsetting ---
+    if num_trajectories is not None and num_trajectories < total_episodes:
+        rng = random.Random(seed)
+        all_episode_entries = sorted(rng.sample(all_episode_entries, num_trajectories),
+                                     key=lambda x: (x[0], x[1]))
+        print(f"Few-shot mode: randomly selected {num_trajectories}/{total_episodes} episodes "
+              f"(seed={seed})")
+        name_suffix = f"_traj{num_trajectories}_seed{seed}"
+        json_name_base = json_name_base + name_suffix
+    else:
+        print(f"Using all {total_episodes} episodes from {len(data_roots)} root(s).")
+
     jsonl_filename = os.path.join(json_save_root, f'{json_name_base}.jsonl')
     json_filename = os.path.join(json_save_root, f'{json_name_base}.json')
-    episodes_root = os.path.join(data_root, 'success')
 
-    # Collect all episode dirs in sorted order so the JSONL output is deterministic
-    episode_dirs = sorted([
-        os.path.join(episodes_root, item)
-        for item in sorted(os.listdir(episodes_root))
-        if os.path.isdir(os.path.join(episodes_root, item)) and item.startswith("episode_")
-    ])
+    print(f"Output base: {json_name_base}")
+    print(f"Launching {num_workers} workers...")
 
-    print(f"Found {len(episode_dirs)} episodes. Launching {num_workers} workers...")
+    # Build args with unique (source_prefix, episode_name) keys
+    args_list = [(ep_dir, img_save_root, task_name, source_prefix)
+                 for source_prefix, ep_dir in all_episode_entries]
+    index_map = {(source_prefix, os.path.basename(ep_dir)): idx
+                 for idx, (source_prefix, ep_dir) in enumerate(all_episode_entries)}
 
-    # Map each episode_dir to its sorted index so we can reassemble in order
-    args_list = [(ep_dir, img_save_root, task_name) for ep_dir in episode_dirs]
-    index_map = {os.path.basename(ep_dir): idx for idx, ep_dir in enumerate(episode_dirs)}
-
-    # results[i] will hold the list of records for episode_dirs[i]
-    results = [None] * len(episode_dirs)
+    results = [None] * len(all_episode_entries)
 
     executor = ProcessPoolExecutor(max_workers=num_workers)
     try:
         future_to_idx = {
-            executor.submit(process_single_episode_worker, args): index_map[os.path.basename(args[0])]
+            executor.submit(process_single_episode_worker, args):
+                index_map[(args[3], os.path.basename(args[0]))]
             for args in args_list
         }
         for future in as_completed(future_to_idx):
@@ -407,7 +475,7 @@ def process_dataset(data_root, img_save_root, json_save_root, json_name_base, ta
     else:
         executor.shutdown(wait=False)
 
-    # Write JSONL in sorted episode order
+    # Write JSONL in sorted (source, episode) order
     with open(jsonl_filename, 'w') as f_jsonl:
         for records in results:
             if records:
@@ -415,21 +483,53 @@ def process_dataset(data_root, img_save_root, json_save_root, json_name_base, ta
                     f_jsonl.write(json.dumps(episode_data) + '\n')
 
     print(f"JSONL written to: {jsonl_filename}")
-    cal_stats(jsonl_filename)
+    cal_stats(jsonl_filename, dataset_name=dataset_name)
     jsonl_2_json(jsonl_filename, json_filename)
 
 
 if __name__ == "__main__":
-    DATA_ROOT = "/mnt/amlfs-02/shared/human_egocentric/dniu/datasets/lambda/raw/task_data/pick_place_egg_04-11-2026_100"
-    IMG_SAVE_ROOT = "/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_dense_fastslow_full"
-    JSON_SAVE_ROOT = "/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/training_data/three_full_json"
-    TASK_NAME = "place_egg_0411_lr_bimanual_stride2"
-    JSON_NAME_BASE = "place_egg_0411_deltabase_axis_eef_lr_bimanual_stride2_train"
+    import argparse
 
-    # Tune num_workers to fit your machine. None = auto (up to 32).
-    NUM_WORKERS = None
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data_roots", nargs='+', required=True, help="One or more data root paths to merge. Each must contain a 'success/' subdirectory with episode_* folders.")
+    parser.add_argument("--img_save_root", type=str, required=True, help="Directory where extracted frame images are saved.")
+    parser.add_argument("--json_save_root", type=str, required=True, help="Directory where JSONL/JSON output files are saved.")
+    parser.add_argument("--task_name", type=str, required=True, help="Task name subfolder used inside img_save_root.")
+    parser.add_argument("--json_name_base", type=str, required=True, help="Base name for the output .jsonl and .json files.")
+    parser.add_argument("--num_trajectories", type=int, default=0, help="Number of trajectories to randomly select for few-shot data. Omit or set to 0 to use all available episodes.")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed for trajectory selection (default: 42).")
+    parser.add_argument("--num_workers", type=int, default=None, help="Number of parallel worker processes (default: auto).")
+    # ── format knobs (override the module defaults; workers inherit via fork) ──
+    parser.add_argument("--action_chunk", type=int, default=ACTION_CHUNK, help="Action chunk length.")
+    parser.add_argument("--frame_stride", type=int, default=FRAME_STRIDE, help="Frame stride between chunk steps.")
+    parser.add_argument("--instruction", type=str, default=DEFAULT_INSTRUCTION, help="Language instruction written into every sample.")
+    parser.add_argument("--crop_box", type=int, nargs=4, default=list(CROP_BOX_SLOW),
+                        metavar=("Y0", "Y1", "X0", "X1"), help="Head-cam crop (y_min y_max x_min x_max).")
+    parser.add_argument("--no_crop", action="store_true", help="Disable head-cam cropping.")
+    parser.add_argument("--dataset_name", type=str, default="rlbench", help="Top-level key in the _statistics.json (loader reads the first key).")
+    args = parser.parse_args()
 
-    process_dataset(DATA_ROOT, IMG_SAVE_ROOT, JSON_SAVE_ROOT, JSON_NAME_BASE, TASK_NAME,
-                    num_workers=NUM_WORKERS)
+    # Apply overrides to the module globals so the fork-spawned workers (which
+    # read these as module-level constants) pick them up.
+    ACTION_CHUNK = args.action_chunk
+    FRAME_STRIDE = args.frame_stride
+    DEFAULT_INSTRUCTION = args.instruction
+    CROP_BOX_SLOW = None if args.no_crop else tuple(args.crop_box)
+
+    data_roots = args.data_roots
+    num_traj = args.num_trajectories if args.num_trajectories and args.num_trajectories > 0 else None
+
+    print(f"Data roots ({len(data_roots)}):")
+    for r in data_roots:
+        print(f"  {r}")
+    print(f"action_chunk={ACTION_CHUNK} frame_stride={FRAME_STRIDE} "
+          f"crop={CROP_BOX_SLOW} dataset_name={args.dataset_name}")
+
+    process_dataset(data_roots, args.img_save_root, args.json_save_root,
+                    args.json_name_base, args.task_name,
+                    num_workers=args.num_workers,
+                    num_trajectories=num_traj,
+                    seed=args.seed,
+                    dataset_name=args.dataset_name)
 
 

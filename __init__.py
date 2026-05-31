@@ -1,1 +1,1 @@
-# dex_mot_qwen: Dex-MoT VLA with Qwen3-VL-2B backbone
+# T-Rex: tactile-reactive bimanual dexterous VLA on a Qwen3-VL-2B MoT backbone.

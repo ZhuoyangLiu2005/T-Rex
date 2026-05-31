@@ -1,8 +1,7 @@
 """TacF6Stats — per-finger-per-dim normalization stats pooled across batch manifests.
 
-Mirrors the pooling scheme used in
-`dex_mot_qwen/scripts/train_qwen3vl_midtrain_flare.py` so the VQ-VAE sees the
-same normalized F6 distribution the downstream MoT will see.
+Mirrors the pooling scheme used in `scripts/train_qwen3vl_midtrain_flare.py` so
+the VQ-VAE sees the same normalized F6 distribution the downstream MoT will see.
 """
 
 from __future__ import annotations

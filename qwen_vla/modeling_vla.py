@@ -68,6 +68,8 @@ class Qwen3VLVLAModel(nn.Module):
         flare_layer_index:       int = -1,
         use_tactile_code:        bool = False,
         vqvae_codebook_size:     int  = 64,
+        use_tactile_vqvae:       bool = False,
+        vqvae_config:            dict = None,
     ):
         super().__init__()
         self.config             = config
@@ -82,8 +84,14 @@ class Qwen3VLVLAModel(nn.Module):
         self.n_flare_steps            = n_flare_steps
         self.n_flare_tokens           = n_flare_tokens_per_frame * n_flare_steps
         self.flare_layer_index        = flare_layer_index
-        self.use_tactile_code         = use_tactile_code
+        # Embedded (on-the-fly) VQ-VAE turns raw F6 history → discrete codes
+        # inside the model.  It implies use_tactile_code (the code embedder is
+        # still what maps an integer code → a hidden token).  When disabled the
+        # model expects pre-computed codes from the dataloader (legacy path).
+        self.use_tactile_vqvae        = use_tactile_vqvae
+        self.use_tactile_code         = bool(use_tactile_code or use_tactile_vqvae)
         self.vqvae_codebook_size      = vqvae_codebook_size
+        self.vqvae_config             = vqvae_config
 
         self.visual = None
 
@@ -100,11 +108,40 @@ class Qwen3VLVLAModel(nn.Module):
             self.deform_encoder = DeformEncoder()
             self.deform_proj    = ActionEmbedder(28800, H) # 128 * 15 * 15
 
-        # VQ-VAE tactile code embedder (one code per hand → 2 tokens).
-        # Created only when explicitly enabled so toggling --use_tactile_code 0
-        # gives a graph identical to the pre-feature checkpoint.
-        if use_tactile_code:
+        # VQ-VAE tactile code embedder (one code per hand → 2 tokens, or one
+        # code per finger → 2*n_fingers tokens).  Created whenever codes are
+        # used (pre-computed OR produced on-the-fly by the embedded VQ-VAE) so
+        # toggling everything off gives a graph identical to the pre-feature
+        # checkpoint.
+        if self.use_tactile_code:
             self.tactile_code_embedder = nn.Embedding(vqvae_codebook_size, H)
+
+        # Embedded VQ-VAE: the encoder + EMA quantizer that map a raw F6
+        # history window → discrete codes, run on-the-fly during training and
+        # inference.  Frozen (never trained, never EMA-updated — encode() uses
+        # encode_only()).  Weights + F6 normalization stats are loaded from a
+        # standalone VQ-VAE checkpoint via load_tactile_vqvae() (training) or
+        # baked into model.pt by scripts/merge_vqvae_into_ckpt.py (deployment).
+        self.tactile_vqvae = None
+        if self.use_tactile_vqvae:
+            if vqvae_config is None:
+                raise ValueError(
+                    "use_tactile_vqvae=True requires vqvae_config "
+                    "(the TactileVQVAEConfig fields from the VQ-VAE checkpoint).")
+            from tactile_vqvae.models.tactile_vqvae import (
+                TactileVQVAE, TactileVQVAEConfig)
+            self.tactile_vqvae = TactileVQVAE(TactileVQVAEConfig.from_dict(vqvae_config))
+            self.tactile_vqvae.eval()
+            for p in self.tactile_vqvae.parameters():
+                p.requires_grad = False
+            # F6 min-max normalization stats ([60] = 10 fingers × 6 dims),
+            # registered as buffers so they travel with the checkpoint.
+            self.register_buffer("tacf6_vqvae_min",
+                                 torch.zeros(60, dtype=torch.float32), persistent=True)
+            self.register_buffer("tacf6_vqvae_max",
+                                 torch.ones(60, dtype=torch.float32), persistent=True)
+            self.register_buffer("tacf6_vqvae_mask",
+                                 torch.ones(60, dtype=torch.bool), persistent=True)
 
         if use_robot_state:
             self.state_embedder = ActionEmbedder(action_dim, H)
@@ -137,6 +174,8 @@ class Qwen3VLVLAModel(nn.Module):
         flare_layer_index:        int = -1,
         use_tactile_code:         bool = False,
         vqvae_codebook_size:      int  = 64,
+        use_tactile_vqvae:        bool = False,
+        vqvae_config:             dict = None,
     ) -> "Qwen3VLVLAModel":
         """
         Build a Qwen3VLVLAModel by:
@@ -180,6 +219,8 @@ class Qwen3VLVLAModel(nn.Module):
             flare_layer_index = flare_layer_index,
             use_tactile_code = use_tactile_code,
             vqvae_codebook_size = vqvae_codebook_size,
+            use_tactile_vqvae = use_tactile_vqvae,
+            vqvae_config = vqvae_config,
         )
         # Capture only the get_rope_index function — do NOT store the full
         # base model as an attribute, because nn.Module.__setattr__ would
@@ -258,6 +299,77 @@ class Qwen3VLVLAModel(nn.Module):
         if missing:
             print(f"  DeformEncoder missing keys: {missing}")
         print("DeformEncoder weights loaded.")
+
+    def load_tactile_vqvae(self, ckpt_path_or_blob):
+        """Load weights + F6 normalization stats into the embedded VQ-VAE.
+
+        Accepts either a path to a standalone VQ-VAE checkpoint (the
+        ``{config, model_state, stats}`` blob saved by tactile_vqvae/train.py)
+        or an already-loaded blob dict.  Keeps the module frozen + eval.
+        """
+        if not self.use_tactile_vqvae or self.tactile_vqvae is None:
+            print("Warning: load_tactile_vqvae called but use_tactile_vqvae is off.")
+            return
+        blob = ckpt_path_or_blob
+        if isinstance(blob, str):
+            blob = torch.load(blob, map_location="cpu", weights_only=False)
+        missing, unexpected = self.tactile_vqvae.load_state_dict(
+            blob["model_state"], strict=False)
+        if missing:
+            print(f"  [tactile_vqvae] missing keys: {missing[:6]} ...")
+        if unexpected:
+            print(f"  [tactile_vqvae] unexpected keys: {unexpected[:6]} ...")
+        stats = blob["stats"]
+        self.tacf6_vqvae_min.copy_(torch.as_tensor(stats["tacf6_min"], dtype=torch.float32))
+        self.tacf6_vqvae_max.copy_(torch.as_tensor(stats["tacf6_max"], dtype=torch.float32))
+        self.tacf6_vqvae_mask.copy_(torch.as_tensor(stats["tacf6_mask"], dtype=torch.bool))
+        self.tactile_vqvae.eval()
+        for p in self.tactile_vqvae.parameters():
+            p.requires_grad = False
+        print(f"[Qwen3VLVLAModel] embedded VQ-VAE loaded "
+              f"(codebook={self.tactile_vqvae.cfg.codebook_size}, "
+              f"granularity={self.tactile_vqvae.cfg.granularity}, "
+              f"window={self.tactile_vqvae.cfg.window}).")
+
+    @torch.no_grad()
+    def encode_tactile_f6_history(self, f6_history_raw: torch.Tensor) -> torch.Tensor:
+        """Encode a raw (un-normalized) F6 history window into per-hand codes.
+
+        f6_history_raw : [B, T, 10, 6]  (two hands × 5 fingers; T = VQ-VAE window).
+                         Normalized internally with the embedded VQ-VAE stats,
+                         so callers pass raw F6 — exactly what the dataloader /
+                         robot reads off the sensor.
+
+        Returns
+        -------
+        codes : [B, n_codes] int64, flattened to match the pre-computed layout
+                consumed by `tactile_code_embedder`:
+                  hand   granularity → [B, 2]            (left, right)
+                  finger granularity → [B, 2*n_fingers]  (L[5], R[5])
+        """
+        if self.tactile_vqvae is None:
+            raise RuntimeError("encode_tactile_f6_history requires use_tactile_vqvae.")
+        vq = self.tactile_vqvae
+        w_dtype = next(vq.parameters()).dtype
+        x = f6_history_raw.to(device=self.tacf6_vqvae_min.device, dtype=torch.float32)
+        B, T, NF, D = x.shape
+        # Min-max normalize to [-1, 1] (matches TacF6Stats.normalize).
+        flat = x.reshape(B, T, NF * D)                                  # [B, T, 60]
+        denom = (self.tacf6_vqvae_max - self.tacf6_vqvae_min) + 1e-8
+        normed = torch.clamp(
+            2.0 * (flat - self.tacf6_vqvae_min) / denom - 1.0, -1.0, 1.0)
+        normed = torch.where(self.tacf6_vqvae_mask, normed, flat)
+        normed = normed.reshape(B, T, NF, D)
+
+        n_hands = NF // 5
+        per_hand_codes = []
+        for h in range(n_hands):
+            wh = normed[:, :, h * 5:(h + 1) * 5, :].to(w_dtype)         # [B, T, 5, 6]
+            idx = vq.encode(wh)                                          # [B] or [B, 5]
+            if idx.dim() == 1:
+                idx = idx.unsqueeze(1)                                   # [B, 1]
+            per_hand_codes.append(idx.long())
+        return torch.cat(per_hand_codes, dim=1)                         # [B, n_codes]
 
     def initialize_vla_weights(self):
         """Xavier-init all new VLA-specific linear layers.
@@ -361,12 +473,25 @@ class Qwen3VLVLAModel(nn.Module):
         device: torch.device,
         dtype: torch.dtype,
         tactile_codes: Optional[torch.Tensor] = None,
+        tactile_f6_history: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """Build [B, n_obs, H] tactile observation embedding (codes + vec + deform).
 
-        When `tactile_codes` is provided ([B, 2] int64) and the model has the
-        embedder, two code tokens are prepended to the f6 / deform tokens.
+        Codes can arrive two ways:
+          * pre-computed `tactile_codes` ([B, n_codes] int64) — legacy path.
+          * `tactile_f6_history` ([B, T, 10, 6] raw) — encoded on-the-fly by the
+            embedded VQ-VAE.  Used whenever the model carries `tactile_vqvae`.
+        Each integer code becomes one prepended token via `tactile_code_embedder`.
         """
+        # On-the-fly: derive codes from the raw F6 history if the model has the
+        # embedded VQ-VAE and the caller did not pass pre-computed codes.
+        if (self.use_tactile_vqvae
+                and self.tactile_vqvae is not None
+                and tactile_codes is None
+                and tactile_f6_history is not None
+                and tactile_f6_history.shape[1] > 0):
+            tactile_codes = self.encode_tactile_f6_history(tactile_f6_history)
+
         tac_parts = []
         if (tactile_codes is not None
                 and self.use_tactile_code
@@ -648,6 +773,7 @@ class Qwen3VLVLAModel(nn.Module):
         tactile_f6: Optional[torch.Tensor] = None,
         tactile_deform: Optional[torch.Tensor] = None,
         tactile_codes: Optional[torch.Tensor] = None,
+        tactile_f6_history: Optional[torch.Tensor] = None,
         num_steps_total: int = 10,
         split_step: int = 6,
     ) -> torch.Tensor:
@@ -667,7 +793,8 @@ class Qwen3VLVLAModel(nn.Module):
 
         tac_obs = self._embed_tactile_observations(
             tactile_f6, tactile_deform, device, dtype,
-            tactile_codes=tactile_codes)
+            tactile_codes=tactile_codes,
+            tactile_f6_history=tactile_f6_history)
         n_obs = tac_obs.shape[1]
         n_tac_seq = n_obs + 1 + n_chunk
 
@@ -715,6 +842,7 @@ class Qwen3VLVLAModel(nn.Module):
         tactile_f6: Optional[torch.Tensor] = None,
         tactile_deform: Optional[torch.Tensor] = None,
         tactile_codes: Optional[torch.Tensor] = None,
+        tactile_f6_history: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """Single tactile-only forward at (x_τ, τ) for cascaded training.
 
@@ -730,7 +858,8 @@ class Qwen3VLVLAModel(nn.Module):
 
         tac_obs = self._embed_tactile_observations(
             tactile_f6, tactile_deform, device, dtype,
-            tactile_codes=tactile_codes)
+            tactile_codes=tactile_codes,
+            tactile_f6_history=tactile_f6_history)
         n_obs = tac_obs.shape[1]
 
         tau_emb = self.t_embedder(tau.to(dtype)).unsqueeze(1)            # [B, 1, H]

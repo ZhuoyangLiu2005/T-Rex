@@ -19,8 +19,9 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-DATA_ROOT = "/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/20260303_pick_orange_cube_refined_100"
-OUTPUT_DIR = "/mnt/amlfs-02/shared/human_egocentric/dniu/Dex-MoT/mot_arch/data/bkl_inlab/scripts/analysis_output1"
+# Module-level defaults (overridable via CLI in main()).
+DATA_ROOT = ""
+OUTPUT_DIR = ""
 FRAME_STRIDE = 2
 SEED = 42
 
@@ -231,6 +232,18 @@ def make_tactile_video(tactile_data, filename, fps=30, label="tactile"):
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
 def main():
+    import argparse
+    global DATA_ROOT, OUTPUT_DIR, FRAME_STRIDE, SEED
+    p = argparse.ArgumentParser(description="Analyse a single randomly sampled episode from the dataset.")
+    p.add_argument("--data_root", required=True, help="Dataset root containing a 'success/' subdir of episode_* dirs.")
+    p.add_argument("--output_dir", required=True, help="Where plots and videos will be written.")
+    p.add_argument("--frame_stride", type=int, default=FRAME_STRIDE)
+    p.add_argument("--seed", type=int, default=SEED)
+    args = p.parse_args()
+    DATA_ROOT = args.data_root
+    OUTPUT_DIR = args.output_dir
+    FRAME_STRIDE = args.frame_stride
+    SEED = args.seed
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     # Randomly sample one episode

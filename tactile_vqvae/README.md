@@ -35,7 +35,7 @@ tactile_vqvae/
 
 ## Requirements
 
-Same env as the rest of `dex_mot_expert` (`accelerate`, `torch`, `h5py`, `numpy`). No additional dependencies.
+Same env as the rest of the project (`accelerate`, `torch`, `h5py`, `numpy`). No additional dependencies.
 
 ## Train
 

@@ -1,18 +1,34 @@
+# Python
 __pycache__/
-.vscode
-training_data
-exp
-exp_pretrain
-experiments/logs
-LIBERO
-vis_results
-vis_scripts
-rollouts
-test_results
-vis*
-wandb
-scripts/logs
-scripts/test_output*
-tactile_vqvae/logs
-tactile_vqvae/plots
-.vscode
+*.pyc
+*.pyo
+*.egg-info/
+.python-version
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Local secrets / per-machine config
+.env
+.env.local
+
+# Run outputs
+outputs/
+logs/
+*.log
+wandb/
+
+# Repo-specific generated dirs
+exp/
+exp_pretrain/
+rollouts/
+vis_results/
+vis_scripts/
+vis*/
+test_results/
+scripts/logs/
+scripts/test_output*/
+tactile_vqvae/logs/
+tactile_vqvae/plots*/
+training_data/

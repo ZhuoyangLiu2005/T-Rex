@@ -1,34 +1,74 @@
-# T-Rex
+<div align="center">
 
-A tactile-reactive bimanual dexterous VLA built on a Qwen3-VL-2B
-**Mixture-of-Transformers** backbone with three parallel expert streams
-(latent / action / tactile), trained end-to-end with **cascaded flow
-matching** and a **FLARE** future-frame auxiliary loss.
+# T-Rex: Tactile-Reactive Dexterous Manipulation
 
-## What's inside
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white)
 
-Every decoder layer is split into three parallel expert streams that share
-the joint causal attention space:
+[🌐 **Project Page**](https://tactile-rex.github.io/) | [✍️ **Paper (arXiv)**](TODO) | [🎥 **Demo**](TODO)
 
-- **latent (reason)** — vision and language tokens; inherits the
-  pretrained Qwen3-VL-2B weights.
-- **action** — diffusion noisy-action tokens; per-expert Q/K/V/O + FFN.
-- **tactile** — F6 force/torque + tactile-deformation tokens + discrete
-  VQ-VAE tactile codes (encoded on the fly inside the model); smaller FFN
-  intermediate.
+Dantong Niu<sup>1,2*</sup>, Zhuoyang Liu<sup>1*</sup>, Zekai Wang<sup>1*</sup>, Boning Shao<sup>1</sup>, Zhao-Heng Yin<sup>1</sup>, Anirudh Pai<sup>1</sup>, Yuvan Sharma<sup>1</sup>, Stefano Saravalle<sup>4</sup>, Ruijie Zheng<sup>2</sup>, Jing Wang<sup>2</sup>, Ryan Punamiya<sup>2</sup>, Mengda Xu<sup>2</sup>, Yuqi Xie<sup>2</sup>, Yunfan Jiang<sup>2,3</sup>, Letian Fu<sup>1</sup>, Konstantinos Kallidromitis<sup>4</sup>, Matteo Gioia<sup>4</sup>, Junyi Zhang<sup>1</sup>, Jiaxin Ge<sup>1</sup>, Haiwen Feng<sup>1</sup>, Fabio Galasso, Wei Zhan<sup>1</sup>, David M. Chan<sup>1</sup>, Yutong Bai<sup>1</sup>, Roei Herzig<sup>1</sup>, Jiahui Lei<sup>1</sup>, Fei-Fei Li<sup>3</sup>, Ken Goldberg<sup>1</sup>, Jitendra Malik<sup>1</sup>, Pieter Abbeel<sup>1</sup>, Yuke Zhu<sup>2</sup>, Danfei Xu<sup>2</sup>, Jim (Linxi) Fan<sup>2‡</sup>, Trevor Darrell<sup>1‡</sup>
 
-Cascaded flow matching splits the action-distribution flow between the two
-experts: the action expert covers τ ∈ [τ_split, 1] (the upper, "semantic"
-segment), while the tactile expert continues the same flow on
-τ ∈ [0, τ_split] using cached `[latent | action]` KV plus fresh tactile
-observations. The action expert is additionally trained on the full
-τ ∈ [0, 1] range so it can run standalone when tactile is missing.
+<sup>1</sup>UC Berkeley &nbsp;&nbsp; <sup>2</sup>NVIDIA &nbsp;&nbsp; <sup>3</sup>Stanford &nbsp;&nbsp; <sup>4</sup>Panasonic
 
-FLARE appends K learnable query tokens to the latent expert at training
-time and matches their projected hidden states to frozen ViT features of
-**future** head-cam frames via cosine similarity — providing future-frame
-context to the action / tactile experts via the shared KV cache, for free
-at inference.
+<sup>*</sup>Equal Contribution &nbsp;&nbsp; <sup>‡</sup>Equal Advising
+
+</div>
+
+<p align="center">
+  <img src="asset/teaser.png" width="95%">
+</p>
+
+**🦖 T-Rex pushes the frontier of *tactile-reactive* dexterous manipulation** —
+reacting dynamically to high-frequency touch, which contemporary VLAs typically
+overlook or capture only with static tactile encoders.
+
+> **Abstract.** The ability to react dynamically to tactile signals has long been
+> considered crucial to agile human-level dexterity. Yet contemporary
+> learning-based VLAs for robotic manipulation generally either overlook the
+> tactile modality or are limited to encoders with static cues — in part due to
+> the scarcity of diverse training data and standardized evaluation, architectural
+> constraints in current Vision-Language-Action (VLA) models, and limitations of
+> static tactile encoders. In this paper, we push the frontier of tactile-reactive
+> manipulation, addressing all of these limitations. We open-source a large-scale,
+> 100-hour tactile-rich dataset collected via a novel, data-efficient recipe that
+> prioritizes elementary motor primitives. To effectively exploit naturally
+> high-frequency touch signals without sacrificing the existing capabilities of
+> existing VLAs, we introduce a variable-rate Mixture-of-Transformer (MoT)
+> architecture equipped with a novel temporal tactile VQ-VAE encoder. We
+> demonstrate the effectiveness of tactile-reactive policies on 12 manipulation
+> tasks requiring delicate force control and deformable object manipulation,
+> achieving over 30% higher average success rate than the strongest baseline.
+
+### Highlights
+
+- **100-hour tactile-rich dataset**, collected with a data-efficient recipe that
+  prioritizes elementary motor primitives (22 primitives, 200+ objects, 5400+
+  trajectories) — open-sourced in [LeRobot v3.0](#lerobot-v30-data-path-opt-in) format.
+- **Asynchronous Mixture-of-Transformers (MoT)** on a Qwen3-VL-2B backbone:
+  *latent* (reason), *action*, and *tactile* experts running at different rates —
+  slow action denoising (~5 Hz) and fast tactile refinement (~20 Hz) — coupled by
+  **cascaded flow matching** so the policy reacts to contact *within* an action
+  chunk without re-running the vision stack.
+- **Temporal tactile VQ-VAE** that tokenizes high-frequency force/deformation over
+  time; embedded in the model and encoded on the fly (no offline code baking).
+- **> 30% higher average success** than the strongest baseline across 12
+  contact-rich tasks (delicate force control, deformable-object manipulation).
+
+Training runs in three stages: large-scale tactile-free **pretrain** →
+tactile-reactive **midtrain** → task-specific **post-train**.
+
+## 🤗 Model Zoo
+
+Pretrained and midtrained checkpoints are released on the Hugging Face Hub:
+
+| Checkpoint | Stage | Notes |
+|---|---|---|
+| [`miniFranka/T-Rex_pretrain_mecka22k_epoch1`](https://huggingface.co/miniFranka/T-Rex_pretrain_mecka22k_epoch1) | Pretrain | VLM-action alignment on ~22k tactile-free episodes (1 epoch); action + latent experts. Resume from this for midtrain. |
+| [`miniFranka/T-Rex_midtrain_mecka23k_ucb100_vqvae_epoch6`](https://huggingface.co/miniFranka/T-Rex_midtrain_mecka23k_ucb100_vqvae_epoch6) | Midtrain | Tactile-reactive (cascaded flow + embedded VQ-VAE), 6 epochs. **Start here to fine-tune on your own task** (set as `RESUME_CHECKPOINT` for `scripts/train.sh`). |
+
+The midtrain checkpoint embeds the tactile VQ-VAE, so post-train auto-detects it
+(no separate `VQVAE_CKPT` needed) and encodes tactile codes on the fly.
 
 ## Repository layout
 
@@ -73,7 +113,7 @@ pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorc
 # everything else (pinned in pyproject.toml; transformers>=4.57 for Qwen3-VL):
 pip install -e .
 # optional — only if you train/convert with the LeRobot v3.0 data path:
-pip install -e /abs/path/to/lerobot
+pip install -e /path/to/lerobot
 ```
 
 Each `.sh` has an **editable header** at the top — set `PROJECT_ROOT`, the conda
@@ -89,9 +129,9 @@ variables at the top of each `.sh`, then run it.
 
 | Stage | Script | Key vars to set (top of script) | What it does |
 |---|---|---|---|
-| **1. Pretrain** | `scripts/pretrain.sh` | `DATA_ROOT`, `ORIGIN_MODEL_PATH`, `OUTPUT_DIR` | VLM-action alignment on a large tactile-free corpus. Action expert is copy-initialised from the latent expert and trained on the full flow range; FLARE on; tactile expert unused. |
-| **2. Midtrain** | `scripts/midtrain.sh` | `MERGED_DATA_ROOT`, `ORIGIN_MODEL_PATH`, `DEFORM_ENCODER_PATH`, `VQVAE_CKPT`, `RESUME_CHECKPOINT` | Tactile-reactive training. Activates the tactile expert, cascaded flow matching, `--tactile_delay_offsets` for slow/fast staleness robustness, `--cascaded_tactile_dropout` so the action expert keeps a standalone fallback. Encodes tactile codes on the fly (embedded VQ-VAE). |
-| **3. Post-train** | `scripts/train.sh` | `DATA_JSON` (or `LEROBOT_ROOT`), `ORIGIN_MODEL_PATH`, `DEFORM_ENCODER_PATH`, `VQVAE_CKPT`, `RESUME_CHECKPOINT` | Task-specific fine-tune on a small JSON or LeRobot dataset. Tactile codes encoded on the fly; if the resume checkpoint already embeds the VQ-VAE it's auto-detected (`VQVAE_CKPT` then optional). `RESUME_SOURCE=midtrain` keeps the tactile expert as-is. |
+| **1.Pretrain** | `scripts/pretrain.sh` | `DATA_ROOT`, `ORIGIN_MODEL_PATH`, `OUTPUT_DIR` | VLM-action alignment on a large tactile-free corpus. Action expert is copy-initialised from the latent expert and trained on the full flow range; FLARE on; tactile expert unused. |
+| **2.Midtrain** | `scripts/midtrain.sh` | `MERGED_DATA_ROOT`, `ORIGIN_MODEL_PATH`, `DEFORM_ENCODER_PATH`, `VQVAE_CKPT`, `RESUME_CHECKPOINT` | Tactile-reactive training. Activates the tactile expert, cascaded flow matching, `--tactile_delay_offsets` for slow/fast staleness robustness, `--cascaded_tactile_dropout` so the action expert keeps a standalone fallback. Encodes tactile codes on the fly (embedded VQ-VAE). |
+| **3.Post-train** | `scripts/train.sh` | `DATA_JSON` (or `LEROBOT_ROOT`), `ORIGIN_MODEL_PATH`, `DEFORM_ENCODER_PATH`, `VQVAE_CKPT`, `RESUME_CHECKPOINT` | Task-specific fine-tune on a small JSON or LeRobot dataset. Tactile codes encoded on the fly; if the resume checkpoint already embeds the VQ-VAE it's auto-detected (`VQVAE_CKPT` then optional). `RESUME_SOURCE=midtrain` keeps the tactile expert as-is. |
 | **Inference** | `scripts/test.sh` | `MODEL_PATH`, `VQVAE_CKPT` (only for legacy external-VQ-VAE checkpoints) | ZMQ REP server speaking the slow/fast cascaded protocol. Auto-detects architecture + embedded VQ-VAE from the checkpoint's `training_args.json`. |
 
 Each `.sh` is a plain script: paths are direct variable assignments at the top,
@@ -320,4 +360,19 @@ header (or your shell).
 
 ## License
 
-TBD — add a `LICENSE` file at the repo root once selected.
+Licensed under the **Apache License 2.0** — see the [`LICENSE`](LICENSE) file at
+the repo root.
+
+## Citation
+
+If you find T-Rex useful, please cite:
+
+```bibtex
+@article{trex2026,
+  title   = {TODO: paper title},
+  author  = {TODO: author list},
+  journal = {arXiv preprint arXiv:TODO},
+  year    = {2026},
+}
+```
+<!-- TODO: replace the title / author / arXiv id above with the real values. -->

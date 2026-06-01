@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🦖 T-Rex: Tactile-Reactive Dexterous Manipulation
+# 🦖T-Rex: Tactile-Reactive Dexterous Manipulation
 
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 ![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white)
@@ -19,7 +19,7 @@ Dantong Niu<sup>1,2*</sup>, Zhuoyang Liu<sup>1*</sup>, Zekai Wang<sup>1*</sup>, 
   <img src="asset/teaser.png" width="95%">
 </p>
 
-**🦖 T-Rex pushes the frontier of *tactile-reactive* dexterous manipulation** —
+**T-Rex pushes the frontier of *tactile-reactive* dexterous manipulation** —
 reacting dynamically to high-frequency touch, which contemporary VLAs typically
 overlook or capture only with static tactile encoders.
 

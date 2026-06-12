@@ -1,0 +1,10 @@
+pyzmq>=25.0.0
+openvr>=1.26.0
+numpy>=1.24.0
+scipy>=1.10.0
+psutil>=5.9.0
+
+# For direct USB communication (optional)
+hidapi>=0.12.0
+pyusb>=1.2.1
+

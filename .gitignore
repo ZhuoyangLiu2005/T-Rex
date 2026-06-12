@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.python-version
+.venv/
+.ruff_cache/
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Local secrets / per-machine config
+.env
+.env.local
+
+# Run outputs
+outputs/
+logs/
+*.log
+wandb/
+
+# Repo-specific generated dirs
+exp/
+exp_pretrain/
+rollouts/
+vis_results/
+vis_scripts/
+/vis*/
+test_results/
+scripts/logs/
+scripts/test_output*/
+tactile_vqvae/logs/
+tactile_vqvae/plots*/
+training_data/

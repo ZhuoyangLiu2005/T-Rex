@@ -1,0 +1,54 @@
+[project]
+name = "t-rex"
+version = "0.1.0"
+description = "T-Rex: a tactile-reactive model for dexterous manipulation"
+readme = "README.md"
+requires-python = "==3.10.*"
+license = { text = "Apache-2.0" }
+
+dependencies = [
+    "torch==2.6.0",
+    "torchvision==0.21.0",
+    "transformers==4.57.3",
+    "tokenizers==0.22.2",
+    "accelerate==1.8.1",
+    "deepspeed==0.15.4",
+    "datasets==4.0.0",
+    "huggingface-hub==0.36.2",
+    "safetensors==0.5.3",
+    "pyarrow==20.0.0",
+    "numpy==2.2.6",
+    "h5py==3.16.0",
+    "pillow==12.1.1",
+    "opencv-python-headless==4.12.0.88",
+    "matplotlib==3.10.3",
+    "timm==1.0.17",
+    "pyzmq==27.1.0",
+    "wandb==0.18.3",
+    "tqdm==4.67.1",
+]
+
+# Dependency-only manifest: the T-Rex modules (qwen_vla, tactile_vqvae, utils)
+# are imported via PROJECT_ROOT on PYTHONPATH (every
+# training/inference .sh exports it), so nothing is installed as a package.
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = []
+
+# ── uv: pull the CUDA-12.4 torch wheels from the official PyTorch index ──────
+# `uv sync` / `uv pip install -e .` will resolve torch/torchvision from here.
+# Plain pip on Linux already gets a CUDA-12.4 build for torch 2.6.0 from PyPI;
+# to force it explicitly use:
+#   pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cu124
+[tool.uv]
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu124" }
+torchvision = { index = "pytorch-cu124" }

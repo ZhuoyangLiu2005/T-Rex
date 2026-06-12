@@ -1,0 +1,62 @@
+name: USD Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+env:
+  OUTPUT_DIR: output
+
+jobs:
+  gen_usd:
+    name: Generate Robot USD
+    runs-on: [self-hosted, Linux, GPU]
+    container:
+      image: nvcr.io/nvidia/isaac-lab:2.2.0
+      options: >-
+        --gpus all
+        -e ACCEPT_EULA=Y
+        -e PRIVACY_CONSENT=Y
+        -v /home/runner/docker/isaac-sim/cache/kit:/isaac-sim/kit/cache:rw
+        -v /home/runner/docker/isaac-sim/cache/ov:/root/.cache/ov:rw
+        -v /home/runner/docker/isaac-sim/cache/pip:/root/.cache/pip:rw
+        -v /home/runner/docker/isaac-sim/cache/glcache:/root/.cache/nvidia/GLCache:rw
+        -v /home/runner/docker/isaac-sim/cache/computecache:/root/.nv/ComputeCache:rw
+        -v /home/runner/docker/isaac-sim/logs:/root/.nvidia-omniverse/logs:rw
+        -v /home/runner/docker/isaac-sim/data:/root/.local/share/ov/data:rw
+        -v /home/runner/docker/isaac-sim/documents:/root/Documents:rw
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install dependencies
+        run: |
+          alias python='/workspace/isaaclab/_isaac_sim/python.sh'
+          python -m pip install trimesh tqdm pyyaml ruff
+
+      - name: Generate decomposed USD files
+        run: |
+          apt-get update && apt-get install -y zip
+          alias python='/workspace/isaaclab/_isaac_sim/python.sh'
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
+          python scripts/workflows/usd_workflow.py --output_dir ${{ env.OUTPUT_DIR }} --python_exe /workspace/isaaclab/_isaac_sim/python.sh
+
+      - name: Create Version Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: 'Release ${{ github.ref_name }}'
+          body: |
+            🚀 dexmate-urdf Release ${{ github.ref_name }}
+
+            This is a stable release of the Robot USD that is generated from dexmate-urdf.
+
+            Please refer to the changelog for details about this release.
+          files: ${{ env.OUTPUT_DIR }}/*.zip
+          draft: false
+          prerelease: false

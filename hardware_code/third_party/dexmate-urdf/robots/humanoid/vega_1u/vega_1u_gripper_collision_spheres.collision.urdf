@@ -1,0 +1,678 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<robot name="vega_1u_gripper">
+  <link name="torso_l3">
+    <inertial>
+      <origin xyz="-0.05623 -0.08424 0.25675" rpy="0 0 0" />
+      <mass value="5.32886" />
+      <inertia ixx="0.11076" ixy="-0.00246" ixz="0.015" iyy="0.10555" iyz="0.01137" izz="0.02731" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0.0775 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/torso_l3.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="-0.07699998468160629 -0.10550002813339233 0.4399999976158142" rpy="0 0 0" /><geometry><sphere radius="0.09080000221729279" /></geometry></collision>
+    <collision><origin xyz="-0.09127682447433472 0.04049959719181061 0.3940000534057617" rpy="0 0 0" /><geometry><sphere radius="0.09471999853849411" /></geometry></collision>
+    <collision><origin xyz="-0.06700000911951065 0.09549999363720417 0.4339999854564667" rpy="0 0 0" /><geometry><sphere radius="0.09471999853849411" /></geometry></collision>
+    <collision><origin xyz="-0.08860704302787781 -0.04250210583209991 0.4070005416870117" rpy="0 0 0" /><geometry><sphere radius="0.09471999853849411" /></geometry></collision>
+    <collision><origin xyz="-0.025999993085861206 -0.0025000131130218507 0.21299999952316284" rpy="0 0 0" /><geometry><sphere radius="0.08626999706029892" /></geometry></collision>
+    <collision><origin xyz="-0.0025912821292877197 0.06506985366344452 0.0047130584716796875" rpy="0 0 0" /><geometry><sphere radius="0.08759000152349472" /></geometry></collision>
+    <collision><origin xyz="-0.04999999701976776 -0.003500015139579773 0.30300000309944153" rpy="0 0 0" /><geometry><sphere radius="0.08561000227928162" /></geometry></collision>
+    <collision><origin xyz="-0.049999999880790715 0.026499987959861755 0.097" rpy="0 0 0" /><geometry><sphere radius="0.08298" /></geometry></collision>
+    <collision><origin xyz="-0.04299999153614044 -0.03650001871585846 0.089" rpy="0 0 0" /><geometry><sphere radius="0.08364" /></geometry></collision>
+    <collision><origin xyz="-0.049999988079071044 -0.07250002384185791 0.126" rpy="0 0 0" /><geometry><sphere radius="0.04891" /></geometry></collision>
+    <collision><origin xyz="-0.04800000464916229 0.0684999932050705 0.132" rpy="0 0 0" /><geometry><sphere radius="0.04627" /></geometry></collision>
+    <collision><origin xyz="0.011000018239021301 -0.06450001561641693 0.061" rpy="0 0 0" /><geometry><sphere radius="0.04891" /></geometry></collision>
+    <collision><origin xyz="-0.00800000011920929 0.07049999821186066 0.093" rpy="0 0 0" /><geometry><sphere radius="0.04759" /></geometry></collision>
+    <collision><origin xyz="-0.03799998676776886 -0.07150002229213714 0.004" rpy="0 0 0" /><geometry><sphere radius="0.04891" /></geometry></collision>
+    <collision><origin xyz="-0.04500000405311584 0.06649999332427978 0.015" rpy="0 0 0" /><geometry><sphere radius="0.04627" /></geometry></collision>
+    <collision><origin xyz="-0.0013663321733474731 -0.0633959925174713 0.0006322860717773438" rpy="0 0 0" /><geometry><sphere radius="0.08799999952316284" /></geometry></collision>
+  </link>
+  <link name="arm_center" />
+  <joint name="arm_center_j0" type="fixed">
+    <origin xyz="-0.05908 0 0.44528" rpy="0 0 0" />
+    <parent link="torso_l3" />
+    <child link="arm_center" />
+  </joint>
+  <link name="head_l1">
+    <inertial>
+      <origin xyz="1.30097E-05 0.07221 -0.02629" rpy="0 0 0" />
+      <mass value="0.4378" />
+      <inertia ixx="0.00043" ixy="1.42488E-08" ixz="7.17634E-08" iyy="0.00025" iyz="-1.01085E-06" izz="0.00051" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/head_l1.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="-0.0030000131130218507 0.10700001239776612 -0.018" rpy="0 0 0" /><geometry><sphere radius="0.05527" /></geometry></collision>
+    <collision><origin xyz="-4.410743713378906e-09 0.03700000441074371 -0.015" rpy="0 0 0" /><geometry><sphere radius="0.05456" /></geometry></collision>
+    <collision><origin xyz="0.002999992370605469 0.06700000834465027 -0.036" rpy="0 0 0" /><geometry><sphere radius="0.05456" /></geometry></collision>
+  </link>
+  <joint name="head_j1" type="revolute">
+    <origin xyz="-0.0735 -0.0725 0.014" rpy="0 0 0" />
+    <parent link="arm_center" />
+    <child link="head_l1" />
+    <axis xyz="0 1 0" />
+    <limit lower="-1.483" upper="1.483" effort="6" velocity="3.2" />
+  </joint>
+  <link name="head_l2">
+    <inertial>
+      <origin xyz="3.533E-05 0.01618 0.03389" rpy="0 0 0" />
+      <mass value="0.60772" />
+      <inertia ixx="0.00052" ixy="8.06625E-08" ixz="-1.98086E-08" iyy="0.00039" iyz="-0.0001" izz="0.0005" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/head_l2.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="-0.005000004529953003 0.03300000333786011 0.029" rpy="0 0 0" /><geometry><sphere radius="0.05506" /></geometry></collision>
+    <collision><origin xyz="-0.006000001192092896 0.003999999761581421 0.003" rpy="0 0 0" /><geometry><sphere radius="0.05506" /></geometry></collision>
+    <collision><origin xyz="-0.0019999955892562866 -0.039000004887580875 0.024" rpy="0 0 0" /><geometry><sphere radius="0.05439" /></geometry></collision>
+  </link>
+  <joint name="head_j2" type="revolute">
+    <origin xyz="0 0.0725 -0.0035" rpy="0 0 0" />
+    <parent link="head_l1" />
+    <child link="head_l2" />
+    <axis xyz="0 0 1" />
+    <limit lower="-2.792" upper="2.792" effort="2.5" velocity="3.2" />
+  </joint>
+  <link name="head_l3">
+    <inertial>
+      <origin xyz="0.00816 -0.00315 0.03745" rpy="0 0 0" />
+      <mass value="0.63278" />
+      <inertia ixx="0.00083" ixy="-2.23229E-06" ixz="-9.73849E-06" iyy="0.00034" iyz="-9.09642E-06" izz="0.00078" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/head_l3.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="0.013000011444091797 -0.011751866899430752 0.020999908447265625" rpy="0 0 0" /><geometry><sphere radius="0.07288999855518341" /></geometry></collision>
+    <collision><origin xyz="0.004117488861083984 0.017253827303647995 0.01900005340576172" rpy="0 0 0" /><geometry><sphere radius="0.07222999632358551" /></geometry></collision>
+  </link>
+  <joint name="head_j3" type="revolute">
+    <origin xyz="0 0.002 0.0495" rpy="0 0 0" />
+    <parent link="head_l2" />
+    <child link="head_l3" />
+    <axis xyz="0 -1 0" />
+    <limit lower="-1.378" upper="1.483" effort="6" velocity="3.2" />
+  </joint>
+  <link name="zed_depth_frame" />
+  <joint name="zed_left_depth_mount" type="fixed">
+    <origin xyz="0.025 0.023 0.0489" rpy="-1.57079 0 -1.57079" />
+    <parent link="head_l3" />
+    <child link="zed_depth_frame" />
+    <axis xyz="0 0 0" />
+  </joint> 
+  <link name="zed_left_camera" />
+  <joint name="zed_left_camera_mount" type="fixed">
+    <origin xyz="0.0365 0.023 0.0489" rpy="-1.57079 0 -1.57079" />
+    <parent link="head_l3" />
+    <child link="zed_left_camera" />
+    <axis xyz="0 0 0" />
+  </joint>
+  <link name="zed_right_camera" />
+  <joint name="zed_right_camera_mount" type="fixed">
+    <origin xyz="0.0365 -0.027 0.0489" rpy="-1.57079 0 -1.57079" />
+    <parent link="head_l3" />
+    <child link="zed_right_camera" />
+    <axis xyz="0 0 0" />
+  </joint>
+
+  <link name="L_arm_l1">
+    <inertial>
+      <origin xyz="0.0285 0.05287 0.00576" rpy="0 0 0" />
+      <mass value="1.41351" />
+      <inertia ixx="0.00168" ixy="-0.00031" ixz="-6.83299E-05" iyy="0.00185" iyz="-5.44956E-05" izz="0.00212" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/L_arm_l1.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="0.013000011444091797 0.012475520372390747 -0.010000228881835938" rpy="0 0 0" /><geometry><sphere radius="0.064970001578331" /></geometry></collision>
+    <collision><origin xyz="0.03475987911224365 0.05470593273639679 -0.003337860107421875" rpy="0 0 0" /><geometry><sphere radius="0.07699999958276749" /></geometry></collision>
+  </link>
+  <joint name="L_arm_j1" type="revolute">
+    <origin xyz="0 0.16946 0" rpy="0 0 0" />
+    <parent link="arm_center" />
+    <child link="L_arm_l1" />
+    <axis xyz="0 1 0" />
+    <limit lower="-3.071" upper="3.071" effort="150" velocity="2.4" />
+  </joint>
+  <link name="L_arm_l2">
+    <inertial>
+      <origin xyz="0.08194 -1.45468E-06 -0.04058" rpy="0 0 0" />
+      <mass value="1.40594" />
+      <inertia ixx="0.00168" ixy="-6.27676E-08" ixz="0.00041" iyy="0.00441" iyz="2.02838E-07" izz="0.00412" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/arm_l2.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="0.005392193794250488 -0.0037997812032699585 -0.04300212860107422" rpy="0 0 0" /><geometry><sphere radius="0.07500000298023224" /></geometry></collision>
+    <collision><origin xyz="0.07100051641464233 0.00800006091594696 -0.031124114990234375" rpy="0 0 0" /><geometry><sphere radius="0.07500000298023224" /></geometry></collision>
+    <collision><origin xyz="0.10232062637805939 0.0010001212358474731 -0.03157520294189453" rpy="0 0 0" /><geometry><sphere radius="0.07500000298023224" /></geometry></collision>
+  </link>
+  <joint name="L_arm_j2" type="revolute">
+    <origin xyz="0.04 0.06 0.0454" rpy="0 0 0" />
+    <parent link="L_arm_l1" />
+    <child link="L_arm_l2" />
+    <axis xyz="0 0 1" />
+    <limit lower="-0.453" upper="1.553" effort="150" velocity="2.4" />
+  </joint>
+  <link name="L_arm_l3">
+    <inertial>
+      <origin xyz="0.07978 0.00403 0.0398" rpy="0 0 0" />
+      <mass value="1.16094" />
+      <inertia ixx="0.0017" ixy="-0.00011" ixz="-0.00104" iyy="0.00337" iyz="-7.78856E-05" izz="0.00257" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/arm_l3.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="0.021000003442168236 -0.003999997861683369 0.0010000000474974513" rpy="0 0 0" /><geometry><sphere radius="0.05999999865889549" /></geometry></collision>
+    <collision><origin xyz="0.12300001430511474 0.0030000150203704835 0.063" rpy="0 0 0" /><geometry><sphere radius="0.06" /></geometry></collision>
+    <collision><origin xyz="0.07400000846385955 0.0030000091791152956 0.017" rpy="0 0 0" /><geometry><sphere radius="0.06" /></geometry></collision>
+  </link>
+  <joint name="L_arm_j3" type="revolute">
+    <origin xyz="0.1644 0 -0.043" rpy="0 0 0" />
+    <parent link="L_arm_l2" />
+    <child link="L_arm_l3" />
+    <axis xyz="1 0 0" />
+    <limit lower="-3.071" upper="3.071" effort="80" velocity="2.7" />
+  </joint>
+  <link name="L_arm_l4">
+    <inertial>
+      <origin xyz="0.09219 -0.03791 -0.02953" rpy="0 0 0" />
+      <mass value="0.93204" />
+      <inertia ixx="0.00101" ixy="0.00023" ixz="0.00042" iyy="0.00305" iyz="-0.00011" izz="0.00274" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/arm_l4.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="0.0036118607968091965 -0.045056119561195374 -0.008000373840332031" rpy="0 0 0" /><geometry><sphere radius="0.07000000029802322" /></geometry></collision>
+    <collision><origin xyz="0.14319883286952972 -0.04100047051906586 -0.04699993133544922" rpy="0 0 0" /><geometry><sphere radius="0.06499999761581421" /></geometry></collision>
+    <collision><origin xyz="0.04000074416399002 -0.04802139103412628 -0.02700042724609375" rpy="0 0 0" /><geometry><sphere radius="0.06499999761581421" /></geometry></collision>
+  </link>
+  <joint name="L_arm_j4" type="revolute">
+    <origin xyz="0.113 0.0433 0.06" rpy="0 0 0" />
+    <parent link="L_arm_l3" />
+    <child link="L_arm_l4" />
+    <axis xyz="0 1 0" />
+    <limit lower="-3.071" upper="0.244" effort="80" velocity="2.7" />
+  </joint>
+  <link name="L_arm_l5">
+    <inertial>
+      <origin xyz="0.06497 -0.00266 1.20027E-05" rpy="0 0 0" />
+      <mass value="0.64582" />
+      <inertia ixx="0.00034" ixy="5.36478E-06" ixz="-1.58049E-07" iyy="0.00056" iyz="4.90514E-08" izz="0.00052" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/arm_l5.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="0.018220365047454834 0.000642731785774231 0.005000114440917969" rpy="0 0 0" /><geometry><sphere radius="0.04500000178813934" /></geometry></collision>
+    <collision><origin xyz="0.07067573070526123 -0.018360719084739685 -0.0039997100830078125" rpy="0 0 0" /><geometry><sphere radius="0.04500000178813934" /></geometry></collision>
+    <collision><origin xyz="0.0690000057220459 0.0047951191663742065 -0.0019998550415039062" rpy="0 0 0" /><geometry><sphere radius="0.04500000178813934" /></geometry></collision>
+    <collision><origin xyz="0.02900000321865082 0.002000003695487976 0.003" rpy="0 0 0" /><geometry><sphere radius="0.035" /></geometry></collision>
+  </link>
+  <joint name="L_arm_j5" type="revolute">
+    <origin xyz="0.1938 -0.0434 -0.04" rpy="0 0 0" />
+    <parent link="L_arm_l4" />
+    <child link="L_arm_l5" />
+    <axis xyz="1 0 0" />
+    <limit lower="-3.071" upper="3.071" effort="25" velocity="2.7" />
+  </joint>
+  <link name="L_arm_l6">
+    <inertial>
+      <origin xyz="0.05526 -0.02615 -0.00267" rpy="0 0 0" />
+      <mass value="0.5542" />
+      <inertia ixx="0.00029" ixy="4.89061E-05" ixz="1.80626E-06" iyy="0.00042" iyz="-1.41013E-06" izz="0.00038" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/L_arm_l6.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="0.06630001217126846 -0.03107999637722969 0.009999999776482582" rpy="0 0 0" /><geometry><sphere radius="0.040389999747276306" /></geometry></collision>
+    <collision><origin xyz="0.06474001157164573 -0.032329996136426925 -0.02" rpy="0 0 0" /><geometry><sphere radius="0.04039" /></geometry></collision>
+    <collision><origin xyz="0.031310006976127625 -0.019379999488592148 -0.0020000000949949026" rpy="0 0 0" /><geometry><sphere radius="0.040389999747276306" /></geometry></collision>
+    <collision><origin xyz="-0.008360000396966934 -0.005030001596212387 0.004" rpy="0 0 0" /><geometry><sphere radius="0.04039" /></geometry></collision>
+  </link>
+  <joint name="L_arm_j6" type="revolute">
+    <origin xyz="0.0762 0.0319 0" rpy="0 0 0" />
+    <parent link="L_arm_l5" />
+    <child link="L_arm_l6" />
+    <axis xyz="0 1 0" />
+    <limit lower="-1.396" upper="1.396" effort="25" velocity="2.7" />
+  </joint>
+  <link name="L_arm_l7">
+    <inertial>
+      <origin xyz="0.032 5.48376E-05 -0.01786" rpy="0 0 0" />
+      <mass value="0.35802" />
+      <inertia ixx="0.0002" ixy="-1.17395E-08" ixz="8.05897E-05" iyy="0.00031" iyz="-2.54703E-08" izz="0.00034" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/arm_l7.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="0.011032551527023315 0.003000006079673767 -0.015999794006347656" rpy="0 0 0" /><geometry><sphere radius="0.05000000074505806" /></geometry></collision>
+    <collision><origin xyz="0.03948143124580383 0.0020000040531158447 -0.029000282287597656" rpy="0 0 0" /><geometry><sphere radius="0.05000000074505806" /></geometry></collision>
+  </link>
+  <joint name="L_arm_j7" type="revolute">
+    <origin xyz="0.065 -0.032 0.0319" rpy="0 0 0" />
+    <parent link="L_arm_l6" />
+    <child link="L_arm_l7" />
+    <axis xyz="0 0 1" />
+    <limit lower="-1.378" upper="1.117" effort="25" velocity="2.7" />
+  </joint>
+  <link name="L_arm_l8">
+    <inertial>
+      <origin xyz="-0.01782 -0.00021 0.00027" rpy="0 0 0" />
+      <mass value="0.20064" />
+      <inertia ixx="9.24605E-05" ixy="7.92184E-08" ixz="3.41865E-07" iyy="5.72813E-05" iyz="2.16589E-07" izz="5.67577E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 -1.57079 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/arm_l8.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="0.0 0.0 -0.022089630365371704" rpy="0 0 0" /><geometry><sphere radius="0.03999999910593033" /></geometry></collision>
+  </link>
+  <joint name="L_arm_j8" type="fixed">
+    <origin xyz="0.11597 0 -0.032" rpy="0 1.57079 0" />
+    <parent link="L_arm_l7" />
+    <child link="L_arm_l8" />
+  </joint>
+  <link name="L_ee" />
+  <joint name="L_ee_j0" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 -1.57079" />
+    <parent link="L_arm_l8" />
+    <child link="L_ee" />
+  </joint>
+
+
+  <link name="R_arm_l1">
+    <inertial>
+      <origin xyz="0.02833 -0.05 0.0054" rpy="0 0 0" />
+      <mass value="1.42401" />
+      <inertia ixx="0.00159" ixy="0.00028" ixz="-4.07181E-05" iyy="0.00166" iyz="4.33627E-05" izz="0.00202" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/R_arm_l1.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="-0.01300001796334982 -0.012475535273551941 -0.010000228881835938" rpy="0 0 0" /><geometry><sphere radius="0.064970001578331" /></geometry></collision>
+    <collision><origin xyz="0.03475990891456604 -0.058173343539237976 0.0028371810913085938" rpy="0 0 0" /><geometry><sphere radius="0.07699999958276749" /></geometry></collision>
+  </link>
+  <joint name="R_arm_j1" type="revolute">
+    <origin xyz="0 -0.16946 0" rpy="0 0 0" />
+    <parent link="arm_center" />
+    <child link="R_arm_l1" />
+    <axis xyz="0 -1 0" />
+    <limit lower="-3.071" upper="3.071" effort="150" velocity="2.4" />
+  </joint>
+  <link name="R_arm_l2">
+    <inertial>
+      <origin xyz="0.08749 -1.34526E-06 -0.04135" rpy="0 0 0" />
+      <mass value="1.40595" />
+      <inertia ixx="0.00168" ixy="-6.23948E-08" ixz="0.00041" iyy="0.00441" iyz="2.02625E-07" izz="0.00412" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/arm_l2.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="0.005392193794250488 -0.0037997812032699585 -0.04300212860107422" rpy="0 0 0" /><geometry><sphere radius="0.07500000298023224" /></geometry></collision>
+    <collision><origin xyz="0.07100051641464233 0.00800006091594696 -0.031124114990234375" rpy="0 0 0" /><geometry><sphere radius="0.07500000298023224" /></geometry></collision>
+    <collision><origin xyz="0.10232062637805939 0.0010001212358474731 -0.03157520294189453" rpy="0 0 0" /><geometry><sphere radius="0.07500000298023224" /></geometry></collision>
+  </link>
+  <joint name="R_arm_j2" type="revolute">
+    <origin xyz="0.04 -0.06 0.0454" rpy="0 0 0" />
+    <parent link="R_arm_l1" />
+    <child link="R_arm_l2" />
+    <axis xyz="0 0 1" />
+    <limit lower="-1.553" upper="0.453" effort="150" velocity="2.4" />
+  </joint>
+  <link name="R_arm_l3">
+    <inertial>
+      <origin xyz="0.08127 0.00414 0.04053" rpy="0 0 0" />
+      <mass value="1.1608" />
+      <inertia ixx="0.0017" ixy="-0.00011" ixz="-0.00104" iyy="0.00337" iyz="-8.33494E-05" izz="0.00257" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/arm_l3.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="0.021000003442168236 -0.003999997861683369 0.0010000000474974513" rpy="0 0 0" /><geometry><sphere radius="0.05999999865889549" /></geometry></collision>
+    <collision><origin xyz="0.12300001084804535 0.003000014927238226 0.06300000101327896" rpy="0 0 0" /><geometry><sphere radius="0.05999999865889549" /></geometry></collision>
+    <collision><origin xyz="0.07400000840425491 0.0030000091064721346 0.017000000923871994" rpy="0 0 0" /><geometry><sphere radius="0.05999999865889549" /></geometry></collision>
+  </link>
+  <joint name="R_arm_j3" type="revolute">
+    <origin xyz="0.1644 0 -0.043" rpy="0 0 0" />
+    <parent link="R_arm_l2" />
+    <child link="R_arm_l3" />
+    <axis xyz="1 0 0" />
+    <limit lower="-3.071" upper="3.071" effort="80" velocity="2.7" />
+  </joint>
+  <link name="R_arm_l4">
+    <inertial>
+      <origin xyz="0.07728 -0.03736 -0.02906" rpy="0 0 0" />
+      <mass value="0.93204" />
+      <inertia ixx="0.00101" ixy="0.00023" ixz="0.00042" iyy="0.00305" iyz="-0.00011" izz="0.00274" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/arm_l4.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="0.0036118607968091965 -0.045056119561195374 -0.008000373840332031" rpy="0 0 0" /><geometry><sphere radius="0.07000000029802322" /></geometry></collision>
+    <collision><origin xyz="0.14319883286952972 -0.04100047051906586 -0.04699993133544922" rpy="0 0 0" /><geometry><sphere radius="0.06499999761581421" /></geometry></collision>
+    <collision><origin xyz="0.04000074416399002 -0.04802139103412628 -0.02700042724609375" rpy="0 0 0" /><geometry><sphere radius="0.06499999761581421" /></geometry></collision>
+  </link>
+  <joint name="R_arm_j4" type="revolute">
+    <origin xyz="0.113 0.0433 0.06" rpy="0 0 0" />
+    <parent link="R_arm_l3" />
+    <child link="R_arm_l4" />
+    <axis xyz="0 1 0" />
+    <limit lower="-3.071" upper="0.244" effort="80" velocity="2.7" />
+  </joint>
+  <link name="R_arm_l5">
+    <inertial>
+      <origin xyz="0.06457 0.0025 -1.30383E-05" rpy="0 0 0" />
+      <mass value="0.64582" />
+      <inertia ixx="0.00034" ixy="-5.39003E-06" ixz="1.71575E-07" iyy="0.00056" iyz="3.8718E-08" izz="0.00052" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="3.14159 0 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/arm_l5.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="0.018220365047454834 0.000642731785774231 -0.0022563934326171875" rpy="0 0 0" /><geometry><sphere radius="0.04500000178813934" /></geometry></collision>
+    <collision><origin xyz="0.07067568600177765 -0.00743517279624939 -0.0039997100830078125" rpy="0 0 0" /><geometry><sphere radius="0.04500000178813934" /></geometry></collision>
+    <collision><origin xyz="0.06899996101856232 0.023313850164413452 -0.0019998550415039062" rpy="0 0 0" /><geometry><sphere radius="0.04500000178813934" /></geometry></collision>
+    <collision><origin xyz="0.02900000321865082 0.002000003695487976 0.003" rpy="0 0 0" /><geometry><sphere radius="0.035" /></geometry></collision>
+  </link>
+  <joint name="R_arm_j5" type="revolute">
+    <origin xyz="0.1938 -0.0434 -0.04" rpy="0 0 0" />
+    <parent link="R_arm_l4" />
+    <child link="R_arm_l5" />
+    <axis xyz="1 0 0" />
+    <limit lower="-3.071" upper="3.071" effort="25" velocity="2.7" />
+  </joint>
+  <link name="R_arm_l6">
+    <inertial>
+      <origin xyz="0.05525 0.02614 -0.00267" rpy="0 0 0" />
+      <mass value="0.55372" />
+      <inertia ixx="0.00029" ixy="-4.90706E-05" ixz="1.86055E-06" iyy="0.00042" iyz="1.46356E-06" izz="0.00038" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/R_arm_l6.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="0.06630319356918335 0.035585224628448486 0.010000228881835938" rpy="0 0 0" /><geometry><sphere radius="0.040389999747276306" /></geometry></collision>
+    <collision><origin xyz="0.06474372744560242 0.030296146869659424 -0.027112960815429688" rpy="0 0 0" /><geometry><sphere radius="0.040389999747276306" /></geometry></collision>
+    <collision><origin xyz="0.03131076693534851 0.005370587110519409 -0.0019998550415039062" rpy="0 0 0" /><geometry><sphere radius="0.040389999747276306" /></geometry></collision>
+    <collision><origin xyz="-0.006437361240386963 0.0035153329372406006 0.0039997100830078125" rpy="0 0 0" /><geometry><sphere radius="0.040389999747276306" /></geometry></collision>
+  </link>
+  <joint name="R_arm_j6" type="revolute">
+    <origin xyz="0.0762 -0.0319 0" rpy="0 0 0" />
+    <parent link="R_arm_l5" />
+    <child link="R_arm_l6" />
+    <axis xyz="0 -1 0" />
+    <limit lower="-1.396" upper="1.396" effort="25" velocity="2.7" />
+  </joint>
+  <link name="R_arm_l7">
+    <inertial>
+      <origin xyz="0.03048 5.11736E-05 -0.01709" rpy="0 0 0" />
+      <mass value="0.35802" />
+      <inertia ixx="0.0002" ixy="-1.17425E-08" ixz="8.05897E-05" iyy="0.00031" iyz="-2.54653E-08" izz="0.00034" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/arm_l7.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="0.011032551527023315 0.003000006079673767 -0.015999794006347656" rpy="0 0 0" /><geometry><sphere radius="0.05000000074505806" /></geometry></collision>
+    <collision><origin xyz="0.03948143124580383 0.0020000040531158447 -0.029000282287597656" rpy="0 0 0" /><geometry><sphere radius="0.05000000074505806" /></geometry></collision>
+  </link>
+  <joint name="R_arm_j7" type="revolute">
+    <origin xyz="0.065 0.032 0.0319" rpy="0 0 0" />
+    <parent link="R_arm_l6" />
+    <child link="R_arm_l7" />
+    <axis xyz="0 0 1" />
+    <limit lower="-1.117" upper="1.378" effort="25" velocity="2.7" />
+  </joint>
+  <link name="R_arm_l8">
+    <inertial>
+      <origin xyz="-0.01782 1.03176E-06 0.00027" rpy="0 0 0" />
+      <mass value="0.20064" />
+      <inertia ixx="9.24605E-05" ixy="-8.37017E-08" ixz="3.41865E-07" iyy="5.72813E-05" iyz="2.16589E-07" izz="5.67577E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 -1.57079 0" />
+      <geometry>
+        <mesh filename="../vega_1/meshes/visual/arm_l8.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="0.0 0.0 -0.022089630365371704" rpy="0 0 0" /><geometry><sphere radius="0.03999999910593033" /></geometry></collision>
+  </link>
+  <joint name="R_arm_j8" type="fixed">
+    <origin xyz="0.11597 0 -0.032" rpy="0 1.57079 0" />
+    <parent link="R_arm_l7" />
+    <child link="R_arm_l8" />
+  </joint>
+  <link name="R_ee" />
+  <joint name="R_ee_j0" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 1.57079" />
+    <parent link="R_arm_l8" />
+    <child link="R_ee" />
+  </joint>
+
+  <joint name="L_hand_mount" type="fixed">
+    <origin xyz="0.0 0 0.078" rpy="0 0 0" />
+    <parent link="L_arm_l8" />
+    <child link="L_gripper_base" />
+  </joint>
+  <link name="L_gripper_base">
+    <inertial>
+      <origin xyz="-0.01121 1.23227E-05 -0.01567" rpy="0 0 0" />
+      <mass value="0.39258" />
+      <inertia ixx="0.00024" ixy="-1.37984E-08" ixz="-1.01327E-06" iyy="0.00017" iyz="-1.37898E-08" izz="0.0003" />
+    </inertial>
+    <visual>
+      <origin xyz="-0.004 0 -0.078" rpy="-1.57079 1.57079 1.57079" />
+      <geometry>
+        <mesh filename="../../hands/f5d6_hand/meshes/visual/connector.glb" />
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../../hands/dexd_gripper/meshes/visual/gripper_base.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="0.0 0.0 0.0" rpy="0 0 0" /><geometry><sphere radius="0.05000000074505806" /></geometry></collision>
+    <collision><origin xyz="-0.05939674377441406 -2.8312206268310547e-07 -0.051303327083587646" rpy="0 0 0" /><geometry><sphere radius="0.03999999910593033" /></geometry></collision>
+    <collision><origin xyz="-9.5367431640625e-07 0.0006696581840515137 -0.04666835069656372" rpy="0 0 0" /><geometry><sphere radius="0.04699999839067459" /></geometry></collision>
+    <collision><origin xyz="0.0 2.9802322387695312e-08 0.02526170015335083" rpy="0 0 0" /><geometry><sphere radius="0.054999999701976776" /></geometry></collision>
+    <collision><origin xyz="9.5367431640625e-07 8.344650268554688e-07 0.10970848798751831" rpy="0 0 0" /><geometry><sphere radius="0.029999999329447746" /></geometry></collision>
+  </link>
+  <joint name="L_gripper_j1" type="revolute">
+    <origin xyz="4.92002E-18 0.0258 0.02875" rpy="0 0 0" />
+    <parent link="L_gripper_base" />
+    <child link="L_gripper_l1" />
+    <axis xyz="-1 0 0" />
+    <limit lower="0" upper="0.7854" effort="0" velocity="0" />
+  </joint>
+  <link name="L_gripper_l1">
+    <inertial>
+      <origin xyz="-2.78908E-05 -0.00741 0.05495" rpy="0 0 0" />
+      <mass value="0.09974" />
+      <inertia ixx="7.72528E-05" ixy="-8.58153E-11" ixz="9.06127E-10" iyy="7.34223E-05" iyz="4.63509E-06" izz="1.8247E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../../hands/dexd_gripper/meshes/visual/gripper_l1.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="-0.03097820281982422 -0.006179690361022949 0.04935193061828613" rpy="0 0 0" /><geometry><sphere radius="0.03000000037252903" /></geometry></collision>
+    <collision><origin xyz="-0.03376579284667969 -0.008206725120544434 0.0764116644859314" rpy="0 0 0" /><geometry><sphere radius="0.028000000044703485" /></geometry></collision>
+    <collision><origin xyz="-0.036388397216796875 -0.012864828109741211 0.10585981607437134" rpy="0 0 0" /><geometry><sphere radius="0.022000000923871995" /></geometry></collision>
+    <collision><origin xyz="-0.03825569152832031 -0.015171289443969727 0.13557374477386475" rpy="0 0 0" /><geometry><sphere radius="0.019999999664723874" /></geometry></collision>
+    <collision><origin xyz="0.03740215301513672 -0.0055694580078125 0.04278486967086792" rpy="0 0 0" /><geometry><sphere radius="0.03000000037252903" /></geometry></collision>
+    <collision><origin xyz="0.03881359100341797 -0.009446144104003906 0.07094484567642212" rpy="0 0 0" /><geometry><sphere radius="0.028000000044703485" /></geometry></collision>
+    <collision><origin xyz="0.03236675262451172 -0.014078140258789062 0.11207413673400879" rpy="0 0 0" /><geometry><sphere radius="0.022000000923871995" /></geometry></collision>
+    <collision><origin xyz="0.03228282928466797 -0.02087986469268799 0.13756084442138672" rpy="0 0 0" /><geometry><sphere radius="0.01700000010430813" /></geometry></collision>
+  </link>
+  <joint name="L_gripper_j2" type="revolute">
+    <origin xyz="-1.39916E-18 -0.0258 0.02875" rpy="0 0 0" />
+    <parent link="L_gripper_base" />
+    <child link="L_gripper_l2" />
+    <axis xyz="1 0 0" />
+    <limit lower="0" upper="0.7854" effort="0" velocity="0" />
+    <mimic joint="L_gripper_j1" multiplier="1" offset="0" />
+  </joint>
+
+  <link name="L_gripper_l2">
+    <inertial>
+      <origin xyz="-2.8025E-05 0.0074 0.05493" rpy="0 0 0" />
+      <mass value="0.09973" />
+      <inertia ixx="7.72502E-05" ixy="5.08385E-11" ixz="9.39246E-10" iyy="7.34168E-05" iyz="-4.63633E-06" izz="1.82497E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../../hands/dexd_gripper/meshes/visual/gripper_l2.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="-0.03586006164550781 0.002604365348815918 0.04966014623641968" rpy="0 0 0" /><geometry><sphere radius="0.03000000037252903" /></geometry></collision>
+    <collision><origin xyz="-0.036711692810058594 0.01250457763671875 0.10499304533004761" rpy="0 0 0" /><geometry><sphere radius="0.019999999664723874" /></geometry></collision>
+    <collision><origin xyz="-0.03553485870361328 0.01774144172668457 0.11816143989562988" rpy="0 0 0" /><geometry><sphere radius="0.019999999664723874" /></geometry></collision>
+    <collision><origin xyz="-0.033603668212890625 0.02336597442626953 0.1394745111465454" rpy="0 0 0" /><geometry><sphere radius="0.01700000010430813" /></geometry></collision>
+    <collision><origin xyz="-0.03571510314941406 0.0077741146087646484 0.08277082443237305" rpy="0 0 0" /><geometry><sphere radius="0.028000000044703485" /></geometry></collision>
+    <collision><origin xyz="0.034348487854003906 0.0013246536254882812 0.05252206325531006" rpy="0 0 0" /><geometry><sphere radius="0.03000000037252903" /></geometry></collision>
+    <collision><origin xyz="0.027309417724609375 0.00016808509826660156 0.08976870775222778" rpy="0 0 0" /><geometry><sphere radius="0.028000000044703485" /></geometry></collision>
+    <collision><origin xyz="0.0310516357421875 0.0068302154541015625 0.11663651466369629" rpy="0 0 0" /><geometry><sphere radius="0.024999999552965165" /></geometry></collision>
+    <collision><origin xyz="0.033458709716796875 0.01809525489807129 0.1411462426185608" rpy="0 0 0" /><geometry><sphere radius="0.019999999664723874" /></geometry></collision>
+  </link>
+  <joint name="R_hand_mount" type="fixed">
+    <origin xyz="0 0 0.078" rpy="0 0 0" />
+    <parent link="R_arm_l8" />
+    <child link="R_gripper_base" />
+  </joint>
+  <link name="R_gripper_base">
+    <inertial>
+      <origin xyz="-0.01121 1.23227E-05 -0.01567" rpy="0 0 0" />
+      <mass value="0.39258" />
+      <inertia ixx="0.00024" ixy="-1.37984E-08" ixz="-1.01327E-06" iyy="0.00017" iyz="-1.37898E-08" izz="0.0003" />
+    </inertial>
+    <visual>
+      <origin xyz="-0.004 0 -0.078" rpy="-1.57079 1.57079 1.57079" />
+      <geometry>
+        <mesh filename="../../hands/f5d6_hand/meshes/visual/connector.glb" />
+      </geometry>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../../hands/dexd_gripper/meshes/visual/gripper_base.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="0.0 0.0 0.0" rpy="0 0 0" /><geometry><sphere radius="0.05000000074505806" /></geometry></collision>
+    <collision><origin xyz="-0.05939674377441406 -2.8312206268310547e-07 -0.051303327083587646" rpy="0 0 0" /><geometry><sphere radius="0.03999999910593033" /></geometry></collision>
+    <collision><origin xyz="-9.5367431640625e-07 0.0006696581840515137 -0.04666835069656372" rpy="0 0 0" /><geometry><sphere radius="0.04699999839067459" /></geometry></collision>
+    <collision><origin xyz="0.0 2.9802322387695312e-08 0.02526170015335083" rpy="0 0 0" /><geometry><sphere radius="0.054999999701976776" /></geometry></collision>
+    <collision><origin xyz="9.5367431640625e-07 8.344650268554688e-07 0.10970848798751831" rpy="0 0 0" /><geometry><sphere radius="0.029999999329447746" /></geometry></collision>
+  </link>
+  <joint name="R_gripper_j1" type="revolute">
+    <origin xyz="4.92002E-18 0.0258 0.02875" rpy="0 0 0" />
+    <parent link="R_gripper_base" />
+    <child link="R_gripper_l1" />
+    <axis xyz="-1 0 0" />
+    <limit lower="0" upper="0.7854" effort="0" velocity="0" />
+  </joint>
+  <link name="R_gripper_l1">
+    <inertial>
+      <origin xyz="-2.78908E-05 -0.00741 0.05495" rpy="0 0 0" />
+      <mass value="0.09974" />
+      <inertia ixx="7.72528E-05" ixy="-8.58153E-11" ixz="9.06127E-10" iyy="7.34223E-05" iyz="4.63509E-06" izz="1.8247E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../../hands/dexd_gripper/meshes/visual/gripper_l1.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="-0.03097820281982422 -0.006179690361022949 0.04935193061828613" rpy="0 0 0" /><geometry><sphere radius="0.03000000037252903" /></geometry></collision>
+    <collision><origin xyz="-0.03376579284667969 -0.008206725120544434 0.0764116644859314" rpy="0 0 0" /><geometry><sphere radius="0.028000000044703485" /></geometry></collision>
+    <collision><origin xyz="-0.036388397216796875 -0.012864828109741211 0.10585981607437134" rpy="0 0 0" /><geometry><sphere radius="0.022000000923871995" /></geometry></collision>
+    <collision><origin xyz="-0.03825569152832031 -0.015171289443969727 0.13557374477386475" rpy="0 0 0" /><geometry><sphere radius="0.019999999664723874" /></geometry></collision>
+    <collision><origin xyz="0.03740215301513672 -0.0055694580078125 0.04278486967086792" rpy="0 0 0" /><geometry><sphere radius="0.03000000037252903" /></geometry></collision>
+    <collision><origin xyz="0.03881359100341797 -0.009446144104003906 0.07094484567642212" rpy="0 0 0" /><geometry><sphere radius="0.028000000044703485" /></geometry></collision>
+    <collision><origin xyz="0.03236675262451172 -0.014078140258789062 0.11207413673400879" rpy="0 0 0" /><geometry><sphere radius="0.022000000923871995" /></geometry></collision>
+    <collision><origin xyz="0.03228282928466797 -0.02087986469268799 0.13756084442138672" rpy="0 0 0" /><geometry><sphere radius="0.01700000010430813" /></geometry></collision>
+  </link>
+  <joint name="R_gripper_j2" type="revolute">
+    <origin xyz="-1.39916E-18 -0.0258 0.02875" rpy="0 0 0" />
+    <parent link="R_gripper_base" />
+    <child link="R_gripper_l2" />
+    <axis xyz="1 0 0" />
+    <limit lower="0" upper="0.7854" effort="0" velocity="0" />
+    <mimic joint="R_gripper_j1" multiplier="1" offset="0" />
+  </joint>
+  <link name="R_gripper_l2">
+    <inertial>
+      <origin xyz="-2.8025E-05 0.0074 0.05493" rpy="0 0 0" />
+      <mass value="0.09973" />
+      <inertia ixx="7.72502E-05" ixy="5.08385E-11" ixz="9.39246E-10" iyy="7.34168E-05" iyz="-4.63633E-06" izz="1.82497E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="../../hands/dexd_gripper/meshes/visual/gripper_l2.glb" />
+      </geometry>
+    </visual>
+    <collision><origin xyz="-0.03586006164550781 0.002604365348815918 0.04966014623641968" rpy="0 0 0" /><geometry><sphere radius="0.03000000037252903" /></geometry></collision>
+  <collision><origin xyz="-0.036711692810058594 0.01250457763671875 0.10499304533004761" rpy="0 0 0" /><geometry><sphere radius="0.019999999664723874" /></geometry></collision>
+  <collision><origin xyz="-0.03553485870361328 0.01774144172668457 0.11816143989562988" rpy="0 0 0" /><geometry><sphere radius="0.019999999664723874" /></geometry></collision>
+  <collision><origin xyz="-0.033603668212890625 0.02336597442626953 0.1394745111465454" rpy="0 0 0" /><geometry><sphere radius="0.01700000010430813" /></geometry></collision>
+  <collision><origin xyz="-0.03571510314941406 0.0077741146087646484 0.08277082443237305" rpy="0 0 0" /><geometry><sphere radius="0.028000000044703485" /></geometry></collision>
+  <collision><origin xyz="0.034348487854003906 0.0013246536254882812 0.05252206325531006" rpy="0 0 0" /><geometry><sphere radius="0.03000000037252903" /></geometry></collision>
+  <collision><origin xyz="0.027309417724609375 0.00016808509826660156 0.08976870775222778" rpy="0 0 0" /><geometry><sphere radius="0.028000000044703485" /></geometry></collision>
+  <collision><origin xyz="0.0310516357421875 0.0068302154541015625 0.11663651466369629" rpy="0 0 0" /><geometry><sphere radius="0.024999999552965165" /></geometry></collision>
+  <collision><origin xyz="0.033458709716796875 0.01809525489807129 0.1411462426185608" rpy="0 0 0" /><geometry><sphere radius="0.019999999664723874" /></geometry></collision>
+</link>
+</robot>

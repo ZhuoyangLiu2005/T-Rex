@@ -1,0 +1,30 @@
+# Core teleop stack dependencies (Python 3.10).
+# Install along with the vendored packages:
+#   pip install -r requirements.txt -e third_party/dexmate-urdf -e third_party/dexcontrol
+# Not covered here (see README):
+#   - sharpa            (Sharpa Wave SDK, installed separately)
+#   - sharpa_hand_pb2   (ships with the Sharpa Manus SDK checkout)
+#   - pyzed             (ZED SDK; only needed on the camera sender hosts)
+# Some analysis utilities in teleop/scripts/ need extras (seaborn, meshcat, ...).
+
+numpy
+scipy
+pin>=3.2          # pinocchio
+coal
+pin-pink          # pink (differential IK)
+qpsolvers
+daqp              # QP backend used by teleop/ik_utils.py (solver="daqp")
+ompl>=1.7,<3      # collision-free initialization planning; 1.7 = classic Py++ bindings, 2.x = nanobind (both supported by teleop/arm_hand_control.py)
+ruckig            # trajectory smoothing
+hydra-core        # required by dexcontrol but not declared in its deps
+pyzmq
+protobuf<3.21     # the Manus SDK's pre-generated sharpa_hand_pb2.py predates protoc 3.19; newer protobuf refuses to load it
+h5py
+opencv-python
+scikit-video      # ffmpeg-based episode video writing (needs an ffmpeg binary)
+matplotlib
+viser
+tyro
+loguru
+loop-rate-limiters
+pyyaml

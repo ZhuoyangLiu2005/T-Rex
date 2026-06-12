@@ -1,0 +1,60 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dexmate-urdf"
+version = "0.8.0"
+license = { file = "LICENSE" }
+authors = [{ name = "Dexmate", email = "contact@dexmate.ai" }]
+description = "URDF model and tools for Dexmate robots"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Robot Framework :: Library",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering",
+]
+
+[project.urls]
+Repository = "https://github.com/dexmate-ai/dexmate-urdf"
+
+[project.optional-dependencies]
+dev = [
+    "sapien==3.0.0b1",
+    "pin==3.4.0",
+    "pin-pink==3.1.0",
+    "pytest",
+    "qpsolvers[qpalm]",
+    "pre-commit",
+    "setuptools",
+]
+
+[tool.ruff]
+exclude = ["robots"]
+line-length = 88
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+known-first-party = ["dexmate_urdf"]
+split-on-trailing-comma = false
+
+[tool.lint.ruff.pydocstyle]
+convention = "google"
+
+[tool.hatch.build.targets.wheel]
+include-packages = ["src/dexmate_urdf"]
+artifacts = [
+    "src/dexmate_urdf/robots/humanoid/**",
+    "src/dexmate_urdf/robots/hands/**",
+]

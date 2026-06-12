@@ -1,0 +1,98 @@
+# Default teleop configuration (site/deployment-specific settings).
+# Copy this file and pass it to main_teleop.py:
+#   python main_teleop.py --config config/<your-site>.yaml
+# See teleop/config.py for the schema.
+
+robot:
+  # Joint positions the robot is reset to before each episode (rad).
+  left_arm_default_joint_pos: [0.84, 0.51, 0.37, -1.30, -0.65, -0.29, -0.03]
+  right_arm_default_joint_pos: [-0.84, -0.51, -0.37, -1.30, 0.65, 0.29, 0.03]
+  torso_default_joint_pos: [0.9, 1.57, 0.1]
+  head_default_joint_pos: [0.28, 0.0, 0.0]
+
+hands:
+  # Sharpa Wave serial numbers (printed by the SDK during device discovery).
+  left_serial: CD51973BCD51
+  right_serial: C65E9038C65E
+  interpolate: true
+
+vive:
+  # Windows PC running vive_tracker/server.py (see vive_tracker/README.md).
+  ip: 192.168.50.30
+  port: "5555"
+  # Must match the server's --vive-names.
+  left_tracker_name: left_tracker
+  right_tracker_name: right_tracker
+  update_hz: 30.0
+  timeout_tol_s: 0.2
+
+hand_action:
+  # Manus retargeting HandAction publisher (sharpa-manus-sdk).
+  address: tcp://localhost:6668
+
+targets:
+  update_hz: 250.0
+
+cameras:
+  image_width: 640
+  image_height: 360
+  head:
+    # Jetson on the robot running the head camera stream sender.
+    sender_ip: 192.168.50.20
+    ports:
+      HEAD_CAM: 5555
+  wrist:
+    # ZED box running the wrist camera stream sender.
+    sender_ip: 192.168.50.25
+    ports:
+      LEFT_WRIST: 5555
+      RIGHT_WRIST: 5556
+
+control:
+  command_hz: 30.0
+  arm_action_hz: 300.0
+  reset_dof_err_tol: 0.3
+
+tactile:
+  fetch_hz: 30.0
+
+environment:
+  # Collision obstacles around the robot (meters; null disables an obstacle).
+  # Use the measured table height - 0.04 m for the table top thickness.
+  # 0.64 is the measured value at the dataset-collection site.
+  table_height: 0.64
+  back_wall_distance: null
+  left_wall_distance: null
+  right_wall_distance: null
+
+data:
+  # Base directory for recorded episodes.
+  data_dir: ./teleop_data
+  # Store DEFORM/RAW tactile maps as lossless grayscale videos (.mkv) instead
+  # of uncompressed HDF5 datasets. Codec: libx264 (lossless -qp 0) or ffv1.
+  tactile_maps_as_video: true
+  tactile_video_codec: libx264
+
+inference:
+  # Policy inference client (eval/eval_trex_async.py) talking to the T-Rex
+  # ZMQ inference server. NOTE: the released checkpoints were evaluated on a
+  # bench with table_height 0.76 and back/right walls at 0.60/0.75 m — set
+  # the environment section accordingly when reproducing the paper evals.
+  # The head crop box below must match what the checkpoint was trained with.
+  server_address: tcp://localhost:5678
+  # Language instruction (or pass --task-description on the command line).
+  task_description: ""
+  dual_arm: true
+  chunk_size: 16
+  execute_steps_per_chunk: 16
+  max_steps: 10000
+  # Tactile-reactive slow/fast protocol: fast refinements within each chunk.
+  use_tactile_refine: true
+  refine_offsets: [4, 8, 12]
+  # ACT-style temporal aggregation over received chunks.
+  use_temporal_aggregation: true
+  temporal_agg_k: 0.0
+  # Head image crop (row_start, row_end, col_start, col_end); must match training.
+  head_crop_box: [0, 300, 140, 540]
+  show_live_viz: true
+  save_debug_images: false

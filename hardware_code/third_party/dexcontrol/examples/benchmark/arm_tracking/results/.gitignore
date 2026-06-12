@@ -1,0 +1,4 @@
+# Ignore benchmark results (large data files and plots)
+*
+!.gitignore
+!.gitkeep

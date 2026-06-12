@@ -1,0 +1,36 @@
+[project]
+name = "trex-dataset-quickstart"
+version = "0.1.0"
+description = "Browse, inspect, and replay the T-Rex Dataset (LeRobotDataset v3.0)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+# Light core: browse + inspect. No lerobot, no torch.
+dependencies = [
+    "av>=13.0",
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "pyarrow>=16.0",
+    "huggingface-hub>=0.25",
+    "matplotlib>=3.8",
+]
+
+[project.optional-dependencies]
+# Robot replay (local). `pin` is the PyPI distribution of Pinocchio; it pulls in `coal`
+# (collision) and `eigenpy` as wheels, so the whole replay stack installs with pip/uv.
+replay = ["pin>=4.0", "viser>=0.2", "scipy>=1.11"]
+# Episode-video rendering (scripts/visualize_episode.ipynb): cv2 for compositing + mp4 writing.
+viz = ["opencv-python>=4.8"]
+dev = ["ruff>=0.6", "jupyterlab>=4.0"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/trex_dataset_quickstart"]
+
+[tool.ruff]
+line-length = 100
+extend-exclude = ["third_party"]  # vendored URDF subtrees — not ours to lint/format

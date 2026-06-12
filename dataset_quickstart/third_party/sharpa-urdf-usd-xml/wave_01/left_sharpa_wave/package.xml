@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>left_sharpa_wave</name>
+  <version>1.0.0</version>
+  <description>
+    URDF Description package for Sharpa Wave left hand.
+  </description>
+
+  <maintainer email="TODO@email.com">TODO</maintainer>
+  <author>TODO</author>
+  <license>BSD</license>
+
+  <!-- Build system -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- Runtime dependencies -->
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>joint_state_publisher_gui</exec_depend>
+  <exec_depend>gazebo_ros</exec_depend>
+
+  <!-- Export: architecture independent -->
+  <export>
+    <build_type>ament_cmake</build_type>
+    <architecture_independent/>
+  </export>
+</package>

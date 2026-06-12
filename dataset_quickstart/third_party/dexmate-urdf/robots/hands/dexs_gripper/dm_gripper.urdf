@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="dm_gripper">
+  <link name="gripper_base">
+    <inertial>
+      <origin xyz="-0.01162 -5.04541E-05 -0.01733" rpy="0 0 0" />
+      <mass value="0.37323" />
+      <inertia ixx="0.00021" ixy="-1.13768E-07" ixz="-3.93189E-06"
+        iyy="0.00016" iyz="6.30749E-08" izz="0.00026" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/visual/gripper_base.glb" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/collision/gripper_base.obj" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="gripper_l1">
+    <inertial>
+      <origin xyz="0.00107 -0.00664 0.05753" rpy="0 0 0" />
+      <mass value="0.05347" />
+      <inertia ixx="3.979E-05" ixy="-1.59415E-08" ixz="5.89261E-08"
+        iyy="3.60166E-05" iyz="2.39147E-06" izz="7.6953E-06" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/visual/gripper_l1.glb" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/collision/gripper_l1.obj" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="gripper_j1" type="revolute">
+    <origin xyz="3.34371E-18 0.02581 0.0288" rpy="0 0 0" />
+    <parent link="gripper_base" />
+    <child link="gripper_l1" />
+    <axis xyz="-1 0 0" />
+    <limit lower="0" upper="0.96" effort="0" velocity="0" />
+  </joint>
+  <link name="gripper_l2">
+    <inertial>
+      <origin xyz="0.00107 0.00663 0.05748" rpy="0 0 0" />
+      <mass value="0.0535" />
+      <inertia ixx="3.97967E-05" ixy="1.59354E-08" ixz="5.8923E-08"
+        iyy="3.60131E-05" iyz="-2.39618E-06" izz="7.70615E-06" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/visual/gripper_l2.glb" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="meshes/collision/gripper_l2.obj" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="gripper_j2" type="revolute">
+    <origin xyz="1.84126E-19 -0.02579 0.0288" rpy="0 0 0" />
+    <parent link="gripper_base" />
+    <child link="gripper_l2" />
+    <axis xyz="1 0 0" />
+    <limit lower="0" upper="0.96" effort="0" velocity="0" />
+    <mimic joint="gripper_j1" multiplier="1" offset="0" />
+  </joint>
+</robot>

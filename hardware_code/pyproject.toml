@@ -1,0 +1,27 @@
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+# Vendored / third-party code is kept byte-identical to upstream.
+extend-exclude = [
+    "third_party",
+    "vive_tracker",
+]
+
+[tool.ruff.lint]
+# Google Python style: pycodestyle/pyflakes plus import sorting (I) and
+# google-convention docstrings (D). pep8-naming (N) is intentionally off:
+# the kinematics code uses math notation (T_L_vive, Rot_z, ...).
+select = ["E4", "E7", "E9", "F", "I", "D"]
+ignore = [
+    "E402", # scripts insert the project root into sys.path before imports
+    "E741", # single-letter names in math-heavy code
+    "F841", # unused locals left untouched in the no-behavior-change cleanup
+    "D1",   # missing docstrings are not enforced
+]
+
+[tool.ruff.lint.per-file-ignores]
+# The inference client predates the docstring-style adoption.
+"eval/**" = ["D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

@@ -1,0 +1,993 @@
+<!--
+Copyright (C) 2025 Dexmate Inc.
+
+This software is dual-licensed:
+
+1. GNU Affero General Public License v3.0 (AGPL-3.0)
+   See LICENSE-AGPL for details
+
+2. Commercial License
+   For commercial licensing terms, contact: contact@dexmate.ai
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RTC Stream Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+R
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            opacity: 0.8;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .connection-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+        }
+
+        .connection-panel h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+        }
+
+        .stream-input-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .input-group label {
+            min-width: 100px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .stream-entry {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .stream-entry-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .stream-entry-title {
+            font-weight: 600;
+            color: #2c3e50;
+            flex: 1;
+        }
+
+        .btn-remove {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .btn-remove:hover {
+            background: #c82333;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .streams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stream-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border: 1px solid #e9ecef;
+        }
+
+        .stream-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stream-title {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        .stream-url {
+            font-size: 0.9em;
+            color: #6c757d;
+            font-family: 'Courier New', monospace;
+        }
+
+        .stream-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .status-connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-connecting {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .stream-video {
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            background: #000;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .stream-controls {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .stream-stats {
+            padding: 15px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            background: #f1f3f4;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .log-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .log-content {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .preset-section {
+            background: #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-preset {
+            background: white;
+            color: #495057;
+            border: 1px solid #ced4da;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-preset:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .streams-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .input-group label {
+                min-width: auto;
+                margin-bottom: 5px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎥 RTC Stream Viewer</h1>
+            <p>Connect to multiple RTC streams using WebSocket signaling</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Connection Panel -->
+            <div class="connection-panel">
+                <h3>🔗 Stream Configuration</h3>
+
+                <!-- Quick Presets -->
+                <div class="preset-section">
+                    <h4>Quick Presets:</h4>
+                    <div class="preset-buttons">
+                        <button class="btn-preset" onclick="loadPreset('localhost')">Localhost (127.0.0.1:49152)</button>
+                        <button class="btn-preset" onclick="loadPreset('local_network')">Local Network (192.168.1.100:49152)</button>
+                        <button class="btn-preset" onclick="loadPreset('multiple_ports')">Multiple Ports (49152-49155)</button>
+                        <button class="btn-preset" onclick="clearAllStreams()">Clear All</button>
+                    </div>
+                </div>
+
+                <!-- Add New Stream -->
+                <div class="stream-input-section">
+                    <h4>Add New Stream:</h4>
+                    <div class="input-group">
+                        <label for="useSecure">Protocol:</label>
+                        <select id="useSecure" style="flex: 1; padding: 10px 15px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px;">
+                            <option value="true">WSS (Secure WebSocket)</option>
+                            <option value="false" selected>WS (Standard WebSocket)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="streamName">Name:</label>
+                        <input type="text" id="streamName" placeholder="Stream Name (optional)">
+                    </div>
+                    <div class="input-group">
+                        <label for="streamHost">Host/IP:</label>
+                        <input type="text" id="streamHost" placeholder="127.0.0.1 or domain.com" value="127.0.0.1">
+                    </div>
+                    <div class="input-group">
+                        <label for="streamPort">Port:</label>
+                        <input type="number" id="streamPort" placeholder="49152" value="49152" min="1" max="65535">
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="addStream()">➕ Add Stream</button>
+                        <button class="btn btn-secondary" onclick="addMultiplePorts()">➕ Add Multiple Ports</button>
+                    </div>
+                </div>
+
+                <!-- Configured Streams -->
+                <div id="streamsList">
+                    <h4>Configured Streams:</h4>
+                    <div id="streamsContainer">
+                        <p style="color: #6c757d; font-style: italic;">No streams configured. Add streams above.</p>
+                    </div>
+                </div>
+
+                <!-- Connection Controls -->
+                <div class="button-group" style="margin-top: 25px;">
+                    <button class="btn btn-success" id="connectAllBtn" onclick="connectAllStreams()">
+                        🚀 Connect All Streams
+                    </button>
+                    <button class="btn btn-danger" id="disconnectAllBtn" onclick="disconnectAllStreams()" disabled>
+                        ⏹️ Disconnect All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Error/Success Messages -->
+            <div id="messageArea"></div>
+
+            <!-- Active Streams Grid -->
+            <div class="streams-grid" id="streamsGrid">
+                <!-- Streams will be added here dynamically -->
+            </div>
+
+            <!-- Debug Log Panel -->
+            <div class="log-panel">
+                <div class="log-header">
+                    <h3>📋 Debug Log</h3>
+                    <button class="btn btn-secondary" onclick="clearLog()">Clear Log</button>
+                </div>
+                <div class="log-content" id="logContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let configuredStreams = [];
+        let activeStreams = new Map();
+        let logEntries = [];
+        let streamIdCounter = 0;
+
+        // Helper function to get WebSocket protocol
+        function getWebSocketProtocol() {
+            const useSecure = document.getElementById('useSecure').value === 'true';
+            return useSecure ? 'wss' : 'ws';
+        }
+
+        // Logging function
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+
+            logEntries.push(logEntry);
+            if (logEntries.length > 100) {
+                logEntries.shift(); // Keep only last 100 entries
+            }
+
+            const logContent = document.getElementById('logContent');
+            logContent.textContent = logEntries.join('\n');
+            logContent.scrollTop = logContent.scrollHeight;
+
+            console.log(logEntry);
+        }
+
+        function clearLog() {
+            logEntries = [];
+            document.getElementById('logContent').textContent = '';
+        }
+
+        function showMessage(message, type = 'success') {
+            const messageArea = document.getElementById('messageArea');
+            const messageClass = type === 'error' ? 'error-message' : 'success-message';
+            messageArea.innerHTML = `<div class="${messageClass}">${message}</div>`;
+
+            setTimeout(() => {
+                messageArea.innerHTML = '';
+            }, 5000);
+        }
+
+        // Preset configurations
+        function loadPreset(presetName) {
+            clearAllStreams();
+
+            switch(presetName) {
+                case 'localhost':
+                    configuredStreams.push({
+                        id: ++streamIdCounter,
+                        name: 'Localhost Stream',
+                        host: '127.0.0.1',
+                        port: 49152,
+                        protocol: getWebSocketProtocol()
+                    });
+                    break;
+
+                case 'local_network':
+                    configuredStreams.push({
+                        id: ++streamIdCounter,
+                        name: 'Local Network Stream',
+                        host: '192.168.1.100',
+                        port: 49152,
+                        protocol: getWebSocketProtocol()
+                    });
+                    break;
+
+                case 'multiple_ports':
+                    const host = '127.0.0.1';
+                    [49152, 49153, 49154, 49155].forEach((port, index) => {
+                        configuredStreams.push({
+                            id: ++streamIdCounter,
+                            name: `Stream ${index + 1}`,
+                            host: host,
+                            port: port,
+                            protocol: getWebSocketProtocol()
+                        });
+                    });
+                    break;
+            }
+
+            updateStreamsDisplay();
+            log(`Loaded ${presetName} preset`);
+            showMessage(`Loaded ${presetName} preset configuration`, 'success');
+        }
+
+        // Add a single stream
+        function addStream() {
+            const name = document.getElementById('streamName').value.trim() || `Stream ${streamIdCounter + 1}`;
+            const host = document.getElementById('streamHost').value.trim();
+            const port = parseInt(document.getElementById('streamPort').value);
+
+            if (!host) {
+                showMessage('Please enter a host/IP address', 'error');
+                return;
+            }
+
+            if (!port || port < 1 || port > 65535) {
+                showMessage('Please enter a valid port number (1-65535)', 'error');
+                return;
+            }
+
+            // Check for duplicates
+            const exists = configuredStreams.some(s => s.host === host && s.port === port);
+            if (exists) {
+                showMessage(`Stream ${host}:${port} already exists`, 'error');
+                return;
+            }
+
+            configuredStreams.push({
+                id: ++streamIdCounter,
+                name: name,
+                host: host,
+                port: port,
+                protocol: getWebSocketProtocol()
+            });
+
+            // Clear inputs
+            document.getElementById('streamName').value = '';
+            document.getElementById('streamHost').value = '127.0.0.1';
+            document.getElementById('streamPort').value = '49152';
+
+            updateStreamsDisplay();
+            log(`Added stream: ${name} (${host}:${port})`);
+            showMessage(`Added stream: ${name}`, 'success');
+        }
+
+        // Add multiple ports for the same host
+        function addMultiplePorts() {
+            const host = document.getElementById('streamHost').value.trim();
+            const startPort = parseInt(document.getElementById('streamPort').value);
+
+            if (!host) {
+                showMessage('Please enter a host/IP address', 'error');
+                return;
+            }
+
+            if (!startPort || startPort < 1 || startPort > 65535) {
+                showMessage('Please enter a valid starting port number', 'error');
+                return;
+            }
+
+            const portsToAdd = prompt('Enter number of consecutive ports to add:', '4');
+            const numPorts = parseInt(portsToAdd);
+
+            if (!numPorts || numPorts < 1 || numPorts > 20) {
+                showMessage('Please enter a valid number of ports (1-20)', 'error');
+                return;
+            }
+
+            let added = 0;
+            for (let i = 0; i < numPorts; i++) {
+                const port = startPort + i;
+                if (port > 65535) break;
+
+                // Check for duplicates
+                const exists = configuredStreams.some(s => s.host === host && s.port === port);
+                if (!exists) {
+                    configuredStreams.push({
+                        id: ++streamIdCounter,
+                        name: `${host}:${port}`,
+                        host: host,
+                        port: port,
+                        protocol: getWebSocketProtocol()
+                    });
+                    added++;
+                }
+            }
+
+            if (added > 0) {
+                updateStreamsDisplay();
+                log(`Added ${added} streams for ${host} starting from port ${startPort}`);
+                showMessage(`Added ${added} streams`, 'success');
+            } else {
+                showMessage('No new streams added (all ports already exist)', 'error');
+            }
+        }
+
+        // Remove a stream
+        function removeStream(streamId) {
+            configuredStreams = configuredStreams.filter(s => s.id !== streamId);
+            updateStreamsDisplay();
+            log(`Removed stream ID ${streamId}`);
+        }
+
+        // Clear all streams
+        function clearAllStreams() {
+            configuredStreams = [];
+            updateStreamsDisplay();
+            log('Cleared all configured streams');
+        }
+
+        // Update the streams display
+        function updateStreamsDisplay() {
+            const container = document.getElementById('streamsContainer');
+
+            if (configuredStreams.length === 0) {
+                container.innerHTML = '<p style="color: #6c757d; font-style: italic;">No streams configured. Add streams above.</p>';
+                return;
+            }
+
+            const html = configuredStreams.map(stream => `
+                <div class="stream-entry">
+                    <div class="stream-entry-header">
+                        <div class="stream-entry-title">${stream.name}</div>
+                        <button class="btn-remove" onclick="removeStream(${stream.id})">Remove</button>
+                    </div>
+                    <div style="font-family: 'Courier New', monospace; font-size: 0.9em; color: #6c757d;">
+                        ${stream.protocol}://${stream.host}:${stream.port}
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        // Create stream card HTML
+        function createStreamCard(stream) {
+            const wsUrl = `${stream.protocol}://${stream.host}:${stream.port}`;
+            return `
+                <div class="stream-card" id="stream-${stream.id}">
+                    <div class="stream-header">
+                        <div>
+                            <div class="stream-title">${stream.name}</div>
+                            <div class="stream-url">${wsUrl}</div>
+                        </div>
+                        <div class="stream-status status-connecting" id="status-${stream.id}">Connecting</div>
+                    </div>
+                    <video class="stream-video" id="video-${stream.id}" autoplay playsinline muted></video>
+                    <div class="stream-controls">
+                        <button class="btn btn-danger" onclick="disconnectSingleStream(${stream.id})">Disconnect</button>
+                        <button class="btn btn-secondary" onclick="toggleStats(${stream.id})">Toggle Stats</button>
+                    </div>
+                    <div class="stream-stats" id="stats-${stream.id}" style="display: none;">
+                        <div class="stats-row">
+                            <span>Status:</span>
+                            <span id="stats-status-${stream.id}">Connecting...</span>
+                        </div>
+                        <div class="stats-row">
+                            <span>Bytes Received:</span>
+                            <span id="stats-bytes-${stream.id}">0</span>
+                        </div>
+                        <div class="stats-row">
+                            <span>Packets Received:</span>
+                            <span id="stats-packets-${stream.id}">0</span>
+                        </div>
+                        <div class="stats-row">
+                            <span>Frames Decoded:</span>
+                            <span id="stats-frames-${stream.id}">0</span>
+                        </div>
+                        <div class="stats-row">
+                            <span>Resolution:</span>
+                            <span id="stats-resolution-${stream.id}">Unknown</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Connect to all configured streams
+        async function connectAllStreams() {
+            if (configuredStreams.length === 0) {
+                showMessage('No streams configured. Please add streams first.', 'error');
+                return;
+            }
+
+            log(`Connecting to ${configuredStreams.length} streams...`);
+            document.getElementById('connectAllBtn').disabled = true;
+
+            for (const stream of configuredStreams) {
+                await connectSingleStream(stream);
+                // Small delay between connections
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            document.getElementById('disconnectAllBtn').disabled = false;
+            showMessage(`Connected to ${configuredStreams.length} streams`, 'success');
+        }
+
+        // Connect to a single stream
+        async function connectSingleStream(stream) {
+            if (activeStreams.has(stream.id)) {
+                log(`Stream ${stream.name} already connected`);
+                return;
+            }
+
+            const wsUrl = `${stream.protocol}://${stream.host}:${stream.port}`;
+            log(`Connecting to ${stream.name} at ${wsUrl}...`);
+
+            // Add stream card to grid
+            const streamsGrid = document.getElementById('streamsGrid');
+            streamsGrid.insertAdjacentHTML('beforeend', createStreamCard(stream));
+
+            // Create RTC connection
+            const pc = new RTCPeerConnection({
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' }
+                ]
+            });
+
+            const videoElement = document.getElementById(`video-${stream.id}`);
+            const statusElement = document.getElementById(`status-${stream.id}`);
+            let websocket = null;
+            let statsInterval = null;
+
+            // Store stream info
+            const streamInfo = {
+                pc,
+                websocket,
+                videoElement,
+                statusElement,
+                statsInterval,
+                stream
+            };
+
+            activeStreams.set(stream.id, streamInfo);
+
+            // Set up RTC event handlers
+            pc.ontrack = (event) => {
+                log(`📹 Received track for ${stream.name}`);
+                if (event.streams.length > 0) {
+                    videoElement.srcObject = event.streams[0];
+                    statusElement.textContent = 'Connected';
+                    statusElement.className = 'stream-status status-connected';
+
+                    // Get video resolution
+                    videoElement.onloadedmetadata = () => {
+                        const resolution = `${videoElement.videoWidth}x${videoElement.videoHeight}`;
+                        document.getElementById(`stats-resolution-${stream.id}`).textContent = resolution;
+                    };
+                }
+            };
+
+            pc.oniceconnectionstatechange = () => {
+                const state = pc.iceConnectionState;
+                log(`ICE connection state for ${stream.name}: ${state}`);
+
+                if (state === 'connected' || state === 'completed') {
+                    statusElement.textContent = 'Connected';
+                    statusElement.className = 'stream-status status-connected';
+                } else if (state === 'failed' || state === 'disconnected') {
+                    statusElement.textContent = 'Disconnected';
+                    statusElement.className = 'stream-status status-disconnected';
+                } else {
+                    statusElement.textContent = 'Connecting';
+                    statusElement.className = 'stream-status status-connecting';
+                }
+
+                document.getElementById(`stats-status-${stream.id}`).textContent = state;
+            };
+
+            // Set up stats monitoring
+            statsInterval = setInterval(async () => {
+                if (pc && pc.iceConnectionState === 'connected') {
+                    try {
+                        const stats = await pc.getStats();
+                        stats.forEach(report => {
+                            if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
+                                document.getElementById(`stats-bytes-${stream.id}`).textContent =
+                                    (report.bytesReceived || 0).toLocaleString();
+                                document.getElementById(`stats-packets-${stream.id}`).textContent =
+                                    (report.packetsReceived || 0).toLocaleString();
+                                document.getElementById(`stats-frames-${stream.id}`).textContent =
+                                    (report.framesDecoded || 0).toLocaleString();
+                            }
+                        });
+                    } catch (e) {
+                        // Ignore stats errors
+                    }
+                }
+            }, 1000);
+
+            streamInfo.statsInterval = statsInterval;
+
+            // Connect WebSocket
+            try {
+                log(`🔌 Attempting WebSocket connection to ${wsUrl}`);
+                websocket = new WebSocket(wsUrl);
+                streamInfo.websocket = websocket;
+
+                websocket.onopen = async () => {
+                    log(`✅ WebSocket connected for ${stream.name}`);
+
+                    pc.addTransceiver('video', { direction: 'recvonly' });
+                    const offer = await pc.createOffer();
+                    await pc.setLocalDescription(offer);
+
+                    websocket.send(JSON.stringify({
+                        type: offer.type,
+                        sdp: offer.sdp
+                    }));
+
+                    log(`📤 Sent offer for ${stream.name}`);
+                };
+
+                websocket.onmessage = async (event) => {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'answer') {
+                        await pc.setRemoteDescription(data);
+                        log(`✅ Set remote description for ${stream.name}`);
+                    }
+                };
+
+                websocket.onclose = (event) => {
+                    const reason = event.reason || 'No reason provided';
+                    const code = event.code || 'Unknown';
+                    log(`❌ WebSocket closed for ${stream.name} - Code: ${code}, Reason: ${reason}`);
+                    if (!event.wasClean) {
+                        log(`❌ Connection closed unexpectedly for ${stream.name}`);
+                    }
+                    statusElement.textContent = 'Disconnected';
+                    statusElement.className = 'stream-status status-disconnected';
+                };
+
+                websocket.onerror = (error) => {
+                    const errorMsg = error.message || error.type || 'Connection failed';
+                    log(`❌ WebSocket error for ${stream.name}: ${errorMsg}`);
+                    log(`❌ Connection details: ${wsUrl}`);
+                    statusElement.textContent = 'Error';
+                    statusElement.className = 'stream-status status-disconnected';
+                };
+
+            } catch (error) {
+                const errorMsg = error.message || error.toString();
+                log(`❌ Failed to create WebSocket for ${stream.name}: ${errorMsg}`);
+                log(`❌ URL: ${wsUrl}`);
+                showMessage(`Failed to connect to ${stream.name}: ${errorMsg}`, 'error');
+                disconnectSingleStream(stream.id);
+            }
+        }
+
+        // Disconnect a single stream
+        function disconnectSingleStream(streamId) {
+            const streamInfo = activeStreams.get(streamId);
+            if (!streamInfo) return;
+
+            log(`Disconnecting stream ${streamInfo.stream.name}...`);
+
+            // Clean up RTC
+            if (streamInfo.pc) {
+                streamInfo.pc.close();
+            }
+
+            // Clean up WebSocket
+            if (streamInfo.websocket) {
+                streamInfo.websocket.close();
+            }
+
+            // Clean up stats interval
+            if (streamInfo.statsInterval) {
+                clearInterval(streamInfo.statsInterval);
+            }
+
+            // Remove from active streams
+            activeStreams.delete(streamId);
+
+            // Remove stream card
+            const streamCard = document.getElementById(`stream-${streamId}`);
+            if (streamCard) {
+                streamCard.remove();
+            }
+
+            // Update UI
+            if (activeStreams.size === 0) {
+                document.getElementById('disconnectAllBtn').disabled = true;
+                document.getElementById('connectAllBtn').disabled = false;
+            }
+
+            log(`✅ Disconnected stream ${streamInfo.stream.name}`);
+        }
+
+        // Disconnect all streams
+        function disconnectAllStreams() {
+            log('Disconnecting all streams...');
+            const streamIds = Array.from(activeStreams.keys());
+            streamIds.forEach(streamId => {
+                disconnectSingleStream(streamId);
+            });
+            document.getElementById('connectAllBtn').disabled = false;
+            showMessage('All streams disconnected', 'success');
+        }
+
+        // Toggle stats display
+        function toggleStats(streamId) {
+            const statsElement = document.getElementById(`stats-${streamId}`);
+            if (statsElement) {
+                statsElement.style.display =
+                    statsElement.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🚀 RTC Stream Viewer initialized');
+            showMessage('Ready to connect to RTC streams', 'success');
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            disconnectAllStreams();
+        });
+    </script>
+
+    <!-- Copyright Notice -->
+    <footer style="text-align: center; padding: 40px 20px 20px 20px; color: #495057; font-size: 0.9em; border-top: 1px solid #e9ecef; margin-top: 40px; background: #f8f9fa;">
+        © Dexmate Inc., 2025. All rights reserved.
+    </footer>
+</body>
+</html>

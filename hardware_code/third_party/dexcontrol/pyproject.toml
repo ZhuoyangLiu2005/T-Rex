@@ -1,0 +1,87 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dexcontrol"
+version = "0.4.4"
+description = "A Python library of Sensing and Control for Dexmate's Robot"
+authors = [{ name = "Dexmate", email = "contact@dexmate.ai" }]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Framework :: Robot Framework :: Library",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Typing :: Typed",
+]
+keywords = ["robot", "python", "control", "learning"]
+license = { file = "LICENSE" }
+readme = "README.md"
+dependencies = [
+    "numpy>=1.26.4",
+    "loguru>=0.7.0",
+    "jaxtyping>=0.3.0",
+    "rich",
+    "dexcomm>=0.4.2,<0.5.0",
+    "dexbot-utils>=0.4.3,<0.5.0"
+]
+requires-python = ">=3.10"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "ruff",
+    "isort>=5.12.0",
+    "pyright",
+    "pre-commit",
+]
+docs = [
+    "sphinx>=7.0.0",
+    "furo>=2023.09.10",
+    "sphinx-autodoc-typehints>=1.24.0",
+    "sphinx-rtd-theme>=1.3.0",
+    "myst-parser>=2.0.0",
+    "markitdown[all]>=0.1.0",
+]
+example = [
+    "matplotlib>=3.8.0",
+    "tyro",
+    "dualsense-controller>=0.3.1",
+    "pytransform3d==3.13.0",
+    "dexmotion>=0.2.1",
+    "scipy>=1.16.1"
+]
+
+[project.urls]
+Repository = "https://github.com/dexmate-ai/dexcontrol"
+
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
+[tool.ruff.format]
+exclude = ["*_pb2.py", "*_pb2.pyi", "src/dexcontrol/sensors/**"]
+quote-style = "double"
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+# Ignore the warning from jaxtyping
+select = ["E", "F", "I001"]
+ignore = ["F722", "E501"]
+
+# Ignore the unused import warning for __init__.py
+[tool.ruff.lint.per-file-ignores]
+"**/__init__.py" = ["F401"]
+
+[tool.pyright]
+include = ["src/dexcontrol/core/", "src/dexcontrol/config/", "examples/"]
+typeCheckingMode = "standard"

@@ -5,7 +5,7 @@
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 ![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white)
 
-[🌐 **Project Page**](https://tactile-rex.github.io/) | [✍️ **Paper (arXiv)**](https://arxiv.org/abs/2606.17055) | [🤗 **Model**](#-model-zoo) | [🤗 **Dataset (Hugging Face)**](https://huggingface.co/datasets/zekaiwang/trex_dataset)
+[🌐 **Project Page**](https://tactile-reactive-dexterous.github.io/) | [✍️ **Paper (arXiv)**](https://arxiv.org/abs/2606.17055) | [🤗 **Model**](#-model-zoo) | [🤗 **Dataset (Hugging Face)**](https://huggingface.co/datasets/zekaiwang/trex_dataset)
 
 Dantong Niu<sup>1,2*</sup>, Zhuoyang Liu<sup>1*</sup>, Zekai Wang<sup>1*</sup>, Boning Shao<sup>1</sup>, Zhao-Heng Yin<sup>1</sup>, Anirudh Pai<sup>1</sup>, Yuvan Sharma<sup>1</sup>, Stefano Saravalle<sup>5</sup>, Ruijie Zheng<sup>2</sup>, Jing Wang<sup>2</sup>, Ryan Punamiya<sup>2</sup>, Mengda Xu<sup>2</sup>, Yuqi Xie<sup>2</sup>, Yunfan Jiang<sup>2,3</sup>, Letian Fu<sup>1</sup>, Konstantinos Kallidromitis<sup>4</sup>, Matteo Gioia<sup>5,6</sup>, Junyi Zhang<sup>1</sup>, Jiaxin Ge<sup>1</sup>, Haiwen Feng<sup>1</sup>, Fabio Galasso<sup>5,6</sup>, Wei Zhan<sup>1</sup>, David M. Chan<sup>1</sup>, Yutong Bai<sup>1</sup>, Roei Herzig<sup>1</sup>, Jiahui Lei<sup>1</sup>, Fei-Fei Li<sup>3</sup>, Ken Goldberg<sup>1</sup>, Jitendra Malik<sup>1</sup>, Pieter Abbeel<sup>1</sup>, Yuke Zhu<sup>2</sup>, Danfei Xu<sup>2</sup>, Jim (Linxi) Fan<sup>2</sup>, Trevor Darrell<sup>1</sup>
 

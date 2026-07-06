@@ -11,6 +11,9 @@ __pycache__/
 .vscode/
 .idea/
 
+# macOS
+.DS_Store
+
 # Local secrets / per-machine config
 .env
 .env.local

@@ -23,6 +23,7 @@ hand state, fingertip tactile (losslessly compressed), and multi-camera video.
 | `teleop/` | Core stack: target source, IK, control loop, data recording, replay |
 | `eval/` | Policy inference client for the T-Rex ZMQ inference server (see `eval/README.md`) |
 | `camera/` | Camera stream senders (run on robot hardware) and receivers |
+| `mounts/` | 3D-printed / CNC adapter joining each Sharpa Wave hand to the Vega arm flange and holding the wrist camera (STEP CAD) |
 | `config/` | Site/deployment configuration (YAML; see `teleop/config.py` for the schema) |
 | `third_party/` | Vendored: `dexcontrol`, `dexmate-urdf`, Sharpa Wave hand descriptions; pointers to the Sharpa SDKs |
 | `vive_tracker/` | Vive tracker streamer (Windows server + Linux client); vendored subtree |

@@ -37,3 +37,12 @@ Senders publish on a ZMQ **PUB** socket (one port per camera) as
 
 Both sides set `zmq.CONFLATE` so only the latest frame is kept; slow
 consumers never see stale backlogs.
+
+## Camera parameters (intrinsics + extrinsics)
+
+[`camera_params.yaml`](camera_params.yaml) holds the calibrated parameters for
+all three dataset cameras — per-camera 3×3 `K` for the released 640×360 videos
+(streams are SDK-rectified, so distortion is zero), the wrist cameras'
+`T_ee_cam` relative to the URDF `L_ee`/`R_ee` frames, and the head camera as a
+constant robot-base-frame pose (torso/head are fixed throughout the dataset).
+Conventions, provenance, and per-camera accuracy are documented inline in the file.

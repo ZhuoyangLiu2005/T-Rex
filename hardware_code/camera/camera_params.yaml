@@ -1,0 +1,85 @@
+# T-Rex dataset camera parameters (intrinsics + extrinsics).
+# Released in response to https://github.com/ZhuoyangLiu2005/T-Rex/issues/3.
+#
+# CONVENTIONS:
+# - Camera optical frames follow OpenCV: x right, y down, z forward.
+# - Intrinsics apply to the released 640x360 videos
+#   (observation.images.{head_left, left_wrist, right_wrist}). The camera
+#   pipeline publishes SDK-RECTIFIED images -> distortion is zero; use K as-is.
+# - T_ee_cam is the POSE OF THE CAMERA IN THE EE FRAME: p_ee = T_ee_cam @ p_cam
+#   (homogeneous, meters). "ee" = the L_ee / R_ee frames of the vega_1 URDF
+#   vendored in dataset_quickstart/third_party (FK helper: dataset_quickstart
+#   robot.py, driven by observation.state).
+# - The torso and head are FIXED during the whole dataset (torso
+#   [0.9, 1.57, 0.1], head [0.28, 0.0, 0.0] rad — config/default.yaml), so the
+#   head camera pose in the ROBOT BASE frame (URDF root) is a constant, given
+#   directly as T_base_cam.
+# - quaternion_xyzw is scalar-LAST (ROS/scipy convention).
+#
+# PROVENANCE / ACCURACY:
+# - Intrinsics: ZED per-serial factory calibration (rectified model), verified
+#   by ChArUco calibration on the collection robot (residual distortion ~0,
+#   K agreement within 0.2%).
+# - Wrist extrinsics: CAD-derived from the released wrist-mount geometry
+#   (hardware_code/mounts) + the camera CAD, then consistency-checked on the
+#   collection robot with a ChArUco board (2026-07); the left camera validated
+#   to <= 9 mm / 2.6 deg. Values are CAD-nominal — expect cm-level accuracy.
+# - Head extrinsics: vendor URDF camera frame (zed_left_camera on head_l3).
+meta:
+  robot: bimanual Dexmate Vega-1 + Sharpa Wave hands (T-Rex collection robot)
+  image_width: 640
+  image_height: 360
+  torso_qpos_fixed: [0.9, 1.57, 0.1]
+  head_qpos_fixed: [0.28, 0.0, 0.0]
+cameras:
+  head_left:
+    serial: 55793948
+    model: ZED X Mini (stereo; released stream = LEFT RGB lens)
+    K:
+      - [253.328003, 0.000000, 331.134481]
+      - [0.000000, 253.328003, 179.017110]
+      - [0.000000, 0.000000, 1.000000]
+    fx_fy_cx_cy: [253.3280, 253.3280, 331.1345, 179.0171]
+    distortion: [0.0, 0.0, 0.0, 0.0, 0.0]  # streams are SDK-rectified
+    T_base_cam:  # CONSTANT for the dataset (torso/head fixed); base = URDF root
+      matrix:
+        - [0.000004, -0.751276, 0.659988, -0.079990]
+        - [-1.000000, 0.000000, 0.000006, 0.025000]
+        - [-0.000005, -0.659988, -0.751276, 1.431978]
+        - [0.000000, 0.000000, 0.000000, 1.000000]
+      translation_m: [-0.079990, 0.025000, 1.431978]
+      quaternion_xyzw: [0.661680, -0.661678, 0.249359, -0.249363]
+  left_wrist:
+    serial: 300534739
+    model: ZED X One S (wide, monocular)
+    K:
+      - [221.920776, 0.000000, 315.297974]
+      - [0.000000, 240.295471, 184.016357]
+      - [0.000000, 0.000000, 1.000000]
+    fx_fy_cx_cy: [221.9208, 240.2955, 315.2980, 184.0164]
+    distortion: [0.0, 0.0, 0.0, 0.0, 0.0]  # streams are SDK-rectified
+    T_ee_cam:  # camera optical frame in L_ee; compose with FK per timestep
+      matrix:
+        - [-0.342030, -0.936113, -0.081903, 0.048700]
+        - [0.939689, -0.340729, -0.029811, 0.005945]
+        - [-0.000000, -0.087160, 0.996194, 0.008986]
+        - [0.000000, 0.000000, 0.000000, 1.000000]
+      translation_m: [0.048700, 0.005945, 0.008986]
+      quaternion_xyzw: [-0.025020, -0.035733, 0.818375, 0.573026]
+  right_wrist:
+    serial: 307245838
+    model: ZED X One S (wide, monocular)
+    K:
+      - [221.845052, 0.000000, 320.828878]
+      - [0.000000, 240.177470, 190.118835]
+      - [0.000000, 0.000000, 1.000000]
+    fx_fy_cx_cy: [221.8451, 240.1775, 320.8289, 190.1188]
+    distortion: [0.0, 0.0, 0.0, 0.0, 0.0]  # streams are SDK-rectified
+    T_ee_cam:  # camera optical frame in R_ee; compose with FK per timestep
+      matrix:
+        - [0.342030, -0.936113, -0.081903, 0.048700]
+        - [0.939689, 0.340729, 0.029811, -0.005945]
+        - [0.000000, -0.087160, 0.996194, 0.008986]
+        - [0.000000, 0.000000, 0.000000, 1.000000]
+      translation_m: [0.048700, -0.005945, 0.008986]
+      quaternion_xyzw: [-0.035733, -0.025020, 0.573026, 0.818375]

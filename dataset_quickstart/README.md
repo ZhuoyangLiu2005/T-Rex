@@ -134,3 +134,10 @@ the model, and animates it in an inline viser viewer.
 renders an episode to a composed mp4 — scene/wrist RGB on top, the five left/right fingertips
 (raw, deform, and force) below — alongside a joint state-vs-target plot. Set `SOURCE` and
 `EPISODE_INDEX` and run all cells (this downloads the episode's videos).
+
+## Head & Wrist Camera Extrinsic & Intrinsic
+Camera intrinsics and extrinsics for all three cameras (K for the 640×360 videos,
+wrist `T_ee_cam` w.r.t. the URDF ee frames, head camera as a constant base-frame
+pose) are released in
+[`hardware_code/camera/camera_params.yaml`](../hardware_code/camera/camera_params.yaml)
+with conventions and accuracy documented inline.

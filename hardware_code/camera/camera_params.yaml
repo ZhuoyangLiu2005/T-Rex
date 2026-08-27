@@ -24,7 +24,13 @@
 #   (hardware_code/mounts) + the camera CAD, then consistency-checked on the
 #   collection robot with a ChArUco board (2026-07); the left camera validated
 #   to <= 9 mm / 2.6 deg. Values are CAD-nominal — expect cm-level accuracy.
-# - Head extrinsics: vendor URDF camera frame (zed_left_camera on head_l3).
+# - Head extrinsics: initialized with vendor URDF camera frame (zed_left_camera on head_l3).
+#   and then refined with aligning the projected robot model mesh to
+#   the recorded teleoperation videos.
+
+# KNOWN ISSUE: The Sharpa hand projected robot model mesh is misaligned with
+# the recorded videos. 
+
 meta:
   robot: bimanual Dexmate Vega-1 + Sharpa Wave hands (T-Rex collection robot)
   image_width: 640
@@ -43,12 +49,12 @@ cameras:
     distortion: [0.0, 0.0, 0.0, 0.0, 0.0]  # streams are SDK-rectified
     T_base_cam:  # CONSTANT for the dataset (torso/head fixed); base = URDF root
       matrix:
-        - [0.000004, -0.751276, 0.659988, -0.079990]
-        - [-1.000000, 0.000000, 0.000006, 0.025000]
-        - [-0.000005, -0.659988, -0.751276, 1.431978]
+        - [0.003612, -0.696424, 0.717621, -0.089301]
+        - [-0.999901, 0.007267, 0.012085, 0.027031]
+        - [-0.013631, -0.717593, -0.696329, 1.446556]
         - [0.000000, 0.000000, 0.000000, 1.000000]
-      translation_m: [-0.079990, 0.025000, 1.431978]
-      quaternion_xyzw: [0.661680, -0.661678, 0.249359, -0.249363]
+      translation_m: [-0.089301, 0.027031, 1.446556]
+      quaternion_xyzw: [-0.650514, 0.651917, -0.270551, 0.280424]
   left_wrist:
     serial: 300534739
     model: ZED X One S (wide, monocular)

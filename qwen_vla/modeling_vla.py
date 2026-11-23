@@ -274,8 +274,9 @@ class Qwen3VLVLAModel(nn.Module):
         if hasattr(_inner, "language_model"):
             del _inner.language_model
             import gc; gc.collect()
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
+            from .device import empty_cache
+            empty_cache("cuda")
+            empty_cache("xpu")
             print("[Qwen3VLVLAModel] Freed base model language_model to save memory.")
 
         return vla

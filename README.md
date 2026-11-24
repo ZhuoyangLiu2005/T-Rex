@@ -160,6 +160,24 @@ env path, and the data/checkpoint paths there for your machine (the scripts add
 `PROJECT_ROOT` to `PYTHONPATH` themselves). There is no need to export anything
 globally.
 
+### Run on Intel GPU (XPU)
+
+The inference server (`scripts/test.py`) also runs on Intel GPUs through PyTorch XPU.
+`--device auto` (the default) picks CUDA, then XPU, then CPU; `--device xpu` forces it.
+`pyproject.toml` pins a CUDA build of torch, so use `requirements-xpu.txt` instead of `pip install -e .`.
+
+```bash
+python3 -m venv trex-xpu && source trex-xpu/bin/activate
+pip install torch torchvision --index-url https://download.pytorch.org/whl/xpu
+pip install -r requirements-xpu.txt
+export PYTHONPATH=$PWD
+python scripts/test.py --checkpoint_path /path/to/T-Rex_midtrain_mecka23k_ucb100_vqvae_epoch6 \
+    --dataset_name rlbench --device xpu --action_dim 62 --action_chunk 16 \
+    --use_tactile_vec 1 --use_tactile_deform 1 --image_size 384 288 --port 5678
+```
+
+Use `--cuda <index>` to pick another GPU. Post-training (`scripts/train.py`, DeepSpeed) is unchanged and stays CUDA-only.
+
 ## Post-training & inference
 
 Fine-tune the released **midtrain** checkpoint on your own task, then serve it.

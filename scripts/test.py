@@ -37,6 +37,7 @@ from PIL import Image
 import zmq
 from transformers import AutoProcessor
 from qwen_vla import Qwen3VLVLAModel, extend_position_ids_for_flare, split_slow_fast_embeds
+from qwen_vla import get_default_device
 
 
 def _normalize(values, mask, vmin, vmax):
@@ -349,7 +350,8 @@ class CascadedServer:
         self.model     = model
         self.processor = processor
         self.statistic = statistic
-        self.device    = f"cuda:{args.cuda}"
+        dev_type       = args.device if args.device != "auto" else get_default_device().type
+        self.device    = f"{dev_type}:{args.cuda}" if dev_type != "cpu" else "cpu"
         self.lock      = threading.Lock()
 
         # Ablation: when True, skip the cascaded split entirely and let the
@@ -720,8 +722,9 @@ def main(args):
     n_fast_cams = 2 if args.action_dim > 31 else 1
     dummy_fast  = [Image.new("RGB", (224, 224), color="black") for _ in range(n_fast_cams)]
     dummy_state = np.zeros(args.action_dim, dtype=np.float32) if args.use_robot_state else None
-    dummy_f6    = np.zeros((5, 6), dtype=np.float32) if args.use_tactile_vec else None
-    dummy_deform = np.zeros((5, 240, 240), dtype=np.float32) if args.use_tactile_deform else None
+    n_fingers   = 10 if args.action_dim > 31 else 5
+    dummy_f6    = np.zeros((n_fingers, 6), dtype=np.float32) if args.use_tactile_vec else None
+    dummy_deform = np.zeros((n_fingers, 240, 240), dtype=np.float32) if args.use_tactile_deform else None
 
     server = CascadedServer(args, model, processor, statistic)
     # Warm-up: run one slow_and_fast and discard
@@ -797,7 +800,11 @@ if __name__ == "__main__":
                         help="0 = auto-detect from training_args.json")
     parser.add_argument("--n_flare_steps", type=int, default=0,
                         help="0 = auto-detect from training_args.json")
-    parser.add_argument("--cuda", type=str, default="0")
+    parser.add_argument("--cuda", type=str, default="0",
+                        help="Index of the GPU to use (CUDA or XPU).")
+    parser.add_argument("--device", type=str, default="auto",
+                        choices=["auto", "cuda", "xpu", "cpu"],
+                        help="auto picks CUDA, then Intel XPU, then CPU.")
     parser.add_argument("--port", type=int, default=5555)
     parser.add_argument("--image_size", type=int, nargs=2, default=None, metavar=("W", "H"))
 
